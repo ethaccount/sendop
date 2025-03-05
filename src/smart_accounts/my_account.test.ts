@@ -1,5 +1,5 @@
 import { type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
-import { ECDSAValidator } from '@/validators/ecdsa_validator'
+import { ECDSAValidator } from '@/validators/ECDSAValidator'
 import { JsonRpcProvider, Wallet, ZeroAddress } from 'ethers'
 import { CHARITY_PAYMASTER_ADDRESS, MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'

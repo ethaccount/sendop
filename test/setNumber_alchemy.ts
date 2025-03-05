@@ -2,7 +2,7 @@ import { ECDSA_VALIDATOR_ADDRESS } from '@/address'
 import { AlchemyBundler } from '@/bundlers/AlchemyBundler'
 import { sendop } from '@/core'
 import { Kernel } from '@/smart_accounts'
-import { ECDSAValidator } from '@/validators/ecdsa_validator'
+import { ECDSAValidator } from '@/validators/ECDSAValidator'
 import { getAddress, Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import { CHARITY_PAYMASTER_ADDRESS, COUNTER_ADDRESS, MyPaymaster, setup } from './utils'
 

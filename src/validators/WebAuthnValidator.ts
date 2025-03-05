@@ -2,17 +2,22 @@ import { ERC7579Validator, type UserOp } from '@/core'
 import { SendopError } from '@/error'
 import { abiEncode } from '@/utils/ethers-helper'
 import type { BytesLike } from 'ethers'
+import { hexlify } from 'ethers'
+import type { DataHexString } from 'node_modules/ethers/lib.esm/utils/data'
 
 type ConstructorOptions = {
 	address: string
+	signMessage: (userOpHash: DataHexString) => Promise<DataHexString>
 }
 
 export class WebAuthnValidator extends ERC7579Validator {
 	#address: string
+	#signMessage: (userOpHash: DataHexString) => Promise<DataHexString>
 
 	constructor(options: ConstructorOptions) {
 		super()
 		this.#address = options.address
+		this.#signMessage = options.signMessage
 	}
 
 	static getInitData(options: { pubKeyX: bigint; pubKeyY: bigint; authenticatorIdHash: BytesLike }): BytesLike {
@@ -36,16 +41,11 @@ export class WebAuthnValidator extends ERC7579Validator {
 	}
 
 	async getSignature(userOpHash: Uint8Array, userOp: UserOp) {
-		const signature = prompt('Please input the signature')
+		const signature = await this.#signMessage(hexlify(userOpHash))
 		if (!signature) {
 			throw new WebAuthnValidatorError('Signature is required in getSignature')
 		}
 		return signature
-	}
-
-	async getAccounts(): Promise<string[]> {
-		// TODO: signer needs to have webauthn public key
-		return []
 	}
 }
 

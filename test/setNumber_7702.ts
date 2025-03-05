@@ -1,5 +1,5 @@
 import { sendop } from '@/core'
-import { ECDSAValidator } from '@/validators/ecdsa_validator'
+import { ECDSAValidator } from '@/validators/ECDSAValidator'
 import { Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import { CHARITY_PAYMASTER_ADDRESS, COUNTER_ADDRESS, MyPaymaster, setup } from './utils'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'

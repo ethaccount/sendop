@@ -1,2 +1,2 @@
-export * from './ecdsa_validator'
-export * from './webauthn_validator'
+export * from './ECDSAValidator'
+export * from './WebAuthnValidator'
