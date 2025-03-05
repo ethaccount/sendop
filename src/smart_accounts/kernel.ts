@@ -115,6 +115,11 @@ export class Kernel extends SmartAccount {
 	}
 
 	async deploy(creationOptions: KernelCreationOptions, pmGetter?: PaymasterGetter): Promise<SendOpResult> {
+		const deployingAddress = await Kernel.getNewAddress(this.client, creationOptions)
+		if (this.address !== deployingAddress) {
+			throw new KernelError('deploying address mismatch')
+		}
+
 		return await sendop({
 			bundler: this.bundler,
 			executions: [],
