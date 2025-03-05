@@ -3,7 +3,7 @@ import { ENTRY_POINT_V07, getEmptyUserOp, sendop, type Bundler } from '@/core'
 import { Kernel } from '@/smart_accounts'
 import { isSameAddress, RpcProvider } from '@/utils'
 import { ECDSAValidator } from '@/validators'
-import { hexlify, Interface, JsonRpcProvider, randomBytes, toNumber, Wallet } from 'ethers'
+import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
 import { CHARITY_PAYMASTER_ADDRESS, COUNTER_ADDRESS, MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { AlchemyBundler } from './AlchemyBundler'
@@ -68,7 +68,7 @@ describe('AlchemyBundler', () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)), // random salt
 			validatorAddress: ECDSA_VALIDATOR_ADDRESS,
-			owner: await signer.getAddress(),
+			initData: await resolveAddress(signer),
 		}
 
 		const deployedAddress = await Kernel.getNewAddress(client, creationOptions)
@@ -123,7 +123,7 @@ describe('AlchemyBundler', () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
 			validatorAddress: ECDSA_VALIDATOR_ADDRESS,
-			owner: await new Wallet(privateKey).getAddress(),
+			initData: await resolveAddress(signer),
 		}
 
 		const deployedAddress = await Kernel.getNewAddress(client, creationOptions)
@@ -178,7 +178,7 @@ describe('AlchemyBundler', () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
 			validatorAddress: ECDSA_VALIDATOR_ADDRESS,
-			owner: await new Wallet(privateKey).getAddress(),
+			initData: await resolveAddress(signer),
 		}
 
 		const deployedAddress = await Kernel.getNewAddress(client, creationOptions)

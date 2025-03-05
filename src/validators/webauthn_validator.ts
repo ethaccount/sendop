@@ -1,15 +1,30 @@
-import type { ERC7579Validator, UserOp } from '@/core'
+import { ERC7579Validator, type UserOp } from '@/core'
 import { SendopError } from '@/error'
+import { abiEncode } from '@/utils/ethers-helper'
+import type { BytesLike } from 'ethers'
 
 type ConstructorOptions = {
 	address: string
 }
 
-export class WebAuthnValidator implements ERC7579Validator {
+export class WebAuthnValidator extends ERC7579Validator {
 	#address: string
 
 	constructor(options: ConstructorOptions) {
+		super()
 		this.#address = options.address
+	}
+
+	static getInitData(options: { pubKeyX: bigint; pubKeyY: bigint; authenticatorIdHash: BytesLike }): BytesLike {
+		const { pubKeyX, pubKeyY, authenticatorIdHash } = options
+		return abiEncode(
+			['tuple(uint256 pubKeyX, uint256 pubKeyY)', 'bytes32'],
+			[{ pubKeyX, pubKeyY }, authenticatorIdHash],
+		)
+	}
+
+	static getDeInitData(): BytesLike {
+		return '0x'
 	}
 
 	address() {

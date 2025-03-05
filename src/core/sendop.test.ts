@@ -1,4 +1,4 @@
-import { hexlify, Interface, JsonRpcProvider, parseEther, randomBytes, toNumber, Wallet } from 'ethers'
+import { hexlify, Interface, JsonRpcProvider, parseEther, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
 import { CHARITY_PAYMASTER_ADDRESS, COUNTER_ADDRESS, MyPaymaster, PimlicoPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { sendop } from './sendop'
@@ -53,7 +53,7 @@ describe('sendop', () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
 			validatorAddress: ECDSA_VALIDATOR_ADDRESS,
-			owner: await new Wallet(privateKey).getAddress(),
+			initData: await resolveAddress(signer),
 		}
 
 		const deployedAddress = await Kernel.getNewAddress(client, creationOptions)
@@ -92,7 +92,7 @@ describe('sendop', () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
 			validatorAddress: ECDSA_VALIDATOR_ADDRESS,
-			owner: await new Wallet(privateKey).getAddress(),
+			initData: await resolveAddress(signer),
 		}
 
 		const deployedAddress = await Kernel.getNewAddress(client, creationOptions)
@@ -123,7 +123,7 @@ describe('sendop', () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
 			validatorAddress: ECDSA_VALIDATOR_ADDRESS,
-			owner: await new Wallet(privateKey).getAddress(),
+			initData: await resolveAddress(signer),
 		}
 
 		const deployedAddress = await Kernel.getNewAddress(client, creationOptions)
@@ -185,7 +185,7 @@ describe('sendop', () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
 			validatorAddress: ECDSA_VALIDATOR_ADDRESS,
-			owner: await new Wallet(privateKey).getAddress(),
+			initData: await resolveAddress(signer),
 		}
 		const deployedAddress = await Kernel.getNewAddress(client, creationOptions)
 

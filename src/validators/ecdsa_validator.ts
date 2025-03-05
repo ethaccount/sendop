@@ -1,4 +1,5 @@
-import type { ERC7579Validator, UserOp } from '@/core'
+import { ERC7579Validator, type UserOp } from '@/core'
+import type { BytesLike } from 'ethers'
 import { Contract, EventLog, JsonRpcProvider, type Signer } from 'ethers'
 
 type ConstructorOptions = {
@@ -7,7 +8,7 @@ type ConstructorOptions = {
 	signer: Signer
 }
 
-export class ECDSAValidator implements ERC7579Validator {
+export class ECDSAValidator extends ERC7579Validator {
 	readonly #address: string
 	readonly #client: JsonRpcProvider
 	readonly #signer: Signer
@@ -15,6 +16,7 @@ export class ECDSAValidator implements ERC7579Validator {
 	#ecdsaValidator: Contract
 
 	constructor(options: ConstructorOptions) {
+		super()
 		this.#address = options.address
 		this.#client = options.client
 		this.#signer = options.signer
@@ -24,6 +26,14 @@ export class ECDSAValidator implements ERC7579Validator {
 			['event OwnerRegistered(address indexed kernel, address indexed owner)'],
 			this.#client,
 		)
+	}
+
+	static getInitData(address: string): BytesLike {
+		return address
+	}
+
+	static getDeInitData(): BytesLike {
+		return '0x'
 	}
 
 	address() {

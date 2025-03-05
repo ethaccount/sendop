@@ -11,7 +11,7 @@ const KERNEL_FACTORY_ADDRESS = '0xaac5D4240AF87249B3f71BC8E4A2cae074A3E419'
 export type KernelCreationOptions = {
 	salt: string
 	validatorAddress: string
-	owner: string
+	initData: BytesLike
 }
 
 export class Kernel extends SmartAccount {
@@ -20,7 +20,7 @@ export class Kernel extends SmartAccount {
 	}
 
 	static override async getNewAddress(client: JsonRpcProvider, creationOptions: KernelCreationOptions) {
-		const { salt, validatorAddress, owner } = creationOptions
+		const { salt, validatorAddress, initData } = creationOptions
 
 		if (!is32BytesHexString(salt)) {
 			throw new KernelError('Salt should be 32 bytes in getNewAddress')
@@ -28,22 +28,22 @@ export class Kernel extends SmartAccount {
 
 		const kernelFactory = new Contract(KERNEL_FACTORY_ADDRESS, this.kernelFactoryInterface, client)
 
-		function getInitializeData(validator: string, owner: string) {
-			if (!isAddress(validator) || !isAddress(owner)) {
+		function getInitializeData(validator: string, initData: BytesLike) {
+			if (!isAddress(validator)) {
 				throw new KernelError('Invalid address in getInitializeData')
 			}
 
 			return Kernel.kernelInterface.encodeFunctionData('initialize', [
 				concat(['0x01', validator]),
 				ZeroAddress,
-				owner,
+				initData,
 				'0x',
 				[],
 			])
 		}
 
 		const address = await kernelFactory['getAddress(bytes,bytes32)'](
-			getInitializeData(validatorAddress, owner),
+			getInitializeData(validatorAddress, initData),
 			salt,
 		)
 
@@ -125,30 +125,30 @@ export class Kernel extends SmartAccount {
 	}
 
 	getInitCode(creationOptions: KernelCreationOptions) {
-		const { salt, validatorAddress, owner } = creationOptions
-		return concat([KERNEL_FACTORY_ADDRESS, this.getCreateAccountData(validatorAddress, owner, salt)])
+		const { salt, validatorAddress, initData } = creationOptions
+		return concat([KERNEL_FACTORY_ADDRESS, this.getCreateAccountData(validatorAddress, initData, salt)])
 	}
 
-	private getCreateAccountData(validator: string, owner: string, salt: string) {
+	private getCreateAccountData(validator: string, initData: BytesLike, salt: string) {
 		if (!is32BytesHexString(salt)) {
 			throw new KernelError('Salt should be 32 bytes in getCreateAccountData')
 		}
 
 		return this.kernelFactoryInterface().encodeFunctionData('createAccount', [
-			this.getInitializeData(validator, owner),
+			this.getInitializeData(validator, initData),
 			salt,
 		])
 	}
 
-	private getInitializeData(validator: string, owner: string) {
-		if (!isAddress(validator) || !isAddress(owner)) {
+	private getInitializeData(validator: string, initData: BytesLike) {
+		if (!isAddress(validator)) {
 			throw new KernelError('Invalid address in getInitializeData')
 		}
 
 		return this.kernelInterface().encodeFunctionData('initialize', [
 			concat(['0x01', validator]),
 			ZeroAddress,
-			owner,
+			initData,
 			'0x',
 			[],
 		])

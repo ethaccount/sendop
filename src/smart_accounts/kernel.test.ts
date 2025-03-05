@@ -2,10 +2,10 @@ import { ECDSA_VALIDATOR_ADDRESS } from '@/address'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
 import { ECDSAValidator } from '@/validators'
-import { hexlify, Interface, JsonRpcProvider, randomBytes, toNumber, Wallet } from 'ethers'
+import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
 import { CHARITY_PAYMASTER_ADDRESS, COUNTER_ADDRESS, MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { Kernel } from './kernel'
+import { Kernel, type KernelCreationOptions } from './kernel'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup()
 
@@ -94,14 +94,14 @@ describe('Kernel', () => {
 
 	describe('Deploy Kernel and setNumber', () => {
 		let kernel: Kernel
-		let creationOptions: any
+		let creationOptions: KernelCreationOptions
 		let deployedAddress: string
 
-		beforeAll(() => {
+		beforeAll(async () => {
 			creationOptions = {
 				salt: hexlify(randomBytes(32)),
 				validatorAddress: ECDSA_VALIDATOR_ADDRESS,
-				owner: signer.address,
+				initData: await resolveAddress(signer),
 			}
 		})
 

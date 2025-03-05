@@ -1,4 +1,5 @@
-import type { TransactionReceipt } from 'ethers'
+import { SendopError } from '@/error'
+import type { BytesLike, TransactionReceipt } from 'ethers'
 
 // ========================================== interfaces ==========================================
 
@@ -28,8 +29,25 @@ export interface SignatureGetter {
 	getSignature(userOpHash: Uint8Array, userOp: UserOp): Promise<string> | string
 }
 
-export interface ERC7579Validator extends SignatureGetter {
-	address(): string
+export abstract class ERC7579Validator implements SignatureGetter {
+	abstract address(): string
+	abstract getDummySignature(userOp: UserOp): Promise<string> | string
+	abstract getSignature(userOpHash: Uint8Array, userOp: UserOp): Promise<string> | string
+
+	static getInitData(args: any): BytesLike {
+		throw new ERC7579ValidatorError('Not implemented')
+	}
+
+	static getDeInitData(args: any): BytesLike {
+		throw new ERC7579ValidatorError('Not implemented')
+	}
+}
+
+export class ERC7579ValidatorError extends SendopError {
+	constructor(message: string, cause?: Error) {
+		super(message, { cause })
+		this.name = 'ERC7579ValidatorError'
+	}
 }
 
 /**
