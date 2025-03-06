@@ -13,7 +13,9 @@ export type GasValues = {
 
 export type BundlerOptions = {
 	skipGasEstimation?: boolean
-	gasValuesHook?: (gasValues: GasValues) => Promise<GasValues>
+	onBeforeEstimation?: (userOp: UserOp) => Promise<UserOp>
+	onGetGasValues?: (gasValues: GasValues) => Promise<GasValues>
+	onBeforeSendUserOp?: (userOp: UserOp) => Promise<UserOp>
 }
 
 export abstract class BaseBundler implements Bundler {
@@ -21,19 +23,26 @@ export abstract class BaseBundler implements Bundler {
 	public url: string
 	public rpcProvider: RpcProvider
 	protected skipGasEstimation: boolean
-	protected gasValuesHook?: (gasValues: GasValues) => Promise<GasValues>
+	protected onGetGasValues?: (gasValues: GasValues) => Promise<GasValues>
+	protected onBeforeEstimation?: (userOp: UserOp) => Promise<UserOp>
+	protected onBeforeSendUserOp?: (userOp: UserOp) => Promise<UserOp>
 
 	constructor(chainId: string, url: string, options?: BundlerOptions) {
 		this.chainId = chainId
 		this.url = url
 		this.rpcProvider = new RpcProvider(url)
 		this.skipGasEstimation = options?.skipGasEstimation ?? false
-		this.gasValuesHook = options?.gasValuesHook
+		this.onBeforeEstimation = options?.onBeforeEstimation
+		this.onGetGasValues = options?.onGetGasValues
+		this.onBeforeSendUserOp = options?.onBeforeSendUserOp
 	}
 
 	abstract getGasValues(userOp: UserOp): Promise<GasValues>
 
 	async sendUserOperation(userOp: UserOp): Promise<string> {
+		if (this.onBeforeSendUserOp) {
+			userOp = await this.onBeforeSendUserOp(userOp)
+		}
 		return await this.rpcProvider.send({
 			method: 'eth_sendUserOperation',
 			params: [userOp, ENTRY_POINT_V07],

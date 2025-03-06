@@ -24,6 +24,9 @@ export class PimlicoBundler extends BaseBundler {
 		if (this.skipGasEstimation) {
 			estimateGas = this.getDefaultGasEstimation()
 		} else {
+			if (this.onBeforeEstimation) {
+				userOp = await this.onBeforeEstimation(userOp)
+			}
 			estimateGas = await this.rpcProvider.send({
 				method: 'eth_estimateUserOperationGas',
 				params: [userOp, ENTRY_POINT_V07],
@@ -39,8 +42,8 @@ export class PimlicoBundler extends BaseBundler {
 			callGasLimit: estimateGas.callGasLimit,
 		}
 
-		if (this.gasValuesHook) {
-			gasValues = await this.gasValuesHook(gasValues)
+		if (this.onGetGasValues) {
+			gasValues = await this.onGetGasValues(gasValues)
 		}
 
 		return gasValues
