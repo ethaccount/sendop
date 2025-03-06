@@ -93,7 +93,12 @@ const receipt = await op.wait()
 
 - For complete examples, please refer to *.test.ts
 
-## Publish Flow
-1. Commit v0.x.x
-2. Push to a branch and create a pull request
-3. If the tests pass, merge it and publish to npm
+## Contracts
+
+| name                      | networks      | address                                    |
+| ------------------------- | ------------- | ------------------------------------------ |
+| ECDSA_VALIDATOR           | local,sepolia | 0x971208C0409CFB2fD44C64E6158cf3335abb4476 |
+| WEB_AUTHN_VALIDATOR       | local,sepolia | 0xdeAFE53E9117379a72c242E35db94De14570f970 |
+| COUNTER                   | local,sepolia | 0x28Df249aF7555EB3D252Ebd6BFDb830f1dD4B790 |
+| CHARITY_PAYMASTER_ADDRESS | local,sepolia | 0x35124236d1a7210B43Cb46897Bc957dEFb42c777 |
+| KERNEL_FACTORY            | local,sepolia | 0xaac5D4240AF87249B3f71BC8E4A2cae074A3E419 |
