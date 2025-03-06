@@ -74,7 +74,7 @@ const op = await sendop({
             return ERC4337_CONTRACT_ADDRESS
         },
         async getNonce() {
-            const nonce: bigint = await getEntryPointContract(client).getNonce(ERC4337_CONTRACT_ADDRESS, 0)
+            const nonce: bigint = await getEntryPointV07(client).getNonce(ERC4337_CONTRACT_ADDRESS, 0)
             return toBeHex(nonce)
         },
         getCallData(executions: Execution[]) {

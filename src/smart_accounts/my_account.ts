@@ -7,8 +7,9 @@ import {
 	type SendOpResult,
 	type UserOp,
 } from '@/core'
-import { SmartAccount } from './interface'
-import { abiEncode, getEntryPointContract, padLeft } from '@/utils/ethers-helper'
+import { getEntryPointV07 } from '@/EntryPointV07'
+import { SendopError } from '@/error'
+import { abiEncode, padLeft } from '@/utils/ethers-helper'
 import {
 	concat,
 	Contract,
@@ -20,8 +21,7 @@ import {
 	zeroPadValue,
 	type BytesLike,
 } from 'ethers'
-import { SendopError } from '@/error'
-
+import { SmartAccount } from './interface'
 const MY_ACCOUNT_FACTORY_ADDRESS = '0xd4650238fcc60f64DfCa4e095dEe0081Dd4734b0'
 
 type MyAccountCreationOptions = {
@@ -89,7 +89,7 @@ export class MyAccount extends SmartAccount {
 
 	async getNonce() {
 		const nonceKey = await this.getNonceKey(await this.erc7579Validator.address())
-		const nonce: bigint = await getEntryPointContract(this.client).getNonce(this.address, nonceKey)
+		const nonce = await getEntryPointV07(this.client).getNonce(this.address, nonceKey)
 		return toBeHex(nonce)
 	}
 

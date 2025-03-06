@@ -7,7 +7,7 @@ import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { ECDSAValidator } from '@/validators'
 import { ECDSA_VALIDATOR_ADDRESS } from '@/address'
 import { Kernel } from '@/smart_accounts'
-import { getEntryPointContract } from '@/utils'
+import { getEntryPointV07 } from '@/EntryPointV07'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, isLocal } = await setup()
 
@@ -65,7 +65,7 @@ describe('sendop', () => {
 		})
 
 		// deposit 1 eth to entrypoint for kernel deployment
-		const entrypoint = getEntryPointContract(signer)
+		const entrypoint = getEntryPointV07(signer)
 		const tx = await entrypoint.depositTo(deployedAddress, { value: parseEther('1') })
 		await tx.wait()
 
@@ -153,7 +153,7 @@ describe('sendop', () => {
 		const number = Math.floor(Math.random() * 10000)
 
 		// deposit 1 eth to entrypoint for kernel deployment
-		const entrypoint = getEntryPointContract(signer)
+		const entrypoint = getEntryPointV07(signer)
 		const tx = await entrypoint.depositTo(deployedAddress, { value: parseEther('1') })
 		await tx.wait()
 

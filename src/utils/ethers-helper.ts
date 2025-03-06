@@ -1,32 +1,11 @@
-import { ENTRY_POINT_V07 } from '@/core'
 import { SendopError } from '@/error'
-import type { ContractRunner, ParamType } from 'ethers'
-import { AbiCoder, Contract, getAddress, Interface, zeroPadBytes, zeroPadValue } from 'ethers'
+import type { ParamType } from 'ethers'
+import { AbiCoder, getAddress, Interface, zeroPadBytes, zeroPadValue } from 'ethers'
 
 export const ERC7579Interface = new Interface([
 	'function installModule(uint256 moduleType, address module, bytes calldata initData)',
 	'function uninstallModule(uint256 moduleType, address module, bytes calldata deInitData)',
 ])
-
-export const EntryPointInterface = new Interface([
-	'function getUserOpHash(tuple(address sender, uint256 nonce, bytes initCode, bytes callData, bytes32 accountGasLimits, uint256 preVerificationGas, bytes32 gasFees, bytes paymasterAndData, bytes signature) userOp) external view returns (bytes32)',
-	'function getNonce(address sender, uint192 key) external view returns (uint256 nonce)',
-	'function handleOps(tuple(address sender, uint256 nonce, bytes initCode, bytes callData, bytes32 accountGasLimits, uint256 preVerificationGas, bytes32 gasFees, bytes paymasterAndData, bytes signature)[] ops, address payable beneficiary) external',
-])
-
-export function getEntryPointContract(runner: ContractRunner) {
-	return new Contract(
-		ENTRY_POINT_V07,
-		[
-			'function getUserOpHash(tuple(address sender, uint256 nonce, bytes initCode, bytes callData, bytes32 accountGasLimits, uint256 preVerificationGas, bytes32 gasFees, bytes paymasterAndData, bytes signature) userOp) external view returns (bytes32)',
-			'function getNonce(address sender, uint192 key) external view returns (uint256 nonce)',
-			'function handleOps(tuple(address sender, uint256 nonce, bytes initCode, bytes callData, bytes32 accountGasLimits, uint256 preVerificationGas, bytes32 gasFees, bytes paymasterAndData, bytes signature)[] ops, address payable beneficiary) external',
-			'function depositTo(address account)',
-			'function balanceOf(address account) public view returns (uint256)',
-		],
-		runner,
-	)
-}
 
 export function is32BytesHexString(data: string) {
 	return data.startsWith('0x') && data.length === 66
