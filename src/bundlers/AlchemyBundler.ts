@@ -1,5 +1,5 @@
 import type { UserOp } from '@/core'
-import { ENTRY_POINT_V07 } from '@/address'
+import { ENTRY_POINT_V0_7 } from '@/address'
 import { SendopError } from '@/error'
 import { toBeHex } from 'ethers'
 import { BaseBundler, type BundlerOptions, type GasValues } from './BaseBundler'
@@ -40,7 +40,7 @@ export class AlchemyBundler extends BaseBundler {
 			}
 			estimateGas = await this.rpcProvider.send({
 				method: 'eth_estimateUserOperationGas',
-				params: [userOp, ENTRY_POINT_V07],
+				params: [userOp, ENTRY_POINT_V0_7],
 			})
 			this.validateGasEstimation(estimateGas)
 		}

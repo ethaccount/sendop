@@ -1,34 +1,57 @@
 import fs from 'fs'
+import { fetchABI } from './common'
 import {
+	// Validators
 	ECDSA_VALIDATOR,
-	ENTRY_POINT_V07,
+	// Singleton
+	ENTRY_POINT_V0_7,
 	ERC20_SPENDING_LIMIT_POLICY,
 	K1_VALIDATOR,
+	// Smart Account Factories
 	KERNEL_FACTORY,
+	// Smart Account
+	KERNEL_V0_3_1,
 	MY_ACCOUNT_FACTORY,
 	REGISTRY,
+	SCHEDULED_ORDERS,
+	// Modules
+	SCHEDULED_TRANSFERS,
+	// SmartSession Contracts
 	SMART_SESSION,
 	SUDO_POLICY,
 	UNI_ACTION_POLICY,
 	WEB_AUTHN_VALIDATOR,
 } from '../src/address'
-import { fetchABI } from './common'
+
+const addresses = [
+	// Singleton
+	ENTRY_POINT_V0_7,
+	REGISTRY,
+
+	// Smart Account Factories
+	KERNEL_FACTORY,
+	MY_ACCOUNT_FACTORY,
+
+	// Smart Account
+	KERNEL_V0_3_1,
+
+	// Validators
+	ECDSA_VALIDATOR,
+	K1_VALIDATOR,
+	WEB_AUTHN_VALIDATOR,
+
+	// SmartSession Contracts
+	SMART_SESSION,
+	SUDO_POLICY,
+	UNI_ACTION_POLICY,
+	ERC20_SPENDING_LIMIT_POLICY,
+
+	// Modules
+	SCHEDULED_TRANSFERS,
+	SCHEDULED_ORDERS,
+]
 
 async function main() {
-	const addresses = [
-		ENTRY_POINT_V07,
-		REGISTRY,
-		KERNEL_FACTORY,
-		MY_ACCOUNT_FACTORY,
-		ECDSA_VALIDATOR,
-		K1_VALIDATOR,
-		WEB_AUTHN_VALIDATOR,
-		SMART_SESSION,
-		SUDO_POLICY,
-		UNI_ACTION_POLICY,
-		ERC20_SPENDING_LIMIT_POLICY,
-	]
-
 	console.log('Fetching ABIs...')
 
 	for (const address of addresses) {

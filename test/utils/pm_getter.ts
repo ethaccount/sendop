@@ -1,7 +1,7 @@
 import type { GetPaymasterDataResult, GetPaymasterStubDataResult, PaymasterGetter, UserOp } from '@/core'
 import { Contract, JsonRpcProvider, toBeHex } from 'ethers'
 import { CHARITY_PAYMASTER } from '@/address'
-import { ENTRY_POINT_V07 } from '@/address'
+import { ENTRY_POINT_V0_7 } from '@/address'
 import { RpcProvider } from '@/utils'
 
 export class MyPaymaster implements PaymasterGetter {
@@ -66,7 +66,7 @@ export class PimlicoPaymaster implements PaymasterGetter {
 			method: 'pm_getPaymasterStubData',
 			params: [
 				userOp,
-				ENTRY_POINT_V07,
+				ENTRY_POINT_V0_7,
 				toBeHex(this.chainId),
 				{
 					sponsorshipPolicyId: 'sp_superb_timeslip',
@@ -80,7 +80,7 @@ export class PimlicoPaymaster implements PaymasterGetter {
 			method: 'pm_getPaymasterData',
 			params: [
 				userOp,
-				ENTRY_POINT_V07,
+				ENTRY_POINT_V0_7,
 				toBeHex(this.chainId),
 				{
 					sponsorshipPolicyId: 'sp_superb_timeslip',

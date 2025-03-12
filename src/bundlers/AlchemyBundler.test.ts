@@ -1,4 +1,4 @@
-import { ECDSA_VALIDATOR, ENTRY_POINT_V07, CHARITY_PAYMASTER, COUNTER } from '@/address'
+import { ECDSA_VALIDATOR, ENTRY_POINT_V0_7, CHARITY_PAYMASTER, COUNTER } from '@/address'
 import { getEmptyUserOp, sendop, type Bundler } from '@/core'
 import { Kernel } from '@/smart_accounts'
 import { isSameAddress, RpcProvider } from '@/utils'
@@ -100,7 +100,7 @@ describe('AlchemyBundler', () => {
 		// Send request for gas estimation
 		const gasValues = await rpcProvider.send({
 			method: 'eth_estimateUserOperationGas',
-			params: [userOp, ENTRY_POINT_V07],
+			params: [userOp, ENTRY_POINT_V0_7],
 		})
 
 		logger.info(`Gas values: ${JSON.stringify(gasValues)}`)

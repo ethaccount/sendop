@@ -9,7 +9,7 @@ import type {
 	UserOp,
 	UserOpReceipt,
 } from './types'
-import { ENTRY_POINT_V07 } from '@/address'
+import { ENTRY_POINT_V0_7 } from '@/address'
 
 export async function sendop(options: {
 	bundler: Bundler
@@ -69,7 +69,7 @@ export async function sendop(options: {
 	}
 
 	// sign userOp
-	const userOpHash = getUserOpHash(packUserOp(userOp), ENTRY_POINT_V07, bundler.chainId)
+	const userOpHash = getUserOpHash(packUserOp(userOp), ENTRY_POINT_V0_7, bundler.chainId)
 	userOp.signature = await opGetter.getSignature(getBytes(userOpHash), userOp)
 
 	// send userOp
