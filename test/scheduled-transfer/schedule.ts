@@ -10,7 +10,7 @@ import {
 	SmartSession__factory,
 } from '@/index'
 import { concat, hexlify, Interface, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
-import { MyPaymaster, setup } from '../utils'
+import { MyPaymaster, setup } from '../../test/utils'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, account1 } = await setup({ chainId: 'local' })
 
