@@ -1,7 +1,7 @@
-import { ECDSA_VALIDATOR } from '@/address'
+import { ECDSA_VALIDATOR, CHARITY_PAYMASTER } from '@/address'
 import { ECDSAValidatorModule, Kernel, PimlicoBundler, sendop } from '@/index'
 import { hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
-import { CHARITY_PAYMASTER_ADDRESS, MyPaymaster, setup } from './utils'
+import { MyPaymaster, setup } from './utils'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup({ chainId: '11155111' })
 
@@ -37,7 +37,7 @@ const op = await sendop({
 	initCode: kernel.getInitCode(creationOptions),
 	pmGetter: new MyPaymaster({
 		client,
-		paymasterAddress: CHARITY_PAYMASTER_ADDRESS,
+		paymasterAddress: CHARITY_PAYMASTER,
 	}),
 })
 

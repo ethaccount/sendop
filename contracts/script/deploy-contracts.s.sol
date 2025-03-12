@@ -28,8 +28,8 @@ contract DeployContracts is Script {
         ECDSAValidator validator = new ECDSAValidator{salt: salt}();
         console.log("ECDSAValidator deployed at", address(validator));
 
-        WebAuthnValidator webauthn = new WebAuthnValidator{salt: salt}();
-        console.log("WebAuthnValidator deployed at", address(webauthn));
+        // WebAuthnValidator webauthn = new WebAuthnValidator{salt: salt}();
+        // console.log("WebAuthnValidator deployed at", address(webauthn));
 
         Counter counter = new Counter{salt: salt}();
         console.log("Counter deployed at", address(counter));

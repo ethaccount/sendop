@@ -2,9 +2,9 @@ import { sendop } from '@/core'
 import { MyAccount } from '@/smart_accounts/my_account'
 import { ECDSAValidatorModule } from '@/validators/ECDSAValidatorModule'
 import { Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
-import { COUNTER_ADDRESS, PimlicoPaymaster, setup } from './utils'
+import { PimlicoPaymaster, setup } from './utils'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
-import { ECDSA_VALIDATOR } from '@/address'
+import { COUNTER, ECDSA_VALIDATOR } from '@/address'
 
 // only works for sepolia
 
@@ -21,7 +21,7 @@ const op = await sendop({
 	bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 	executions: [
 		{
-			to: COUNTER_ADDRESS,
+			to: COUNTER,
 			data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
 			value: '0x0',
 		},

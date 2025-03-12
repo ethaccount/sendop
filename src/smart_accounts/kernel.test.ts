@@ -1,9 +1,9 @@
-import { ECDSA_VALIDATOR } from '@/address'
+import { ECDSA_VALIDATOR, CHARITY_PAYMASTER, COUNTER } from '@/address'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
 import { ECDSAValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
-import { CHARITY_PAYMASTER_ADDRESS, COUNTER_ADDRESS, MyPaymaster, setup } from 'test/utils'
+import { MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { Kernel, type KernelCreationOptions } from './kernel'
 
@@ -30,7 +30,7 @@ describe('Kernel', () => {
 		})
 		pmGetter = new MyPaymaster({
 			client,
-			paymasterAddress: CHARITY_PAYMASTER_ADDRESS,
+			paymasterAddress: CHARITY_PAYMASTER,
 		})
 
 		kernel = new Kernel('', {
@@ -131,7 +131,7 @@ describe('Kernel', () => {
 			const number = Math.floor(Math.random() * 1000000)
 			const op = await kernel.send([
 				{
-					to: COUNTER_ADDRESS,
+					to: COUNTER,
 					data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
 					value: '0x0',
 				},

@@ -1,11 +1,11 @@
 import { hexlify, Interface, JsonRpcProvider, parseEther, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
-import { CHARITY_PAYMASTER_ADDRESS, COUNTER_ADDRESS, MyPaymaster, PimlicoPaymaster, setup } from 'test/utils'
+import { MyPaymaster, PimlicoPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { sendop } from './sendop'
 import type { Bundler, ERC7579Validator, PaymasterGetter } from './types'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { ECDSAValidatorModule } from '@/validators'
-import { ECDSA_VALIDATOR } from '@/address'
+import { ECDSA_VALIDATOR, CHARITY_PAYMASTER, COUNTER } from '@/address'
 import { Kernel } from '@/smart_accounts'
 import { connectEntryPointV07 } from '@/utils'
 
@@ -32,7 +32,7 @@ describe('sendop', () => {
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL)
 		pmGetter = new MyPaymaster({
 			client,
-			paymasterAddress: CHARITY_PAYMASTER_ADDRESS,
+			paymasterAddress: CHARITY_PAYMASTER,
 		})
 		erc7579Validator = new ECDSAValidatorModule({
 			address: ECDSA_VALIDATOR,
@@ -165,7 +165,7 @@ describe('sendop', () => {
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 			executions: [
 				{
-					to: COUNTER_ADDRESS,
+					to: COUNTER,
 					data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
 					value: '0x0',
 				},
@@ -202,7 +202,7 @@ describe('sendop', () => {
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 			executions: [
 				{
-					to: COUNTER_ADDRESS,
+					to: COUNTER,
 					data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
 					value: '0x0',
 				},
@@ -210,7 +210,7 @@ describe('sendop', () => {
 			opGetter: kernel,
 			pmGetter: new MyPaymaster({
 				client,
-				paymasterAddress: CHARITY_PAYMASTER_ADDRESS,
+				paymasterAddress: CHARITY_PAYMASTER,
 			}),
 			initCode: kernel.getInitCode(creationOptions),
 		})

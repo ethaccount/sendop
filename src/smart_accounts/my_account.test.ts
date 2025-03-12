@@ -1,11 +1,11 @@
 import { type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
 import { ECDSAValidatorModule } from '@/validators/ECDSAValidatorModule'
 import { JsonRpcProvider, Wallet, ZeroAddress } from 'ethers'
-import { CHARITY_PAYMASTER_ADDRESS, MyPaymaster, setup } from 'test/utils'
+import { MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { MyAccount } from './my_account'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
-import { ECDSA_VALIDATOR } from '@/address'
+import { ECDSA_VALIDATOR, CHARITY_PAYMASTER } from '@/address'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup()
 
@@ -30,7 +30,7 @@ describe.skip('MyAccount', () => {
 		})
 		pmGetter = new MyPaymaster({
 			client,
-			paymasterAddress: CHARITY_PAYMASTER_ADDRESS,
+			paymasterAddress: CHARITY_PAYMASTER,
 		})
 
 		// TODO:

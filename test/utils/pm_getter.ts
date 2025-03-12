@@ -1,6 +1,6 @@
 import type { GetPaymasterDataResult, GetPaymasterStubDataResult, PaymasterGetter, UserOp } from '@/core'
 import { Contract, JsonRpcProvider, toBeHex } from 'ethers'
-import { CHARITY_PAYMASTER_ADDRESS } from './test_address'
+import { CHARITY_PAYMASTER } from '@/address'
 import { ENTRY_POINT_V07 } from '@/address'
 import { RpcProvider } from '@/utils'
 
@@ -20,7 +20,7 @@ export class MyPaymaster implements PaymasterGetter {
 	}
 
 	async getPaymasterStubData(userOp: UserOp): Promise<GetPaymasterStubDataResult> {
-		if (this.#paymasterAddress === CHARITY_PAYMASTER_ADDRESS) {
+		if (this.#paymasterAddress === CHARITY_PAYMASTER) {
 			return {
 				sponsor: {
 					name: 'My Wallet',

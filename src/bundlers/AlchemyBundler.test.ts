@@ -1,10 +1,10 @@
-import { ECDSA_VALIDATOR, ENTRY_POINT_V07 } from '@/address'
+import { ECDSA_VALIDATOR, ENTRY_POINT_V07, CHARITY_PAYMASTER, COUNTER } from '@/address'
 import { getEmptyUserOp, sendop, type Bundler } from '@/core'
 import { Kernel } from '@/smart_accounts'
 import { isSameAddress, RpcProvider } from '@/utils'
 import { ECDSAValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
-import { CHARITY_PAYMASTER_ADDRESS, COUNTER_ADDRESS, MyPaymaster, setup } from 'test/utils'
+import { MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { AlchemyBundler } from './AlchemyBundler'
 import { PimlicoBundler } from './PimlicoBundler'
@@ -117,7 +117,7 @@ describe('AlchemyBundler', () => {
 
 		const myPaymaster = new MyPaymaster({
 			client,
-			paymasterAddress: CHARITY_PAYMASTER_ADDRESS,
+			paymasterAddress: CHARITY_PAYMASTER,
 		})
 
 		const creationOptions = {
@@ -153,7 +153,7 @@ describe('AlchemyBundler', () => {
 			bundler: alchemyBundler,
 			executions: [
 				{
-					to: COUNTER_ADDRESS,
+					to: COUNTER,
 					data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
 					value: '0x0',
 				},
@@ -169,7 +169,7 @@ describe('AlchemyBundler', () => {
 		const duration = (Date.now() - startTime) / 1000
 		logger.info(`Receipt received after ${duration.toFixed(2)} seconds`)
 
-		const log = receipt.logs.find(log => isSameAddress(log.address, COUNTER_ADDRESS))
+		const log = receipt.logs.find(log => isSameAddress(log.address, COUNTER))
 		expect(log && toNumber(log.data)).toBe(number)
 	}, 200000)
 
@@ -199,7 +199,7 @@ describe('AlchemyBundler', () => {
 			opGetter: kernel,
 			pmGetter: new MyPaymaster({
 				client,
-				paymasterAddress: CHARITY_PAYMASTER_ADDRESS,
+				paymasterAddress: CHARITY_PAYMASTER,
 			}),
 			initCode: kernel.getInitCode(creationOptions),
 		})
