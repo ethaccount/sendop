@@ -184,11 +184,8 @@ export class Kernel extends SmartAccount {
 
 		const execMode = '0x0100000000000000000000000000000000000000000000000000000000000000'
 
-		// Execute functions other than 'execute' on the smart account
-		if (executions.some(execution => execution.to == this.address)) {
-			if (executions.length > 1) {
-				throw new KernelError('Only one execution is allowed on the smart account')
-			}
+		// Execute 1 function on the smart account
+		if (executions.length === 1 && executions[0].to == this.address) {
 			return executions[0].data
 		}
 
