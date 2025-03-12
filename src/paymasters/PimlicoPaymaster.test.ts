@@ -1,7 +1,7 @@
-import { ECDSA_VALIDATOR, CHARITY_PAYMASTER } from '@/address'
+import ADDRESS from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
-import { Kernel } from '@/smart_accounts'
+import { KernelAccount } from '@/smart_accounts'
 import { ECDSAValidatorModule } from '@/validators'
 import { hexlify, JsonRpcProvider, randomBytes, resolveAddress, Wallet } from 'ethers'
 import { MyPaymaster, setup } from 'test/utils'
@@ -31,10 +31,10 @@ describe('sendop', () => {
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL)
 		pmGetter = new MyPaymaster({
 			client,
-			paymasterAddress: CHARITY_PAYMASTER,
+			paymasterAddress: ADDRESS.CharityPaymaster,
 		})
 		erc7579Validator = new ECDSAValidatorModule({
-			address: ECDSA_VALIDATOR,
+			address: ADDRESS.ECDSAValidator,
 			client,
 			signer,
 		})
@@ -45,13 +45,13 @@ describe('sendop', () => {
 	it('should deploy kernel with pimlico paymaster', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ECDSA_VALIDATOR,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			initData: await resolveAddress(signer),
 		}
 
-		const deployedAddress = await Kernel.getNewAddress(client, creationOptions)
+		const deployedAddress = await KernelAccount.getNewAddress(client, creationOptions)
 
-		const kernel = new Kernel(deployedAddress, {
+		const kernel = new KernelAccount(deployedAddress, {
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 			erc7579Validator,

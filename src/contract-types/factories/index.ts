@@ -2,12 +2,14 @@
 /* tslint:disable */
 /* eslint-disable */
 export * as manual from "./manual";
+export { CharityPaymaster__factory } from "./CharityPaymaster__factory";
+export { Counter__factory } from "./Counter__factory";
 export { ECDSAValidator__factory } from "./ECDSAValidator__factory";
 export { ERC20SpendingLimitPolicy__factory } from "./ERC20SpendingLimitPolicy__factory";
-export { EntryPointV07__factory } from "./EntryPointV07__factory";
+export { EntryPointV7__factory } from "./EntryPointV7__factory";
 export { K1Validator__factory } from "./K1Validator__factory";
-export { Kernel__factory } from "./Kernel__factory";
-export { KernelFactory__factory } from "./KernelFactory__factory";
+export { KernelV3__factory } from "./KernelV3__factory";
+export { KernelV3Factory__factory } from "./KernelV3Factory__factory";
 export { MyAccountFactory__factory } from "./MyAccountFactory__factory";
 export { Registry__factory } from "./Registry__factory";
 export { ScheduledOrders__factory } from "./ScheduledOrders__factory";

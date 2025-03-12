@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 import { Contract, Interface, type ContractRunner } from "ethers";
-import type { Kernel, KernelInterface } from "../Kernel";
+import type { KernelV3, KernelV3Interface } from "../KernelV3";
 
 const _abi = [
   {
@@ -1230,12 +1230,12 @@ const _abi = [
   },
 ] as const;
 
-export class Kernel__factory {
+export class KernelV3__factory {
   static readonly abi = _abi;
-  static createInterface(): KernelInterface {
-    return new Interface(_abi) as KernelInterface;
+  static createInterface(): KernelV3Interface {
+    return new Interface(_abi) as KernelV3Interface;
   }
-  static connect(address: string, runner?: ContractRunner | null): Kernel {
-    return new Contract(address, _abi, runner) as unknown as Kernel;
+  static connect(address: string, runner?: ContractRunner | null): KernelV3 {
+    return new Contract(address, _abi, runner) as unknown as KernelV3;
   }
 }

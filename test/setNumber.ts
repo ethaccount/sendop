@@ -1,10 +1,10 @@
-import { ECDSA_VALIDATOR, CHARITY_PAYMASTER, COUNTER } from '@/address'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { sendop } from '@/core'
-import { Kernel } from '@/smart_accounts'
+import { KernelAccount } from '@/smart_accounts'
 import { ECDSAValidatorModule } from '@/validators/ECDSAValidatorModule'
 import { getAddress, Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import { MyPaymaster, setup } from './utils'
+import ADDRESS from '@/addresses'
 
 const { logger, chainId, CLIENT_URL, PIMLICO_BUNDLER_URL, privateKey } = await setup({ chainId: '11155111' })
 logger.info(`Chain ID: ${chainId}`)
@@ -23,23 +23,23 @@ const op = await sendop({
 	bundler,
 	executions: [
 		{
-			to: COUNTER,
+			to: ADDRESS.Counter,
 			data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
 			value: '0x0',
 		},
 	],
-	opGetter: new Kernel(FROM, {
+	opGetter: new KernelAccount(FROM, {
 		client,
 		bundler,
 		erc7579Validator: new ECDSAValidatorModule({
-			address: ECDSA_VALIDATOR,
+			address: ADDRESS.ECDSAValidator,
 			client,
 			signer,
 		}),
 	}),
 	pmGetter: new MyPaymaster({
 		client,
-		paymasterAddress: CHARITY_PAYMASTER,
+		paymasterAddress: ADDRESS.CharityPaymaster,
 	}),
 })
 
@@ -49,7 +49,7 @@ const receipt = await op.wait()
 const duration = (Date.now() - startTime) / 1000 // Convert to seconds
 logger.info(`Receipt received after ${duration.toFixed(2)} seconds`)
 
-const log = receipt.logs.find(log => getAddress(log.address) === getAddress(COUNTER))
+const log = receipt.logs.find(log => getAddress(log.address) === getAddress(ADDRESS.Counter))
 if (log && toNumber(log.data) === number) {
 	logger.info(`Number ${number} set successfully`)
 } else {

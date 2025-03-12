@@ -4,7 +4,7 @@ import { ECDSAValidatorModule } from '@/validators/ECDSAValidatorModule'
 import { Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import { PimlicoPaymaster, setup } from './utils'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
-import { COUNTER, ECDSA_VALIDATOR } from '@/address'
+import ADDRESS from '@/addresses'
 
 // only works for sepolia
 
@@ -21,7 +21,7 @@ const op = await sendop({
 	bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 	executions: [
 		{
-			to: COUNTER,
+			to: ADDRESS.Counter,
 			data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
 			value: '0x0',
 		},
@@ -30,7 +30,7 @@ const op = await sendop({
 		client: new JsonRpcProvider(CLIENT_URL),
 		bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 		erc7579Validator: new ECDSAValidatorModule({
-			address: ECDSA_VALIDATOR,
+			address: ADDRESS.ECDSAValidator,
 			client: new JsonRpcProvider(CLIENT_URL),
 			signer: new Wallet(privateKey),
 		}),

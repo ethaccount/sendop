@@ -4,7 +4,7 @@ import { Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import { MyPaymaster, setup } from './utils'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { MyAccount } from '@/smart_accounts'
-import { ECDSA_VALIDATOR, CHARITY_PAYMASTER, COUNTER } from '@/address'
+import ADDRESS from '@/addresses'
 
 // error: AccountAccessUnauthorized()
 
@@ -26,7 +26,7 @@ const op = await sendop({
 	bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 	executions: [
 		{
-			to: COUNTER,
+			to: ADDRESS.Counter,
 			data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
 			value: '0x0',
 		},
@@ -35,14 +35,14 @@ const op = await sendop({
 		client,
 		bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 		erc7579Validator: new ECDSAValidatorModule({
-			address: ECDSA_VALIDATOR,
+			address: ADDRESS.ECDSAValidator,
 			client,
 			signer: new Wallet(privateKey),
 		}),
 	}),
 	pmGetter: new MyPaymaster({
 		client,
-		paymasterAddress: CHARITY_PAYMASTER,
+		paymasterAddress: ADDRESS.CharityPaymaster,
 	}),
 })
 

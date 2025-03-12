@@ -1,6 +1,5 @@
-import { ECDSA_VALIDATOR, ENTRY_POINT_V0_7, CHARITY_PAYMASTER, COUNTER } from '@/address'
 import { getEmptyUserOp, sendop, type Bundler } from '@/core'
-import { Kernel } from '@/smart_accounts'
+import { KernelAccount } from '@/smart_accounts'
 import { isSameAddress, RpcProvider } from '@/utils'
 import { ECDSAValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
@@ -8,6 +7,7 @@ import { MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { AlchemyBundler } from './AlchemyBundler'
 import { PimlicoBundler } from './PimlicoBundler'
+import ADDRESS from '@/addresses'
 
 const {
 	logger,
@@ -67,17 +67,17 @@ describe('AlchemyBundler', () => {
 		// Create a test userop for kernel deployment
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)), // random salt
-			validatorAddress: ECDSA_VALIDATOR,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			initData: await resolveAddress(signer),
 		}
 
-		const deployedAddress = await Kernel.getNewAddress(client, creationOptions)
+		const deployedAddress = await KernelAccount.getNewAddress(client, creationOptions)
 
-		const kernel = new Kernel(deployedAddress, {
+		const kernel = new KernelAccount(deployedAddress, {
 			client,
 			bundler: new AlchemyBundler(chainId, BUNDLER_URL),
 			erc7579Validator: new ECDSAValidatorModule({
-				address: ECDSA_VALIDATOR,
+				address: ADDRESS.ECDSAValidator,
 				client,
 				signer,
 			}),
@@ -100,7 +100,7 @@ describe('AlchemyBundler', () => {
 		// Send request for gas estimation
 		const gasValues = await rpcProvider.send({
 			method: 'eth_estimateUserOperationGas',
-			params: [userOp, ENTRY_POINT_V0_7],
+			params: [userOp, ADDRESS.EntryPointV7],
 		})
 
 		logger.info(`Gas values: ${JSON.stringify(gasValues)}`)
@@ -117,22 +117,22 @@ describe('AlchemyBundler', () => {
 
 		const myPaymaster = new MyPaymaster({
 			client,
-			paymasterAddress: CHARITY_PAYMASTER,
+			paymasterAddress: ADDRESS.CharityPaymaster,
 		})
 
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ECDSA_VALIDATOR,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			initData: await resolveAddress(signer),
 		}
 
-		const deployedAddress = await Kernel.getNewAddress(client, creationOptions)
+		const deployedAddress = await KernelAccount.getNewAddress(client, creationOptions)
 
-		const kernel = new Kernel(deployedAddress, {
+		const kernel = new KernelAccount(deployedAddress, {
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: pimlicoBundler,
 			erc7579Validator: new ECDSAValidatorModule({
-				address: ECDSA_VALIDATOR,
+				address: ADDRESS.ECDSAValidator,
 				client,
 				signer,
 			}),
@@ -153,7 +153,7 @@ describe('AlchemyBundler', () => {
 			bundler: alchemyBundler,
 			executions: [
 				{
-					to: COUNTER,
+					to: ADDRESS.Counter,
 					data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
 					value: '0x0',
 				},
@@ -169,7 +169,7 @@ describe('AlchemyBundler', () => {
 		const duration = (Date.now() - startTime) / 1000
 		logger.info(`Receipt received after ${duration.toFixed(2)} seconds`)
 
-		const log = receipt.logs.find(log => isSameAddress(log.address, COUNTER))
+		const log = receipt.logs.find(log => isSameAddress(log.address, ADDRESS.Counter))
 		expect(log && toNumber(log.data)).toBe(number)
 	}, 200000)
 
@@ -177,17 +177,17 @@ describe('AlchemyBundler', () => {
 	it.skip('cannot deploy kernel without staking factory', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ECDSA_VALIDATOR,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			initData: await resolveAddress(signer),
 		}
 
-		const deployedAddress = await Kernel.getNewAddress(client, creationOptions)
+		const deployedAddress = await KernelAccount.getNewAddress(client, creationOptions)
 
-		const kernel = new Kernel(deployedAddress, {
+		const kernel = new KernelAccount(deployedAddress, {
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: alchemyBundler,
 			erc7579Validator: new ECDSAValidatorModule({
-				address: ECDSA_VALIDATOR,
+				address: ADDRESS.ECDSAValidator,
 				client,
 				signer,
 			}),
@@ -199,7 +199,7 @@ describe('AlchemyBundler', () => {
 			opGetter: kernel,
 			pmGetter: new MyPaymaster({
 				client,
-				paymasterAddress: CHARITY_PAYMASTER,
+				paymasterAddress: ADDRESS.CharityPaymaster,
 			}),
 			initCode: kernel.getInitCode(creationOptions),
 		})

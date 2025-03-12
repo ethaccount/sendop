@@ -4,8 +4,19 @@ import { connectEntryPointV07 } from '@/utils/contract-getter'
 import { SendopError } from '@/error'
 import { abiEncode, is32BytesHexString, isSameAddress, padLeft } from '@/utils/ethers-helper'
 import type { BytesLike } from 'ethers'
-import { concat, Contract, hexlify, Interface, isAddress, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
+import {
+	concat,
+	Contract,
+	hexlify,
+	Interface,
+	isAddress,
+	JsonRpcProvider,
+	toBeHex,
+	ZeroAddress,
+	zeroPadBytes,
+} from 'ethers'
 import { SmartAccount } from './interface'
+import { IERC7579Account__factory, KernelV3__factory } from '@/contract-types'
 
 const KERNEL_FACTORY_ADDRESS = '0xaac5D4240AF87249B3f71BC8E4A2cae074A3E419'
 
@@ -15,7 +26,7 @@ export type KernelCreationOptions = {
 	initData: BytesLike
 }
 
-export class Kernel extends SmartAccount {
+export class KernelAccount extends SmartAccount {
 	static override accountId() {
 		return 'kernel.advanced.v0.3.1'
 	}
@@ -27,14 +38,14 @@ export class Kernel extends SmartAccount {
 			throw new KernelError('Salt should be 32 bytes in getNewAddress')
 		}
 
-		const kernelFactory = new Contract(KERNEL_FACTORY_ADDRESS, this.kernelFactoryInterface, client)
+		const kernelFactory = new Contract(KERNEL_FACTORY_ADDRESS, this.factoryInterface, client)
 
 		function getInitializeData(validator: string, initData: BytesLike) {
 			if (!isAddress(validator)) {
 				throw new KernelError('Invalid address in getInitializeData')
 			}
 
-			return Kernel.kernelInterface.encodeFunctionData('initialize', [
+			return KernelAccount.interface.encodeFunctionData('initialize', [
 				concat(['0x01', validator]),
 				ZeroAddress,
 				initData,
@@ -55,12 +66,9 @@ export class Kernel extends SmartAccount {
 		return address
 	}
 
-	static readonly kernelInterface = new Interface([
-		'function initialize(bytes21 _rootValidator, address hook, bytes calldata validatorData, bytes calldata hookData, bytes[] calldata initConfig) external',
-		'function execute(bytes32 execMode, bytes calldata executionCalldata)',
-	])
+	static readonly interface = KernelV3__factory.createInterface()
 
-	static readonly kernelFactoryInterface = new Interface([
+	static readonly factoryInterface = new Interface([
 		'function createAccount(bytes calldata data, bytes32 salt) public payable returns (address)',
 		'function getAddress(bytes calldata data, bytes32 salt) public view returns (address)',
 	])
@@ -116,7 +124,7 @@ export class Kernel extends SmartAccount {
 	}
 
 	async deploy(creationOptions: KernelCreationOptions, pmGetter?: PaymasterGetter): Promise<SendOpResult> {
-		const deployingAddress = await Kernel.getNewAddress(this.client, creationOptions)
+		const deployingAddress = await KernelAccount.getNewAddress(this.client, creationOptions)
 		if (this.address !== deployingAddress) {
 			throw new KernelError('deploying address mismatch')
 		}
@@ -140,7 +148,7 @@ export class Kernel extends SmartAccount {
 			throw new KernelError('Salt should be 32 bytes in getCreateAccountData')
 		}
 
-		return this.kernelFactoryInterface().encodeFunctionData('createAccount', [
+		return this.factoryInterface().encodeFunctionData('createAccount', [
 			this.getInitializeData(validator, initData),
 			salt,
 		])
@@ -151,7 +159,7 @@ export class Kernel extends SmartAccount {
 			throw new KernelError('Invalid address in getInitializeData')
 		}
 
-		return this.kernelInterface().encodeFunctionData('initialize', [
+		return this.interface().encodeFunctionData('initialize', [
 			concat(['0x01', validator]),
 			ZeroAddress,
 			initData,
@@ -160,12 +168,12 @@ export class Kernel extends SmartAccount {
 		])
 	}
 
-	kernelInterface() {
-		return Kernel.kernelInterface
+	interface() {
+		return KernelAccount.interface
 	}
 
-	kernelFactoryInterface() {
-		return Kernel.kernelFactoryInterface
+	factoryInterface() {
+		return KernelAccount.factoryInterface
 	}
 
 	/**
@@ -177,12 +185,19 @@ export class Kernel extends SmartAccount {
 		return concat(['0x00', '0x00', validator, '0x0000'])
 	}
 
-	async getCallData(executions: Execution[]) {
+	async getCallData(
+		executions: Execution[],
+		options: {
+			execMode: string
+		} = {
+			execMode: '0x0100000000000000000000000000000000000000000000000000000000000000',
+		},
+	) {
+		const { execMode } = options
+
 		if (!executions.length) {
 			return '0x'
 		}
-
-		const execMode = '0x0100000000000000000000000000000000000000000000000000000000000000'
 
 		// Execute 1 function on the smart account
 		if (executions.length === 1 && executions[0].to == this.address) {
@@ -200,7 +215,7 @@ export class Kernel extends SmartAccount {
 			[executionsData.map(execution => [execution.target, execution.value, execution.data])],
 		)
 
-		return this.kernelInterface().encodeFunctionData('execute', [execMode, executionCalldata])
+		return this.interface().encodeFunctionData('execute', [execMode, executionCalldata])
 	}
 
 	async getInstallModuleInitData(validationData: BytesLike) {

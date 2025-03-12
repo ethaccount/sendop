@@ -1,5 +1,5 @@
 import type { Bundler, UserOp, UserOpReceipt } from '@/core'
-import { ENTRY_POINT_V0_7 } from '@/address'
+import ADDRESS from '@/addresses'
 import { SendopError } from '@/error'
 import { RpcProvider } from '@/utils'
 
@@ -45,7 +45,7 @@ export abstract class BaseBundler implements Bundler {
 		}
 		return await this.rpcProvider.send({
 			method: 'eth_sendUserOperation',
-			params: [userOp, ENTRY_POINT_V0_7],
+			params: [userOp, ADDRESS.EntryPointV7],
 		})
 	}
 

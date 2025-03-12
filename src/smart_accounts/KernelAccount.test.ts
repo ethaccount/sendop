@@ -1,39 +1,39 @@
-import { ECDSA_VALIDATOR, CHARITY_PAYMASTER, COUNTER } from '@/address'
+import ADDRESS from '@/addresses'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
 import { ECDSAValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
 import { MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { Kernel, type KernelCreationOptions } from './Kernel'
+import { KernelAccount, type KernelCreationOptions } from './KernelAccount'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup()
 
 logger.info(`Chain ID: ${chainId}`)
 
-describe('Kernel', () => {
+describe('KernelAccount', () => {
 	let signer: Wallet
 	let client: JsonRpcProvider
 	let bundler: Bundler
 	let erc7579Validator: ERC7579Validator
 	let pmGetter: PaymasterGetter
-	let kernel: Kernel
+	let kernel: KernelAccount
 
 	beforeAll(() => {
 		signer = new Wallet(privateKey)
 		client = new JsonRpcProvider(CLIENT_URL)
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL)
 		erc7579Validator = new ECDSAValidatorModule({
-			address: ECDSA_VALIDATOR,
+			address: ADDRESS.ECDSAValidator,
 			client,
 			signer: new Wallet(privateKey),
 		})
 		pmGetter = new MyPaymaster({
 			client,
-			paymasterAddress: CHARITY_PAYMASTER,
+			paymasterAddress: ADDRESS.CharityPaymaster,
 		})
 
-		kernel = new Kernel('', {
+		kernel = new KernelAccount('', {
 			client,
 			bundler,
 			erc7579Validator,
@@ -92,26 +92,26 @@ describe('Kernel', () => {
 		})
 	})
 
-	describe('Deploy Kernel and setNumber', () => {
-		let kernel: Kernel
+	describe('Deploy KernelAccount and setNumber', () => {
+		let kernel: KernelAccount
 		let creationOptions: KernelCreationOptions
 		let deployedAddress: string
 
 		beforeAll(async () => {
 			creationOptions = {
 				salt: hexlify(randomBytes(32)),
-				validatorAddress: ECDSA_VALIDATOR,
+				validatorAddress: ADDRESS.ECDSAValidator,
 				initData: await resolveAddress(signer),
 			}
 		})
 
 		it('should getNewAddress', async () => {
-			deployedAddress = await Kernel.getNewAddress(client, creationOptions)
+			deployedAddress = await KernelAccount.getNewAddress(client, creationOptions)
 			expect(deployedAddress).not.toBe('0x0000000000000000000000000000000000000000')
 		})
 
 		it('should deploy the contract', async () => {
-			kernel = new Kernel(deployedAddress, {
+			kernel = new KernelAccount(deployedAddress, {
 				client,
 				bundler,
 				erc7579Validator,
@@ -131,7 +131,7 @@ describe('Kernel', () => {
 			const number = Math.floor(Math.random() * 1000000)
 			const op = await kernel.send([
 				{
-					to: COUNTER,
+					to: ADDRESS.Counter,
 					data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
 					value: '0x0',
 				},

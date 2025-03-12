@@ -101,7 +101,7 @@ export declare namespace SelectorManager {
   ] & { hook: string; target: string; callType: string };
 }
 
-export interface KernelInterface extends Interface {
+export interface KernelV3Interface extends Interface {
   getFunction(
     nameOrSignature:
       | "accountId"
@@ -561,11 +561,11 @@ export namespace ValidatorUninstalledEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export interface Kernel extends BaseContract {
-  connect(runner?: ContractRunner | null): Kernel;
+export interface KernelV3 extends BaseContract {
+  connect(runner?: ContractRunner | null): KernelV3;
   waitForDeployment(): Promise<this>;
 
-  interface: KernelInterface;
+  interface: KernelV3Interface;
 
   queryFilter<TCEvent extends TypedContractEvent>(
     event: TCEvent,

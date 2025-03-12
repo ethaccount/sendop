@@ -5,9 +5,9 @@ import { sendop } from './sendop'
 import type { Bundler, ERC7579Validator, PaymasterGetter } from './types'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { ECDSAValidatorModule } from '@/validators'
-import { ECDSA_VALIDATOR, CHARITY_PAYMASTER, COUNTER } from '@/address'
-import { Kernel } from '@/smart_accounts'
-import { connectEntryPointV07 } from '@/utils'
+import ADDRESS from '@/addresses'
+import { KernelAccount } from '@/smart_accounts'
+import { connectEntryPointV07 } from '@/utils/contract-getter'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, isLocal } = await setup()
 
@@ -32,16 +32,16 @@ describe('sendop', () => {
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL)
 		pmGetter = new MyPaymaster({
 			client,
-			paymasterAddress: CHARITY_PAYMASTER,
+			paymasterAddress: ADDRESS.CharityPaymaster,
 		})
 		erc7579Validator = new ECDSAValidatorModule({
-			address: ECDSA_VALIDATOR,
+			address: ADDRESS.ECDSAValidator,
 			client,
 			signer,
 		})
 		creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ECDSA_VALIDATOR,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			owner: signer.address,
 		}
 
@@ -52,13 +52,13 @@ describe('sendop', () => {
 	it.skip('cannot pay prefund for kernel deployment when estimateUserOperationGas with reason: AA13 initCode failed or OOG', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ECDSA_VALIDATOR,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			initData: await resolveAddress(signer),
 		}
 
-		const deployedAddress = await Kernel.getNewAddress(client, creationOptions)
+		const deployedAddress = await KernelAccount.getNewAddress(client, creationOptions)
 
-		const kernel = new Kernel(deployedAddress, {
+		const kernel = new KernelAccount(deployedAddress, {
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 			erc7579Validator,
@@ -88,16 +88,16 @@ describe('sendop', () => {
 		expect(code).not.toBe('0x')
 	}, 100_000)
 
-	it('should deploy Kernel with charity paymaster', async () => {
+	it('should deploy KernelAccount with charity paymaster', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ECDSA_VALIDATOR,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			initData: await resolveAddress(signer),
 		}
 
-		const deployedAddress = await Kernel.getNewAddress(client, creationOptions)
+		const deployedAddress = await KernelAccount.getNewAddress(client, creationOptions)
 
-		const kernel = new Kernel(deployedAddress, {
+		const kernel = new KernelAccount(deployedAddress, {
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 			erc7579Validator,
@@ -119,16 +119,16 @@ describe('sendop', () => {
 		expect(code).not.toBe('0x')
 	}, 100_000)
 
-	it('should deploy Kernel with charity paymaster and set number without paymaster', async () => {
+	it('should deploy KernelAccount with charity paymaster and set number without paymaster', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ECDSA_VALIDATOR,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			initData: await resolveAddress(signer),
 		}
 
-		const deployedAddress = await Kernel.getNewAddress(client, creationOptions)
+		const deployedAddress = await KernelAccount.getNewAddress(client, creationOptions)
 
-		const kernel = new Kernel(deployedAddress, {
+		const kernel = new KernelAccount(deployedAddress, {
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 			erc7579Validator,
@@ -165,7 +165,7 @@ describe('sendop', () => {
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 			executions: [
 				{
-					to: COUNTER,
+					to: ADDRESS.Counter,
 					data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
 					value: '0x0',
 				},
@@ -181,15 +181,15 @@ describe('sendop', () => {
 		expect(toNumber(log.data)).toBe(number)
 	}, 100_000)
 
-	it('should deploy Kernel and set number in one user operation', async () => {
+	it('should deploy KernelAccount and set number in one user operation', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ECDSA_VALIDATOR,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			initData: await resolveAddress(signer),
 		}
-		const deployedAddress = await Kernel.getNewAddress(client, creationOptions)
+		const deployedAddress = await KernelAccount.getNewAddress(client, creationOptions)
 
-		const kernel = new Kernel(deployedAddress, {
+		const kernel = new KernelAccount(deployedAddress, {
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 			erc7579Validator,
@@ -202,7 +202,7 @@ describe('sendop', () => {
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 			executions: [
 				{
-					to: COUNTER,
+					to: ADDRESS.Counter,
 					data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
 					value: '0x0',
 				},
@@ -210,7 +210,7 @@ describe('sendop', () => {
 			opGetter: kernel,
 			pmGetter: new MyPaymaster({
 				client,
-				paymasterAddress: CHARITY_PAYMASTER,
+				paymasterAddress: ADDRESS.CharityPaymaster,
 			}),
 			initCode: kernel.getInitCode(creationOptions),
 		})

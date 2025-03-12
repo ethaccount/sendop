@@ -25,8 +25,8 @@ contract DeployContracts is Script {
 
         vm.startBroadcast();
 
-        ECDSAValidator validator = new ECDSAValidator{salt: salt}();
-        console.log("ECDSAValidator deployed at", address(validator));
+        // ECDSAValidator validator = new ECDSAValidator{salt: salt}();
+        // console.log("ECDSAValidator deployed at", address(validator));
 
         // WebAuthnValidator webauthn = new WebAuthnValidator{salt: salt}();
         // console.log("WebAuthnValidator deployed at", address(webauthn));

@@ -19,7 +19,7 @@ import type {
   TypedContractMethod,
 } from "./common";
 
-export interface KernelFactoryInterface extends Interface {
+export interface KernelV3FactoryInterface extends Interface {
   getFunction(
     nameOrSignature: "createAccount" | "getAddress" | "implementation"
   ): FunctionFragment;
@@ -48,11 +48,11 @@ export interface KernelFactoryInterface extends Interface {
   ): Result;
 }
 
-export interface KernelFactory extends BaseContract {
-  connect(runner?: ContractRunner | null): KernelFactory;
+export interface KernelV3Factory extends BaseContract {
+  connect(runner?: ContractRunner | null): KernelV3Factory;
   waitForDeployment(): Promise<this>;
 
-  interface: KernelFactoryInterface;
+  interface: KernelV3FactoryInterface;
 
   queryFilter<TCEvent extends TypedContractEvent>(
     event: TCEvent,

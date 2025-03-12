@@ -51,49 +51,33 @@ export async function getContractName(address: string, network: Network): Promis
 	return data.result[0].ContractName
 }
 
-async function tryGetContractName(address: string, network: Network): Promise<string> {
-	try {
-		return await getContractName(address, network)
-	} catch (error) {
-		throw new Error(`Failed to get contract name on ${network}: ${error}`)
-	}
-}
-
-export async function fetchABI(address: string, network: Network, output: string = 'src/abis') {
-	// Try to get contract name from specified network, fallback to mainnet
-	let contractName: string
-	let effectiveNetwork = network
-
-	try {
-		contractName = await tryGetContractName(address, network)
-		if (!contractName) {
-			throw new Error('Contract name is empty')
-		}
-	} catch (error) {
-		if (network !== 'mainnet') {
-			console.log('Retrying contract name fetch on mainnet...')
-			contractName = await tryGetContractName(address, 'mainnet')
-			effectiveNetwork = 'mainnet'
-		} else {
-			throw error
-		}
-	}
-
-	const endpoint = NETWORK_ENDPOINTS[effectiveNetwork]
-	const isFilePath = output.endsWith('.json')
-	const outputPath = isFilePath ? output : path.join(output, `${contractName}.json`)
-
-	const url = new URL(endpoint)
+async function fetchABIFromNetwork(address: string, network: Network): Promise<EtherscanResponse> {
+	const url = new URL(NETWORK_ENDPOINTS[network])
 	url.searchParams.append('module', 'contract')
 	url.searchParams.append('action', 'getabi')
 	url.searchParams.append('address', address)
 	url.searchParams.append('apikey', API_KEY)
 
 	const response = await fetch(url)
-	const data = (await response.json()) as EtherscanResponse
+	return (await response.json()) as EtherscanResponse
+}
 
+export async function fetchABI(address: string, network: Network, contractName: string, output: string = 'src/abis') {
+	const isFilePath = output.endsWith('.json')
+	const outputPath = isFilePath ? output : path.join(output, `${contractName}.json`)
+
+	// Try primary network first
+	let data = await fetchABIFromNetwork(address, network)
+
+	// If failed and not on mainnet, try mainnet as fallback
+	if (data.status === '0' && network !== 'mainnet') {
+		console.log('Retrying fetch on mainnet...')
+		data = await fetchABIFromNetwork(address, 'mainnet')
+	}
+
+	// Final status check
 	if (data.status === '0') {
-		throw new Error(`Error fetching ABI on ${effectiveNetwork}: ${data.message}`)
+		throw new Error(`Error fetching ABI on ${network === 'mainnet' ? 'mainnet' : `${network} and mainnet`}`)
 	}
 
 	if (!data.result.startsWith('[')) {
@@ -106,5 +90,6 @@ export async function fetchABI(address: string, network: Network, output: string
 	// Ensure the output directory exists
 	await fs.mkdir(path.dirname(outputPath), { recursive: true })
 	await fs.writeFile(outputPath, result)
+
 	console.log(`ABI written to ${outputPath}`)
 }

@@ -1,5 +1,5 @@
 import type { UserOp } from '@/core'
-import { ENTRY_POINT_V0_7 } from '@/address'
+import ADDRESS from '@/addresses'
 import { SendopError } from '@/error'
 import { toBeHex } from 'ethers'
 import { BaseBundler, type BundlerOptions, type GasValues } from './BaseBundler'
@@ -29,7 +29,7 @@ export class PimlicoBundler extends BaseBundler {
 			}
 			estimateGas = await this.rpcProvider.send({
 				method: 'eth_estimateUserOperationGas',
-				params: [userOp, ENTRY_POINT_V0_7],
+				params: [userOp, ADDRESS.EntryPointV7],
 			})
 			this.validateGasEstimation(estimateGas)
 		}
