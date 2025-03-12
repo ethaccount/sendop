@@ -1,3 +1,3 @@
 export * from './my_account'
-export * from './kernel'
+export * from './Kernel'
 export * from './interface'
