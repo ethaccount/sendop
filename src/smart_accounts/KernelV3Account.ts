@@ -1,24 +1,13 @@
+import ADDRESS from '@/addresses'
+import { KernelV3__factory, KernelV3Factory__factory } from '@/contract-types'
 import type { Bundler, ERC7579Validator, Execution, PaymasterGetter, SendOpResult, UserOp } from '@/core'
 import { sendop } from '@/core'
-import { connectEntryPointV07 } from '@/utils/contract-getter'
 import { SendopError } from '@/error'
-import { abiEncode, is32BytesHexString, isSameAddress, padLeft } from '@/utils/ethers-helper'
+import { connectEntryPointV07 } from '@/utils/contract-getter'
+import { abiEncode, is32BytesHexString, padLeft } from '@/utils/ethers-helper'
 import type { BytesLike } from 'ethers'
-import {
-	concat,
-	Contract,
-	hexlify,
-	Interface,
-	isAddress,
-	JsonRpcProvider,
-	toBeHex,
-	ZeroAddress,
-	zeroPadBytes,
-} from 'ethers'
+import { concat, hexlify, isAddress, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
 import { SmartAccount } from './interface'
-import { IERC7579Account__factory, KernelV3__factory } from '@/contract-types'
-
-const KERNEL_FACTORY_ADDRESS = '0xaac5D4240AF87249B3f71BC8E4A2cae074A3E419'
 
 export type KernelCreationOptions = {
 	salt: string
@@ -26,7 +15,7 @@ export type KernelCreationOptions = {
 	initData: BytesLike
 }
 
-export class KernelAccount extends SmartAccount {
+export class KernelV3Account extends SmartAccount {
 	static override accountId() {
 		return 'kernel.advanced.v0.3.1'
 	}
@@ -38,14 +27,14 @@ export class KernelAccount extends SmartAccount {
 			throw new KernelError('Salt should be 32 bytes in getNewAddress')
 		}
 
-		const kernelFactory = new Contract(KERNEL_FACTORY_ADDRESS, this.factoryInterface, client)
+		const kernelFactory = KernelV3Factory__factory.connect(ADDRESS.KernelV3Factory, client)
 
 		function getInitializeData(validator: string, initData: BytesLike) {
 			if (!isAddress(validator)) {
 				throw new KernelError('Invalid address in getInitializeData')
 			}
 
-			return KernelAccount.interface.encodeFunctionData('initialize', [
+			return KernelV3Account.interface.encodeFunctionData('initialize', [
 				concat(['0x01', validator]),
 				ZeroAddress,
 				initData,
@@ -54,10 +43,7 @@ export class KernelAccount extends SmartAccount {
 			])
 		}
 
-		const address = await kernelFactory['getAddress(bytes,bytes32)'](
-			getInitializeData(validatorAddress, initData),
-			salt,
-		)
+		const address = await kernelFactory.getAddress(getInitializeData(validatorAddress, initData), salt)
 
 		if (!isAddress(address)) {
 			throw new KernelError('Invalid address in getNewAddress')
@@ -67,11 +53,7 @@ export class KernelAccount extends SmartAccount {
 	}
 
 	static readonly interface = KernelV3__factory.createInterface()
-
-	static readonly factoryInterface = new Interface([
-		'function createAccount(bytes calldata data, bytes32 salt) public payable returns (address)',
-		'function getAddress(bytes calldata data, bytes32 salt) public view returns (address)',
-	])
+	static readonly factoryInterface = KernelV3Factory__factory.createInterface()
 
 	readonly address: string
 	readonly client: JsonRpcProvider
@@ -124,7 +106,7 @@ export class KernelAccount extends SmartAccount {
 	}
 
 	async deploy(creationOptions: KernelCreationOptions, pmGetter?: PaymasterGetter): Promise<SendOpResult> {
-		const deployingAddress = await KernelAccount.getNewAddress(this.client, creationOptions)
+		const deployingAddress = await KernelV3Account.getNewAddress(this.client, creationOptions)
 		if (this.address !== deployingAddress) {
 			throw new KernelError('deploying address mismatch')
 		}
@@ -140,7 +122,7 @@ export class KernelAccount extends SmartAccount {
 
 	getInitCode(creationOptions: KernelCreationOptions) {
 		const { salt, validatorAddress, initData } = creationOptions
-		return concat([KERNEL_FACTORY_ADDRESS, this.getCreateAccountData(validatorAddress, initData, salt)])
+		return concat([ADDRESS.KernelV3Factory, this.getCreateAccountData(validatorAddress, initData, salt)])
 	}
 
 	private getCreateAccountData(validator: string, initData: BytesLike, salt: string) {
@@ -169,11 +151,11 @@ export class KernelAccount extends SmartAccount {
 	}
 
 	interface() {
-		return KernelAccount.interface
+		return KernelV3Account.interface
 	}
 
 	factoryInterface() {
-		return KernelAccount.factoryInterface
+		return KernelV3Account.factoryInterface
 	}
 
 	/**

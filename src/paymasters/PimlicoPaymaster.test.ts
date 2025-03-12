@@ -1,7 +1,7 @@
 import ADDRESS from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
-import { KernelAccount } from '@/smart_accounts'
+import { KernelV3Account } from '@/smart_accounts'
 import { ECDSAValidatorModule } from '@/validators'
 import { hexlify, JsonRpcProvider, randomBytes, resolveAddress, Wallet } from 'ethers'
 import { MyPaymaster, setup } from 'test/utils'
@@ -49,9 +49,9 @@ describe('sendop', () => {
 			initData: await resolveAddress(signer),
 		}
 
-		const deployedAddress = await KernelAccount.getNewAddress(client, creationOptions)
+		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
 
-		const kernel = new KernelAccount(deployedAddress, {
+		const kernel = new KernelV3Account(deployedAddress, {
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 			erc7579Validator,

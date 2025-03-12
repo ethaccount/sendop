@@ -5,19 +5,19 @@ import { ECDSAValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
 import { MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { KernelAccount, type KernelCreationOptions } from './KernelAccount'
+import { KernelV3Account, type KernelCreationOptions } from './KernelV3Account'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup()
 
 logger.info(`Chain ID: ${chainId}`)
 
-describe('KernelAccount', () => {
+describe('KernelV3Account', () => {
 	let signer: Wallet
 	let client: JsonRpcProvider
 	let bundler: Bundler
 	let erc7579Validator: ERC7579Validator
 	let pmGetter: PaymasterGetter
-	let kernel: KernelAccount
+	let kernel: KernelV3Account
 
 	beforeAll(() => {
 		signer = new Wallet(privateKey)
@@ -33,7 +33,7 @@ describe('KernelAccount', () => {
 			paymasterAddress: ADDRESS.CharityPaymaster,
 		})
 
-		kernel = new KernelAccount('', {
+		kernel = new KernelV3Account('', {
 			client,
 			bundler,
 			erc7579Validator,
@@ -92,8 +92,8 @@ describe('KernelAccount', () => {
 		})
 	})
 
-	describe('Deploy KernelAccount and setNumber', () => {
-		let kernel: KernelAccount
+	describe('Deploy KernelV3Account and setNumber', () => {
+		let kernel: KernelV3Account
 		let creationOptions: KernelCreationOptions
 		let deployedAddress: string
 
@@ -106,12 +106,12 @@ describe('KernelAccount', () => {
 		})
 
 		it('should getNewAddress', async () => {
-			deployedAddress = await KernelAccount.getNewAddress(client, creationOptions)
+			deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
 			expect(deployedAddress).not.toBe('0x0000000000000000000000000000000000000000')
 		})
 
 		it('should deploy the contract', async () => {
-			kernel = new KernelAccount(deployedAddress, {
+			kernel = new KernelV3Account(deployedAddress, {
 				client,
 				bundler,
 				erc7579Validator,

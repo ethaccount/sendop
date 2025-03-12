@@ -1,5 +1,5 @@
 import { getEmptyUserOp, sendop, type Bundler } from '@/core'
-import { KernelAccount } from '@/smart_accounts'
+import { KernelV3Account } from '@/smart_accounts'
 import { isSameAddress, RpcProvider } from '@/utils'
 import { ECDSAValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
@@ -71,9 +71,9 @@ describe('AlchemyBundler', () => {
 			initData: await resolveAddress(signer),
 		}
 
-		const deployedAddress = await KernelAccount.getNewAddress(client, creationOptions)
+		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
 
-		const kernel = new KernelAccount(deployedAddress, {
+		const kernel = new KernelV3Account(deployedAddress, {
 			client,
 			bundler: new AlchemyBundler(chainId, BUNDLER_URL),
 			erc7579Validator: new ECDSAValidatorModule({
@@ -126,9 +126,9 @@ describe('AlchemyBundler', () => {
 			initData: await resolveAddress(signer),
 		}
 
-		const deployedAddress = await KernelAccount.getNewAddress(client, creationOptions)
+		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
 
-		const kernel = new KernelAccount(deployedAddress, {
+		const kernel = new KernelV3Account(deployedAddress, {
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: pimlicoBundler,
 			erc7579Validator: new ECDSAValidatorModule({
@@ -181,9 +181,9 @@ describe('AlchemyBundler', () => {
 			initData: await resolveAddress(signer),
 		}
 
-		const deployedAddress = await KernelAccount.getNewAddress(client, creationOptions)
+		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
 
-		const kernel = new KernelAccount(deployedAddress, {
+		const kernel = new KernelV3Account(deployedAddress, {
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: alchemyBundler,
 			erc7579Validator: new ECDSAValidatorModule({

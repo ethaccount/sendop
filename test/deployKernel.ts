@@ -1,5 +1,5 @@
 import ADDRESS from '@/addresses'
-import { ECDSAValidatorModule, KernelAccount, PimlicoBundler, sendop } from '@/index'
+import { ECDSAValidatorModule, KernelV3Account, PimlicoBundler, sendop } from '@/index'
 import { hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
 import { MyPaymaster, setup } from './utils'
 
@@ -18,9 +18,9 @@ const creationOptions = {
 
 logger.info(`Salt: ${creationOptions.salt}`)
 
-const deployedAddress = await KernelAccount.getNewAddress(client, creationOptions)
+const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
 
-const kernel = new KernelAccount(deployedAddress, {
+const kernel = new KernelV3Account(deployedAddress, {
 	client,
 	bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 	erc7579Validator: new ECDSAValidatorModule({

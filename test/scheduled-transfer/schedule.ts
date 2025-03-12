@@ -3,7 +3,7 @@ import type { SessionStruct } from '@/contract-types/SmartSession'
 import {
 	ECDSAValidatorModule,
 	IERC7579Account__factory,
-	KernelAccount,
+	KernelV3Account,
 	PimlicoBundler,
 	sendop,
 	SMART_SESSIONS_ENABLE_MODE,
@@ -37,7 +37,7 @@ const creationOptions = {
 
 logger.info(`Salt: ${creationOptions.salt}`)
 
-const computedAddress = await KernelAccount.getNewAddress(client, creationOptions)
+const computedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
 
 const sessions: SessionStruct[] = [
 	{
@@ -71,7 +71,7 @@ const enableSessionCallData = SmartSession__factory.createInterface().encodeFunc
 
 const smartSessionInitData = concat([SMART_SESSIONS_ENABLE_MODE, enableSessionCallData])
 
-const kernel = new KernelAccount(computedAddress, {
+const kernel = new KernelV3Account(computedAddress, {
 	client,
 	bundler,
 	erc7579Validator: new ECDSAValidatorModule({

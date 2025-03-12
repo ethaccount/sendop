@@ -1,3 +1,3 @@
 export * from './my_account'
-export * from './KernelAccount'
+export * from './KernelV3Account'
 export * from './interface'
