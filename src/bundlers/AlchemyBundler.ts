@@ -1,5 +1,5 @@
 import type { UserOp } from '@/core'
-import { ENTRY_POINT_V07 } from '@/core'
+import { ENTRY_POINT_V07 } from '@/address'
 import { SendopError } from '@/error'
 import { toBeHex } from 'ethers'
 import { BaseBundler, type BundlerOptions, type GasValues } from './BaseBundler'

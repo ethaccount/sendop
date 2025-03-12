@@ -10,7 +10,7 @@ type ConstructorOptions = {
 	signMessage: (userOpHash: DataHexString) => Promise<DataHexString>
 }
 
-export class WebAuthnValidator extends ERC7579Validator {
+export class WebAuthnValidatorModule extends ERC7579Validator {
 	#address: string
 	#signMessage: (userOpHash: DataHexString) => Promise<DataHexString>
 

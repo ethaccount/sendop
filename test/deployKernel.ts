@@ -1,5 +1,5 @@
-import { ECDSA_VALIDATOR_ADDRESS } from '@/address'
-import { ECDSAValidator, Kernel, PimlicoBundler, sendop } from '@/index'
+import { ECDSA_VALIDATOR } from '@/address'
+import { ECDSAValidatorModule, Kernel, PimlicoBundler, sendop } from '@/index'
 import { hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
 import { CHARITY_PAYMASTER_ADDRESS, MyPaymaster, setup } from './utils'
 
@@ -12,8 +12,8 @@ const client = new JsonRpcProvider(CLIENT_URL)
 
 const creationOptions = {
 	salt: hexlify(randomBytes(32)), // random salt
-	validatorAddress: ECDSA_VALIDATOR_ADDRESS,
-	owner: await signer.getAddress(),
+	validatorAddress: ECDSA_VALIDATOR,
+	initData: await signer.getAddress(),
 }
 
 logger.info(`Salt: ${creationOptions.salt}`)
@@ -23,8 +23,8 @@ const deployedAddress = await Kernel.getNewAddress(client, creationOptions)
 const kernel = new Kernel(deployedAddress, {
 	client,
 	bundler: new PimlicoBundler(chainId, BUNDLER_URL),
-	erc7579Validator: new ECDSAValidator({
-		address: ECDSA_VALIDATOR_ADDRESS,
+	erc7579Validator: new ECDSAValidatorModule({
+		address: ECDSA_VALIDATOR,
 		client,
 		signer,
 	}),

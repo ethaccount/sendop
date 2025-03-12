@@ -7,7 +7,7 @@ import {
 	type SendOpResult,
 	type UserOp,
 } from '@/core'
-import { getEntryPointV07 } from '@/EntryPointV07'
+import { connectEntryPointV07 } from '@/utils/contract-getter'
 import { SendopError } from '@/error'
 import { abiEncode, padLeft } from '@/utils/ethers-helper'
 import {
@@ -89,7 +89,7 @@ export class MyAccount extends SmartAccount {
 
 	async getNonce() {
 		const nonceKey = await this.getNonceKey(await this.erc7579Validator.address())
-		const nonce = await getEntryPointV07(this.client).getNonce(this.address, nonceKey)
+		const nonce = await connectEntryPointV07(this.client).getNonce(this.address, nonceKey)
 		return toBeHex(nonce)
 	}
 

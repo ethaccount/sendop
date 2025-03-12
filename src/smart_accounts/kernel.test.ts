@@ -1,7 +1,7 @@
-import { ECDSA_VALIDATOR_ADDRESS } from '@/address'
+import { ECDSA_VALIDATOR } from '@/address'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
-import { ECDSAValidator } from '@/validators'
+import { ECDSAValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
 import { CHARITY_PAYMASTER_ADDRESS, COUNTER_ADDRESS, MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -23,8 +23,8 @@ describe('Kernel', () => {
 		signer = new Wallet(privateKey)
 		client = new JsonRpcProvider(CLIENT_URL)
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL)
-		erc7579Validator = new ECDSAValidator({
-			address: ECDSA_VALIDATOR_ADDRESS,
+		erc7579Validator = new ECDSAValidatorModule({
+			address: ECDSA_VALIDATOR,
 			client,
 			signer: new Wallet(privateKey),
 		})
@@ -100,7 +100,7 @@ describe('Kernel', () => {
 		beforeAll(async () => {
 			creationOptions = {
 				salt: hexlify(randomBytes(32)),
-				validatorAddress: ECDSA_VALIDATOR_ADDRESS,
+				validatorAddress: ECDSA_VALIDATOR,
 				initData: await resolveAddress(signer),
 			}
 		})

@@ -1,8 +1,8 @@
-import { ECDSA_VALIDATOR_ADDRESS } from '@/address'
-import { ENTRY_POINT_V07, getEmptyUserOp, sendop, type Bundler } from '@/core'
+import { ECDSA_VALIDATOR, ENTRY_POINT_V07 } from '@/address'
+import { getEmptyUserOp, sendop, type Bundler } from '@/core'
 import { Kernel } from '@/smart_accounts'
 import { isSameAddress, RpcProvider } from '@/utils'
-import { ECDSAValidator } from '@/validators'
+import { ECDSAValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
 import { CHARITY_PAYMASTER_ADDRESS, COUNTER_ADDRESS, MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -67,7 +67,7 @@ describe('AlchemyBundler', () => {
 		// Create a test userop for kernel deployment
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)), // random salt
-			validatorAddress: ECDSA_VALIDATOR_ADDRESS,
+			validatorAddress: ECDSA_VALIDATOR,
 			initData: await resolveAddress(signer),
 		}
 
@@ -76,8 +76,8 @@ describe('AlchemyBundler', () => {
 		const kernel = new Kernel(deployedAddress, {
 			client,
 			bundler: new AlchemyBundler(chainId, BUNDLER_URL),
-			erc7579Validator: new ECDSAValidator({
-				address: ECDSA_VALIDATOR_ADDRESS,
+			erc7579Validator: new ECDSAValidatorModule({
+				address: ECDSA_VALIDATOR,
 				client,
 				signer,
 			}),
@@ -122,7 +122,7 @@ describe('AlchemyBundler', () => {
 
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ECDSA_VALIDATOR_ADDRESS,
+			validatorAddress: ECDSA_VALIDATOR,
 			initData: await resolveAddress(signer),
 		}
 
@@ -131,8 +131,8 @@ describe('AlchemyBundler', () => {
 		const kernel = new Kernel(deployedAddress, {
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: pimlicoBundler,
-			erc7579Validator: new ECDSAValidator({
-				address: ECDSA_VALIDATOR_ADDRESS,
+			erc7579Validator: new ECDSAValidatorModule({
+				address: ECDSA_VALIDATOR,
 				client,
 				signer,
 			}),
@@ -177,7 +177,7 @@ describe('AlchemyBundler', () => {
 	it.skip('cannot deploy kernel without staking factory', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ECDSA_VALIDATOR_ADDRESS,
+			validatorAddress: ECDSA_VALIDATOR,
 			initData: await resolveAddress(signer),
 		}
 
@@ -186,8 +186,8 @@ describe('AlchemyBundler', () => {
 		const kernel = new Kernel(deployedAddress, {
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: alchemyBundler,
-			erc7579Validator: new ECDSAValidator({
-				address: ECDSA_VALIDATOR_ADDRESS,
+			erc7579Validator: new ECDSAValidatorModule({
+				address: ECDSA_VALIDATOR,
 				client,
 				signer,
 			}),

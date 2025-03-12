@@ -1,4 +1,4 @@
-import { getEntryPointV07 } from '@/EntryPointV07'
+import { connectEntryPointV07 } from '@/utils/contract-getter'
 import { formatEther, JsonRpcProvider, parseEther, Wallet } from 'ethers'
 import { setup } from './utils/setup'
 import { CHARITY_PAYMASTER_ADDRESS } from './utils/test_address'
@@ -9,7 +9,7 @@ logger.info(`Chain ID: ${chainId}`)
 
 const provider = new JsonRpcProvider(CLIENT_URL)
 const signer = new Wallet(privateKey, provider)
-const entryPoint = getEntryPointV07(signer)
+const entryPoint = connectEntryPointV07(signer)
 
 const balance = await entryPoint.balanceOf(CHARITY_PAYMASTER_ADDRESS)
 logger.info(`Balance: ${formatEther(balance)}`)

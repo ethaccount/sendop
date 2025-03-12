@@ -4,10 +4,10 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { sendop } from './sendop'
 import type { Bundler, ERC7579Validator, PaymasterGetter } from './types'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
-import { ECDSAValidator } from '@/validators'
-import { ECDSA_VALIDATOR_ADDRESS } from '@/address'
+import { ECDSAValidatorModule } from '@/validators'
+import { ECDSA_VALIDATOR } from '@/address'
 import { Kernel } from '@/smart_accounts'
-import { getEntryPointV07 } from '@/EntryPointV07'
+import { connectEntryPointV07 } from '@/utils'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, isLocal } = await setup()
 
@@ -34,14 +34,14 @@ describe('sendop', () => {
 			client,
 			paymasterAddress: CHARITY_PAYMASTER_ADDRESS,
 		})
-		erc7579Validator = new ECDSAValidator({
-			address: ECDSA_VALIDATOR_ADDRESS,
+		erc7579Validator = new ECDSAValidatorModule({
+			address: ECDSA_VALIDATOR,
 			client,
 			signer,
 		})
 		creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ECDSA_VALIDATOR_ADDRESS,
+			validatorAddress: ECDSA_VALIDATOR,
 			owner: signer.address,
 		}
 
@@ -52,7 +52,7 @@ describe('sendop', () => {
 	it.skip('cannot pay prefund for kernel deployment when estimateUserOperationGas with reason: AA13 initCode failed or OOG', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ECDSA_VALIDATOR_ADDRESS,
+			validatorAddress: ECDSA_VALIDATOR,
 			initData: await resolveAddress(signer),
 		}
 
@@ -65,7 +65,7 @@ describe('sendop', () => {
 		})
 
 		// deposit 1 eth to entrypoint for kernel deployment
-		const entrypoint = getEntryPointV07(signer)
+		const entrypoint = connectEntryPointV07(signer)
 		const tx = await entrypoint.depositTo(deployedAddress, { value: parseEther('1') })
 		await tx.wait()
 
@@ -91,7 +91,7 @@ describe('sendop', () => {
 	it('should deploy Kernel with charity paymaster', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ECDSA_VALIDATOR_ADDRESS,
+			validatorAddress: ECDSA_VALIDATOR,
 			initData: await resolveAddress(signer),
 		}
 
@@ -122,7 +122,7 @@ describe('sendop', () => {
 	it('should deploy Kernel with charity paymaster and set number without paymaster', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ECDSA_VALIDATOR_ADDRESS,
+			validatorAddress: ECDSA_VALIDATOR,
 			initData: await resolveAddress(signer),
 		}
 
@@ -153,7 +153,7 @@ describe('sendop', () => {
 		const number = Math.floor(Math.random() * 10000)
 
 		// deposit 1 eth to entrypoint for kernel deployment
-		const entrypoint = getEntryPointV07(signer)
+		const entrypoint = connectEntryPointV07(signer)
 		const tx = await entrypoint.depositTo(deployedAddress, { value: parseEther('1') })
 		await tx.wait()
 
@@ -184,7 +184,7 @@ describe('sendop', () => {
 	it('should deploy Kernel and set number in one user operation', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ECDSA_VALIDATOR_ADDRESS,
+			validatorAddress: ECDSA_VALIDATOR,
 			initData: await resolveAddress(signer),
 		}
 		const deployedAddress = await Kernel.getNewAddress(client, creationOptions)

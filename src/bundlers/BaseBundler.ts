@@ -1,5 +1,5 @@
 import type { Bundler, UserOp, UserOpReceipt } from '@/core'
-import { ENTRY_POINT_V07 } from '@/core'
+import { ENTRY_POINT_V07 } from '@/address'
 import { SendopError } from '@/error'
 import { RpcProvider } from '@/utils'
 

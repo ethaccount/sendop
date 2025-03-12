@@ -1,8 +1,8 @@
-import { ECDSA_VALIDATOR_ADDRESS } from '@/address'
+import { ECDSA_VALIDATOR } from '@/address'
 import { PimlicoBundler } from '@/bundlers'
 import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
 import { Kernel } from '@/smart_accounts'
-import { ECDSAValidator } from '@/validators'
+import { ECDSAValidatorModule } from '@/validators'
 import { hexlify, JsonRpcProvider, randomBytes, resolveAddress, Wallet } from 'ethers'
 import { CHARITY_PAYMASTER_ADDRESS, MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -33,8 +33,8 @@ describe('sendop', () => {
 			client,
 			paymasterAddress: CHARITY_PAYMASTER_ADDRESS,
 		})
-		erc7579Validator = new ECDSAValidator({
-			address: ECDSA_VALIDATOR_ADDRESS,
+		erc7579Validator = new ECDSAValidatorModule({
+			address: ECDSA_VALIDATOR,
 			client,
 			signer,
 		})
@@ -45,7 +45,7 @@ describe('sendop', () => {
 	it('should deploy kernel with pimlico paymaster', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ECDSA_VALIDATOR_ADDRESS,
+			validatorAddress: ECDSA_VALIDATOR,
 			initData: await resolveAddress(signer),
 		}
 

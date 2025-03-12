@@ -1,6 +1,6 @@
 import type { Bundler, ERC7579Validator, Execution, PaymasterGetter, SendOpResult, UserOp } from '@/core'
 import { sendop } from '@/core'
-import { getEntryPointV07 } from '@/EntryPointV07'
+import { connectEntryPointV07 } from '@/utils/contract-getter'
 import { SendopError } from '@/error'
 import { abiEncode, is32BytesHexString, padLeft } from '@/utils/ethers-helper'
 import type { BytesLike } from 'ethers'
@@ -102,7 +102,7 @@ export class Kernel extends SmartAccount {
 
 	async getNonce() {
 		const nonceKey = await this.getNonceKey(await this.erc7579Validator.address())
-		const nonce = await getEntryPointV07(this.client).getNonce(this.address, nonceKey)
+		const nonce = await connectEntryPointV07(this.client).getNonce(this.address, nonceKey)
 		return toBeHex(nonce)
 	}
 

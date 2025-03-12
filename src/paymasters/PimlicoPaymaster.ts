@@ -1,5 +1,5 @@
 import type { GetPaymasterDataResult, GetPaymasterStubDataResult, PaymasterGetter, UserOp } from '@/core'
-import { ENTRY_POINT_V07 } from '@/core'
+import { ENTRY_POINT_V07 } from '@/address'
 import { RpcProvider } from '@/RpcProvider'
 import { toBeHex } from 'ethers'
 

@@ -16,9 +16,12 @@
 	},
 	"scripts": {
 		"build": "vite build",
+		"build:address": "bun run script/fetch-abis.ts && bun run typechain && bun run script/generate-contract-getter.ts",
 		"test": "vitest --run",
 		"deploy-contracts:local": "forge script --root contracts contracts/script/deploy-contracts.s.sol --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://localhost:8545 --broadcast",
-		"deploy-contracts:sepolia": "forge script --root contracts contracts/script/deploy-contracts.s.sol --account dev --rpc-url $sepolia --broadcast"
+		"deploy-contracts:sepolia": "forge script --root contracts contracts/script/deploy-contracts.s.sol --account dev --rpc-url $sepolia --broadcast",
+		"typechain": "typechain --target ethers-v6 --out-dir src/contract-types src/abis/*.json",
+		"typecheck": "tsc -p tsconfig.json --noEmit"
 	},
 	"type": "module",
 	"files": [
@@ -41,10 +44,14 @@
 		"ethers": "^6.13.5"
 	},
 	"devDependencies": {
+		"@typechain/ethers-v6": "^0.5.1",
+		"@types/yargs": "^17.0.33",
 		"consola": "^3.2.3",
 		"dotenv": "^16.4.7",
+		"typechain": "^8.3.2",
 		"vite": "^6.2.0",
 		"vite-plugin-dts": "^4.4.0",
-		"vitest": "^2.1.8"
+		"vitest": "^2.1.8",
+		"yargs": "^17.7.2"
 	}
 }

@@ -15,7 +15,7 @@ describe('Smart Accounts', () => {
 		it('should implement getNewAddress', async () => {
 			// const newAddress = await Kernel.getNewAddress(client, {
 			// 	salt: hexlify(randomBytes(32)),
-			// 	validatorAddress: ECDSA_VALIDATOR_ADDRESS,
+			// 	validatorAddress: ECDSA_VALIDATOR,
 			// 	owner: signer.address,
 			// })
 			// expect(newAddress).not.toBe(ZeroAddress)

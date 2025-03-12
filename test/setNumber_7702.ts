@@ -1,10 +1,10 @@
 import { sendop } from '@/core'
-import { ECDSAValidator } from '@/validators/ECDSAValidator'
+import { ECDSAValidatorModule } from '@/validators/ECDSAValidatorModule'
 import { Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import { CHARITY_PAYMASTER_ADDRESS, COUNTER_ADDRESS, MyPaymaster, setup } from './utils'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { MyAccount } from '@/smart_accounts'
-import { ECDSA_VALIDATOR_ADDRESS } from '@/address'
+import { ECDSA_VALIDATOR } from '@/address'
 
 // error: AccountAccessUnauthorized()
 
@@ -34,8 +34,8 @@ const op = await sendop({
 	opGetter: new MyAccount(FROM, {
 		client,
 		bundler: new PimlicoBundler(chainId, BUNDLER_URL),
-		erc7579Validator: new ECDSAValidator({
-			address: ECDSA_VALIDATOR_ADDRESS,
+		erc7579Validator: new ECDSAValidatorModule({
+			address: ECDSA_VALIDATOR,
 			client,
 			signer: new Wallet(privateKey),
 		}),

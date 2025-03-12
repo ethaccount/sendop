@@ -1,8 +1,8 @@
-import { ECDSA_VALIDATOR_ADDRESS } from '@/address'
+import { ECDSA_VALIDATOR } from '@/address'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { sendop } from '@/core'
 import { Kernel } from '@/smart_accounts'
-import { ECDSAValidator } from '@/validators/ECDSAValidator'
+import { ECDSAValidatorModule } from '@/validators/ECDSAValidatorModule'
 import { getAddress, Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import { CHARITY_PAYMASTER_ADDRESS, COUNTER_ADDRESS, MyPaymaster, setup } from './utils'
 
@@ -31,8 +31,8 @@ const op = await sendop({
 	opGetter: new Kernel(FROM, {
 		client,
 		bundler,
-		erc7579Validator: new ECDSAValidator({
-			address: ECDSA_VALIDATOR_ADDRESS,
+		erc7579Validator: new ECDSAValidatorModule({
+			address: ECDSA_VALIDATOR,
 			client,
 			signer,
 		}),
