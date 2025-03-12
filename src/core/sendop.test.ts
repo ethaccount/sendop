@@ -7,7 +7,7 @@ import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { ECDSAValidatorModule } from '@/validators'
 import ADDRESS from '@/addresses'
 import { KernelV3Account } from '@/smart-accounts'
-import { connectEntryPointV07 } from '@/utils/contract-getter'
+import { connectEntryPointV07 } from '@/utils/contract-helper'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, isLocal } = await setup()
 

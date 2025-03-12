@@ -1,11 +1,23 @@
 import { SendopError } from '@/error'
 import type { ParamType } from 'ethers'
-import { AbiCoder, getAddress, Interface, zeroPadBytes, zeroPadValue } from 'ethers'
+import { AbiCoder, getAddress, hexlify, Interface, randomBytes, zeroPadBytes, zeroPadValue } from 'ethers'
 
 export const ERC7579Interface = new Interface([
 	'function installModule(uint256 moduleType, address module, bytes calldata initData)',
 	'function uninstallModule(uint256 moduleType, address module, bytes calldata deInitData)',
 ])
+
+export function getEncodedFunctionParams(callData: string) {
+	return '0x' + callData.slice(10)
+}
+
+export function randomAddress() {
+	return hexlify(randomBytes(20))
+}
+
+export function randomBytes32() {
+	return hexlify(randomBytes(32))
+}
 
 export function is32BytesHexString(data: string) {
 	return data.startsWith('0x') && data.length === 66

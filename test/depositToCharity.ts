@@ -1,4 +1,4 @@
-import { connectEntryPointV07 } from '@/utils/contract-getter'
+import { connectEntryPointV07 } from '@/utils/contract-helper'
 import { formatEther, JsonRpcProvider, parseEther, Wallet } from 'ethers'
 import { setup } from './utils/setup'
 import ADDRESS from '@/addresses'

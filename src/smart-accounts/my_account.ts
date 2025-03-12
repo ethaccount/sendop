@@ -7,7 +7,7 @@ import {
 	type SendOpResult,
 	type UserOp,
 } from '@/core'
-import { connectEntryPointV07 } from '@/utils/contract-getter'
+import { connectEntryPointV07 } from '@/utils/contract-helper'
 import { SendopError } from '@/error'
 import { abiEncode, padLeft } from '@/utils/ethers-helper'
 import {
