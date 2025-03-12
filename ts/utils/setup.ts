@@ -1,4 +1,5 @@
 import { createConsola } from 'consola'
+import { Wallet } from 'ethers'
 
 const logger = createConsola({
 	level: 4,
@@ -113,6 +114,9 @@ export async function setup(options?: { chainId?: string }) {
 		}
 	}
 
+	const account0 = new Wallet('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80')
+	const account1 = new Wallet('0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d')
+
 	return {
 		isLocal,
 		logger,
@@ -126,6 +130,8 @@ export async function setup(options?: { chainId?: string }) {
 		ALCHEMY_API_KEY,
 		PIMLICO_API_KEY,
 		PIMLICO_SPONSORSHIP_POLICY_ID,
+		account0,
+		account1,
 	}
 }
 

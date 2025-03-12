@@ -2,7 +2,7 @@ import type { Bundler, ERC7579Validator, Execution, PaymasterGetter, SendOpResul
 import { sendop } from '@/core'
 import { connectEntryPointV07 } from '@/utils/contract-getter'
 import { SendopError } from '@/error'
-import { abiEncode, is32BytesHexString, padLeft } from '@/utils/ethers-helper'
+import { abiEncode, is32BytesHexString, isSameAddress, padLeft } from '@/utils/ethers-helper'
 import type { BytesLike } from 'ethers'
 import { concat, Contract, hexlify, Interface, isAddress, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
 import { SmartAccount } from './interface'
@@ -183,6 +183,14 @@ export class Kernel extends SmartAccount {
 		}
 
 		const execMode = '0x0100000000000000000000000000000000000000000000000000000000000000'
+
+		// Execute functions other than 'execute' on the smart account
+		if (executions.some(execution => execution.to == this.address)) {
+			if (executions.length > 1) {
+				throw new KernelError('Only one execution is allowed on the smart account')
+			}
+			return executions[0].data
+		}
 
 		const executionsData = executions.map(execution => ({
 			target: execution.to || '0x',
