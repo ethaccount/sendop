@@ -1,7 +1,7 @@
 import { ECDSA_VALIDATOR, CHARITY_PAYMASTER } from '@/address'
 import { ECDSAValidatorModule, Kernel, PimlicoBundler, sendop } from '@/index'
 import { hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
-import { MyPaymaster, setup } from './utils'
+import { MyPaymaster, setup } from '../utils'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup({ chainId: 'local' })
 
@@ -18,29 +18,29 @@ const creationOptions = {
 
 logger.info(`Salt: ${creationOptions.salt}`)
 
-const deployedAddress = await Kernel.getNewAddress(client, creationOptions)
+const computedAddress = await Kernel.getNewAddress(client, creationOptions)
 
-const kernel = new Kernel(deployedAddress, {
+const kernel = new Kernel(computedAddress, {
 	client,
-	bundler: new PimlicoBundler(chainId, BUNDLER_URL),
+	bundler: new PimlicoBundler(chainId, BUNDLER_URL, {
+		onBeforeSendUserOp: async userOp => {
+			console.log(userOp)
+			return userOp
+		},
+	}),
 	erc7579Validator: new ECDSAValidatorModule({
 		address: ECDSA_VALIDATOR,
 		client,
 		signer,
 	}),
-})
-
-const op = await sendop({
-	bundler: new PimlicoBundler(chainId, BUNDLER_URL),
-	executions: [],
-	opGetter: kernel,
-	initCode: kernel.getInitCode(creationOptions),
 	pmGetter: new MyPaymaster({
 		client,
 		paymasterAddress: CHARITY_PAYMASTER,
 	}),
 })
 
+const op = await kernel.deploy(creationOptions)
 logger.info(`hash: ${op.hash}`)
+
 await op.wait()
-logger.info('deployed address: ', deployedAddress)
+logger.info('address:', computedAddress)

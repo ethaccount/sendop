@@ -178,6 +178,10 @@ export class Kernel extends SmartAccount {
 	}
 
 	async getCallData(executions: Execution[]) {
+		if (!executions.length) {
+			return '0x'
+		}
+
 		const execMode = '0x0100000000000000000000000000000000000000000000000000000000000000'
 
 		const executionsData = executions.map(execution => ({
