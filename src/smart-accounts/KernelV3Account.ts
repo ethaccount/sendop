@@ -6,7 +6,7 @@ import { SendopError } from '@/error'
 import { connectEntryPointV07 } from '@/utils/contract-getter'
 import { abiEncode, is32BytesHexString, padLeft } from '@/utils/ethers-helper'
 import type { BytesLike } from 'ethers'
-import { concat, hexlify, isAddress, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
+import { concat, Contract, hexlify, isAddress, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
 import { SmartAccount } from './SmartAccount'
 
 export type KernelCreationOptions = {
@@ -27,8 +27,6 @@ export class KernelV3Account extends SmartAccount {
 			throw new KernelError('Salt should be 32 bytes in getNewAddress')
 		}
 
-		const kernelFactory = KernelV3Factory__factory.connect(ADDRESS.KernelV3Factory, client)
-
 		function getInitializeData(validator: string, initData: BytesLike) {
 			if (!isAddress(validator)) {
 				throw new KernelError('Invalid address in getInitializeData')
@@ -43,7 +41,12 @@ export class KernelV3Account extends SmartAccount {
 			])
 		}
 
-		const address = await kernelFactory.getAddress(getInitializeData(validatorAddress, initData), salt)
+		// Note: Since getAddress is also a method of BaseContract, special handling is required here
+		const kernelFactory = new Contract(ADDRESS.KernelV3Factory, KernelV3Account.factoryInterface, client)
+		const address = await kernelFactory['getAddress(bytes,bytes32)'](
+			getInitializeData(validatorAddress, initData),
+			salt,
+		)
 
 		if (!isAddress(address)) {
 			throw new KernelError('Invalid address in getNewAddress')

@@ -16,13 +16,21 @@ const creationOptions = {
 	initData: await signer.getAddress(),
 }
 
-logger.info(`Salt: ${creationOptions.salt}`)
+logger.info(`salt: ${creationOptions.salt}`)
 
-const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
+const computedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
+logger.info('computedAddress:', computedAddress)
 
-const kernel = new KernelV3Account(deployedAddress, {
+const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
+	async onBeforeEstimation(userOp) {
+		// logger.info('onBeforeEstimation', userOp)
+		return userOp
+	},
+})
+
+const kernel = new KernelV3Account(computedAddress, {
 	client,
-	bundler: new PimlicoBundler(chainId, BUNDLER_URL),
+	bundler,
 	erc7579Validator: new ECDSAValidatorModule({
 		address: ADDRESS.ECDSAValidator,
 		client,
@@ -31,7 +39,7 @@ const kernel = new KernelV3Account(deployedAddress, {
 })
 
 const op = await sendop({
-	bundler: new PimlicoBundler(chainId, BUNDLER_URL),
+	bundler,
 	executions: [],
 	opGetter: kernel,
 	initCode: kernel.getInitCode(creationOptions),
@@ -42,5 +50,6 @@ const op = await sendop({
 })
 
 logger.info(`hash: ${op.hash}`)
+
 await op.wait()
-logger.info('deployed address: ', deployedAddress)
+logger.info('deployed address:', computedAddress)

@@ -91,7 +91,15 @@ export async function setup(options?: { chainId?: string }) {
 	// If using local network, fetch actual chainId from the network
 	let actualChainId = chainId
 	let isLocal = false
-	let privateKey = PRIVATE_KEY || '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
+
+	let privateKey
+	if (chainId === 'local') {
+		privateKey = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
+	} else if (PRIVATE_KEY) {
+		privateKey = PRIVATE_KEY
+	} else {
+		throw new Error('Missing PRIVATE_KEY')
+	}
 
 	if (chainId === 'local') {
 		isLocal = true

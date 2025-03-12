@@ -39,34 +39,32 @@ logger.info(`Salt: ${creationOptions.salt}`)
 
 const computedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
 
-const sessions: SessionStruct[] = [
-	{
-		sessionValidator: ADDRESS.SudoPolicy,
-		sessionValidatorInitData: account1.address,
-		salt: hexlify(randomBytes(32)), // random salt
-		userOpPolicies: [],
-		erc7739Policies: {
-			erc1271Policies: [],
-			allowedERC7739Content: [],
-		},
-		actions: [
-			{
-				actionTargetSelector: new Interface(['function executeOrder(uint256 jobId)']).getFunction(
-					'executeOrder',
-				)!.selector,
-				actionTarget: ADDRESS.ScheduledTransfers,
-				actionPolicies: [
-					{
-						policy: ADDRESS.SudoPolicy,
-						initData: '0x',
-					},
-				],
-			},
-		],
-		permitERC4337Paymaster: true,
+const session: SessionStruct = {
+	sessionValidator: ADDRESS.K1Validator,
+	sessionValidatorInitData: account1.address,
+	salt: hexlify(randomBytes(32)), // random salt
+	userOpPolicies: [],
+	erc7739Policies: {
+		erc1271Policies: [],
+		allowedERC7739Content: [],
 	},
-]
+	actions: [
+		{
+			actionTargetSelector: new Interface(['function executeOrder(uint256 jobId)']).getFunction('executeOrder')!
+				.selector,
+			actionTarget: ADDRESS.ScheduledTransfers,
+			actionPolicies: [
+				{
+					policy: ADDRESS.SudoPolicy,
+					initData: '0x',
+				},
+			],
+		},
+	],
+	permitERC4337Paymaster: true,
+}
 
+const sessions: SessionStruct[] = [session]
 const enableSessionCallData = SmartSession__factory.createInterface().encodeFunctionData('enableSessions', [sessions])
 
 const smartSessionInitData = concat([SMART_SESSIONS_ENABLE_MODE, enableSessionCallData])
