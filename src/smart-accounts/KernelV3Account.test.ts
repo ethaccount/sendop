@@ -1,6 +1,7 @@
 import ADDRESS from '@/addresses'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
-import { type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
+import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
+import { randomBytes32 } from '@/utils/ethers-helper'
 import { ECDSAValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
 import { MyPaymaster, setup } from 'test/utils'
@@ -119,10 +120,7 @@ describe('KernelV3Account', () => {
 			})
 
 			const op = await kernel.deploy(creationOptions)
-			logger.info(`hash: ${op.hash}`)
 			await op.wait()
-			logger.info('deployed address: ', deployedAddress)
-
 			const code = await client.getCode(deployedAddress)
 			expect(code).not.toBe('0x')
 		}, 100_000)
@@ -136,6 +134,40 @@ describe('KernelV3Account', () => {
 					value: '0x0',
 				},
 			])
+			const receipt = await op.wait()
+			const log = receipt.logs[receipt.logs.length - 1]
+			expect(toNumber(log.data)).toBe(number)
+		}, 100_000)
+
+		it('should deploy and setNumber in one transaction', async () => {
+			const number = Math.floor(Math.random() * 1000000)
+
+			const creationOptions = {
+				salt: randomBytes32(),
+				validatorAddress: ADDRESS.ECDSAValidator,
+				initData: signer.address,
+			}
+			const computedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
+			const kernel = new KernelV3Account(computedAddress, {
+				client,
+				bundler,
+				erc7579Validator,
+				pmGetter,
+			})
+
+			const op = await sendop({
+				bundler,
+				opGetter: kernel,
+				pmGetter,
+				initCode: kernel.getInitCode(creationOptions),
+				executions: [
+					{
+						to: ADDRESS.Counter,
+						data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
+						value: '0x0',
+					},
+				],
+			})
 			const receipt = await op.wait()
 			const log = receipt.logs[receipt.logs.length - 1]
 			expect(toNumber(log.data)).toBe(number)

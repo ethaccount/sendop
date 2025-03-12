@@ -1,7 +1,7 @@
-import type { Bundler, UserOp, UserOpReceipt } from '@/core'
 import ADDRESS from '@/addresses'
+import type { Bundler, UserOp, UserOpReceipt } from '@/core'
 import { SendopError } from '@/error'
-import { RpcProvider } from '@/utils'
+import { encodeHandleOpsCalldata, randomAddress, RpcProvider } from '@/utils'
 
 export type GasValues = {
 	maxFeePerGas: string
@@ -16,6 +16,7 @@ export type BundlerOptions = {
 	onBeforeEstimation?: (userOp: UserOp) => Promise<UserOp>
 	onGetGasValues?: (gasValues: GasValues) => Promise<GasValues>
 	onBeforeSendUserOp?: (userOp: UserOp) => Promise<UserOp>
+	debugHandleOps?: boolean
 }
 
 export abstract class BaseBundler implements Bundler {
@@ -26,6 +27,7 @@ export abstract class BaseBundler implements Bundler {
 	protected onGetGasValues?: (gasValues: GasValues) => Promise<GasValues>
 	protected onBeforeEstimation?: (userOp: UserOp) => Promise<UserOp>
 	protected onBeforeSendUserOp?: (userOp: UserOp) => Promise<UserOp>
+	protected debugHandleOps?: boolean
 
 	constructor(chainId: string, url: string, options?: BundlerOptions) {
 		this.chainId = chainId
@@ -35,6 +37,12 @@ export abstract class BaseBundler implements Bundler {
 		this.onBeforeEstimation = options?.onBeforeEstimation
 		this.onGetGasValues = options?.onGetGasValues
 		this.onBeforeSendUserOp = options?.onBeforeSendUserOp
+		this.debugHandleOps = options?.debugHandleOps ?? false
+
+		if (this.debugHandleOps) {
+			console.warn('debugHandleOps is enabled. It will skip gas estimation.')
+			this.skipGasEstimation = true
+		}
 	}
 
 	abstract getGasValues(userOp: UserOp): Promise<GasValues>
@@ -43,6 +51,11 @@ export abstract class BaseBundler implements Bundler {
 		if (this.onBeforeSendUserOp) {
 			userOp = await this.onBeforeSendUserOp(userOp)
 		}
+
+		if (this.debugHandleOps) {
+			console.log('handleOpsCalldata:', encodeHandleOpsCalldata([userOp], randomAddress()))
+		}
+
 		return await this.rpcProvider.send({
 			method: 'eth_sendUserOperation',
 			params: [userOp, ADDRESS.EntryPointV7],

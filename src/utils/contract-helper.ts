@@ -9,7 +9,7 @@ export function connectEntryPointV07(runner: ContractRunner) {
 	return EntryPointV7__factory.connect(ADDRESS.EntryPointV7, runner)
 }
 
-export function encodeHandleOpsData(userOps: UserOp[], beneficiary: string) {
+export function encodeHandleOpsCalldata(userOps: UserOp[], beneficiary: string) {
 	return EntryPointV7__factory.createInterface().encodeFunctionData('handleOps', [
 		userOps.map(op => packUserOp(op)),
 		beneficiary,

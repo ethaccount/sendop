@@ -184,7 +184,7 @@ export class KernelV3Account extends SmartAccount {
 			return '0x'
 		}
 
-		// Execute 1 function on the smart account
+		// Execute 1 function directly on the smart account if it's the only one and to address is itself
 		if (executions.length === 1 && executions[0].to == this.address) {
 			return executions[0].data
 		}
@@ -203,25 +203,20 @@ export class KernelV3Account extends SmartAccount {
 		return this.interface().encodeFunctionData('execute', [execMode, executionCalldata])
 	}
 
-	async getInstallModuleInitData(validationData: BytesLike) {
-		const hook = ZeroAddress
-		const validationLength = padLeft(hexlify(validationData))
-		const validationOffset = padLeft('0x60')
-		const hookLength = padLeft('0x0')
-		const hookOffset = padLeft(toBeHex(BigInt(validationOffset) + BigInt(validationLength) + BigInt('0x20')))
-		const selectorLength = padLeft('0x0')
-		const selectorOffset = padLeft(toBeHex(BigInt(hookOffset) + BigInt('0x20')))
-
-		return concat([
-			hook,
-			validationOffset,
-			hookOffset,
-			selectorOffset,
-			validationLength,
-			validationData,
-			hookLength,
-			selectorLength,
-		])
+	/**
+	 * @param hookAddress address
+	 * @param validationData bytes
+	 * @param hookData bytes
+	 * @param selectorData bytes4 Specify which function selector the validator is allowed to use. It can be empty if you don't want to set any selector restrictions.
+	 * @returns bytes
+	 */
+	static getInstallModuleInitData(
+		hookAddress: string,
+		validationData: string,
+		hookData: string,
+		selectorData: string,
+	) {
+		return abiEncode(['address', 'bytes', 'bytes', 'bytes4'], [hookAddress, validationData, hookData, selectorData])
 	}
 
 	async getUninstallModuleDeInitData() {

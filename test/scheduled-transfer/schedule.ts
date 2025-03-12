@@ -2,34 +2,27 @@ import ADDRESS from '@/addresses'
 import type { SessionStruct } from '@/contract-types/SmartSession'
 import {
 	ECDSAValidatorModule,
-	encodeHandleOpsData,
-	EntryPointV7__factory,
 	getEncodedFunctionParams,
 	IERC7579Account__factory,
 	KernelV3Account,
-	packUserOp,
 	PimlicoBundler,
 	randomBytes32,
+	ScheduledTransfers__factory,
 	sendop,
 	SMART_SESSIONS_ENABLE_MODE,
 	SmartSession__factory,
-	type UserOp,
 } from '@/index'
-import { concat, hexlify, Interface, JsonRpcProvider, randomBytes, Wallet, ZeroAddress } from 'ethers'
+import { concat, Interface, JsonRpcProvider, Wallet, ZeroAddress } from 'ethers'
 import { MyPaymaster, setup } from '../../test/utils'
 
-const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, account1 } = await setup({ chainId: '11155111' })
+const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, account0, account1 } = await setup({ chainId: 'local' })
 
 logger.info(`Chain ID: ${chainId}`)
 
 const signer = new Wallet(privateKey)
 const client = new JsonRpcProvider(CLIENT_URL)
 const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
-	async onBeforeEstimation(userOp) {
-		logger.info('handleOpsData:', encodeHandleOpsData([userOp], account1.address))
-		return userOp
-	},
-	// skipGasEstimation: true,
+	// debugHandleOps: true,
 })
 
 const pmGetter = new MyPaymaster({
@@ -49,7 +42,7 @@ const computedAddress = await KernelV3Account.getNewAddress(client, creationOpti
 
 const session: SessionStruct = {
 	sessionValidator: ADDRESS.K1Validator,
-	sessionValidatorInitData: account1.address,
+	sessionValidatorInitData: account1.address, // session key owner
 	salt: randomBytes32(),
 	userOpPolicies: [],
 	erc7739Policies: {
@@ -58,8 +51,7 @@ const session: SessionStruct = {
 	},
 	actions: [
 		{
-			actionTargetSelector: new Interface(['function executeOrder(uint256 jobId)']).getFunction('executeOrder')!
-				.selector,
+			actionTargetSelector: ScheduledTransfers__factory.createInterface().getFunction('executeOrder').selector,
 			actionTarget: ADDRESS.ScheduledTransfers,
 			actionPolicies: [
 				{
@@ -94,12 +86,20 @@ const op = await sendop({
 	executions: [
 		{
 			to: computedAddress,
-			value: '0',
+			value: '0x0',
 			data: IERC7579Account__factory.createInterface().encodeFunctionData('installModule', [
 				1,
 				ADDRESS.SmartSession,
-				smartSessionInitData,
+				KernelV3Account.getInstallModuleInitData(ZeroAddress, smartSessionInitData, '0x', '0x00000000'),
 			]),
+		},
+		// Set a random number on the counter contract
+		{
+			to: ADDRESS.Counter,
+			data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [
+				Math.floor(Math.random() * 1000000),
+			]),
+			value: '0x0',
 		},
 	],
 	opGetter: kernel,
