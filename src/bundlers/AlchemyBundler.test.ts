@@ -1,5 +1,5 @@
 import { getEmptyUserOp, sendop, type Bundler } from '@/core'
-import { KernelV3Account } from '@/smart_accounts'
+import { KernelV3Account } from '@/smart-accounts'
 import { isSameAddress, RpcProvider } from '@/utils'
 import { ECDSAValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'

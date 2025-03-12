@@ -21,7 +21,7 @@ import {
 	zeroPadValue,
 	type BytesLike,
 } from 'ethers'
-import { SmartAccount } from './interface'
+import { SmartAccount } from './SmartAccount'
 const MY_ACCOUNT_FACTORY_ADDRESS = '0xd4650238fcc60f64DfCa4e095dEe0081Dd4734b0'
 
 type MyAccountCreationOptions = {

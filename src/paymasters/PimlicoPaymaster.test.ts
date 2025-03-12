@@ -1,7 +1,7 @@
 import ADDRESS from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
-import { KernelV3Account } from '@/smart_accounts'
+import { KernelV3Account } from '@/smart-accounts'
 import { ECDSAValidatorModule } from '@/validators'
 import { hexlify, JsonRpcProvider, randomBytes, resolveAddress, Wallet } from 'ethers'
 import { MyPaymaster, setup } from 'test/utils'

@@ -7,7 +7,7 @@ import { connectEntryPointV07 } from '@/utils/contract-getter'
 import { abiEncode, is32BytesHexString, padLeft } from '@/utils/ethers-helper'
 import type { BytesLike } from 'ethers'
 import { concat, hexlify, isAddress, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
-import { SmartAccount } from './interface'
+import { SmartAccount } from './SmartAccount'
 
 export type KernelCreationOptions = {
 	salt: string

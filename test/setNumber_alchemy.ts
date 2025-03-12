@@ -1,7 +1,7 @@
 import ADDRESS from '@/addresses'
 import { AlchemyBundler } from '@/bundlers/AlchemyBundler'
 import { sendop } from '@/core'
-import { KernelV3Account } from '@/smart_accounts'
+import { KernelV3Account } from '@/smart-accounts'
 import { ECDSAValidatorModule } from '@/validators/ECDSAValidatorModule'
 import { getAddress, Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import { MyPaymaster, setup } from './utils'

@@ -1,5 +1,5 @@
 import { sendop } from '@/core'
-import { MyAccount } from '@/smart_accounts/my_account'
+import { MyAccount } from '@/smart-accounts/my_account'
 import { ECDSAValidatorModule } from '@/validators/ECDSAValidatorModule'
 import { Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import { PimlicoPaymaster, setup } from './utils'

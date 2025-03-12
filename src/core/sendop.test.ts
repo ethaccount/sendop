@@ -6,7 +6,7 @@ import type { Bundler, ERC7579Validator, PaymasterGetter } from './types'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { ECDSAValidatorModule } from '@/validators'
 import ADDRESS from '@/addresses'
-import { KernelV3Account } from '@/smart_accounts'
+import { KernelV3Account } from '@/smart-accounts'
 import { connectEntryPointV07 } from '@/utils/contract-getter'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, isLocal } = await setup()

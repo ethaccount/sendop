@@ -3,7 +3,7 @@ import { ECDSAValidatorModule } from '@/validators/ECDSAValidatorModule'
 import { Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import { MyPaymaster, setup } from './utils'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
-import { MyAccount } from '@/smart_accounts'
+import { MyAccount } from '@/smart-accounts'
 import ADDRESS from '@/addresses'
 
 // error: AccountAccessUnauthorized()

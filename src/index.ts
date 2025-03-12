@@ -1,5 +1,5 @@
 export * from '@/core'
-export * from '@/smart_accounts'
+export * from '@/smart-accounts'
 export * from '@/utils'
 export * from '@/validators'
 export * from '@/addresses'
