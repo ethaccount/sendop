@@ -16,23 +16,10 @@ export class PimlicoBundler extends BaseBundler {
 			throw new PimlicoBundlerError('Invalid gas price response from rpcProvider')
 		}
 
-		// Set gas price
 		userOp.maxFeePerGas = curGasPrice.standard.maxFeePerGas
 
-		// Get gas estimation
-		let estimateGas
-		if (this.skipGasEstimation) {
-			estimateGas = this.getDefaultGasEstimation()
-		} else {
-			if (this.onBeforeEstimation) {
-				userOp = await this.onBeforeEstimation(userOp)
-			}
-			estimateGas = await this.rpcProvider.send({
-				method: 'eth_estimateUserOperationGas',
-				params: [userOp, ADDRESS.EntryPointV7],
-			})
-			this.validateGasEstimation(estimateGas)
-		}
+		// Send eth_estimateUserOperationGas
+		const estimateGas = await this.estimateUserOperationGas(userOp)
 
 		let gasValues: GasValues = {
 			maxFeePerGas: toBeHex(curGasPrice.standard.maxFeePerGas),

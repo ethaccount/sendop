@@ -13,6 +13,7 @@ import {
 	sendop,
 	SMART_SESSIONS_ENABLE_MODE,
 	SMART_SESSIONS_UNSAFE_ENABLE_MODE,
+	SMART_SESSIONS_USE_MODE,
 	SmartSession__factory,
 } from '@/index'
 import { concat, JsonRpcProvider, parseEther, toBeHex, Wallet, ZeroAddress } from 'ethers'
@@ -120,15 +121,15 @@ const op = await sendop({
 			}),
 		},
 		// install scheduled transfers module
-		{
-			to: computedAddress,
-			value: '0x0',
-			data: KernelV3Account.encodeInstallModule({
-				moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
-				moduleAddress: ADDRESS.ScheduledTransfers,
-				executorData: scheduledTransfersInitData,
-			}),
-		},
+		// {
+		// 	to: computedAddress,
+		// 	value: '0x0',
+		// 	data: KernelV3Account.encodeInstallModule({
+		// 		moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
+		// 		moduleAddress: ADDRESS.ScheduledTransfers,
+		// 		executorData: scheduledTransfersInitData,
+		// 	}),
+		// },
 	],
 	opGetter: kernel,
 	initCode: kernel.getInitCode(creationOptions), // create account

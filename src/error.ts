@@ -6,7 +6,10 @@ export class SendopError extends Error {
 	constructor(message: string, options?: ErrorOptions) {
 		super(message, options)
 		this.name = 'SendopError'
-		this.message = `${this.message} (sendop@${PACKAGE_VERSION})`
+		// Add sendop@version to the error message if it's not already there
+		if (!this.message.includes('sendop@')) {
+			this.message = `${this.message} (sendop@${PACKAGE_VERSION})`
+		}
 	}
 }
 

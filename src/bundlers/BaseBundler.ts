@@ -1,7 +1,8 @@
 import ADDRESS from '@/addresses'
 import type { Bundler, UserOp, UserOpReceipt } from '@/core'
-import { SendopError } from '@/error'
+import { normalizeError, SendopError } from '@/error'
 import { encodeHandleOpsCalldata, randomAddress, RpcProvider } from '@/utils'
+import { parseContractError } from '@/utils'
 
 export type GasValues = {
 	maxFeePerGas: string
@@ -17,6 +18,7 @@ export type BundlerOptions = {
 	onGetGasValues?: (gasValues: GasValues) => Promise<GasValues>
 	onBeforeSendUserOp?: (userOp: UserOp) => Promise<UserOp>
 	debugHandleOps?: boolean
+	parseError?: boolean
 }
 
 export abstract class BaseBundler implements Bundler {
@@ -28,6 +30,7 @@ export abstract class BaseBundler implements Bundler {
 	protected onBeforeEstimation?: (userOp: UserOp) => Promise<UserOp>
 	protected onBeforeSendUserOp?: (userOp: UserOp) => Promise<UserOp>
 	protected debugHandleOps?: boolean
+	protected parseError: boolean = true
 
 	constructor(chainId: string, url: string, options?: BundlerOptions) {
 		this.chainId = chainId
@@ -38,6 +41,7 @@ export abstract class BaseBundler implements Bundler {
 		this.onGetGasValues = options?.onGetGasValues
 		this.onBeforeSendUserOp = options?.onBeforeSendUserOp
 		this.debugHandleOps = options?.debugHandleOps ?? false
+		this.parseError = options?.parseError ?? true
 
 		if (this.debugHandleOps) {
 			console.warn('debugHandleOps is enabled. It will skip gas estimation.')
@@ -65,6 +69,45 @@ export abstract class BaseBundler implements Bundler {
 
 	async getUserOperationReceipt(hash: string): Promise<UserOpReceipt> {
 		return await this.rpcProvider.send({ method: 'eth_getUserOperationReceipt', params: [hash] })
+	}
+
+	protected async estimateUserOperationGas(userOp: UserOp) {
+		if (this.skipGasEstimation) {
+			return this.getDefaultGasEstimation()
+		}
+
+		if (this.onBeforeEstimation) {
+			userOp = await this.onBeforeEstimation(userOp)
+		}
+
+		let estimateGas
+
+		try {
+			estimateGas = await this.rpcProvider.send({
+				method: 'eth_estimateUserOperationGas',
+				params: [userOp, ADDRESS.EntryPointV7],
+			})
+		} catch (error: unknown) {
+			const err = normalizeError(error)
+			if (this.parseError) {
+				const hasReason = err.message.toLowerCase().includes('reason')
+				const hexDataMatch = err.message.match(/(0x[a-fA-F0-9]+)(?![0-9a-fA-F])/)
+				const hasHexData = hexDataMatch?.[1]
+
+				if (hasReason && hasHexData) {
+					const parsedError = parseContractError(hasHexData)
+					if (parsedError) {
+						// replace hex data with parsed error
+						const newMessage = err.message.replace(hasHexData, parsedError)
+						throw new BaseBundlerError(newMessage, { cause: err })
+					}
+				}
+			}
+			throw err
+		}
+
+		this.validateGasEstimation(estimateGas)
+		return estimateGas
 	}
 
 	protected getDefaultGasEstimation() {
