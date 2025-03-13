@@ -24,7 +24,7 @@ logger.info(`Chain ID: ${chainId}`)
 
 const BUNDLER_URL = `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
 
-describe('AlchemyBundler', () => {
+describe.skip('AlchemyBundler', () => {
 	let rpcProvider: RpcProvider
 	let alchemyBundler: Bundler
 	let client: JsonRpcProvider

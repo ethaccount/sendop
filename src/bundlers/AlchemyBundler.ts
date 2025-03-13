@@ -1,5 +1,4 @@
 import type { UserOp } from '@/core'
-import ADDRESS from '@/addresses'
 import { SendopError } from '@/error'
 import { toBeHex } from 'ethers'
 import { BaseBundler, type BundlerOptions, type GasValues } from './BaseBundler'

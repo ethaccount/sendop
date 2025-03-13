@@ -21,7 +21,7 @@ if (confirmed !== 'y') {
 	process.exit()
 }
 
-const tx = await entryPoint.depositTo(ADDRESS.CharityPaymaster, { value: parseEther('100') })
+const tx = await entryPoint.depositTo(ADDRESS.CharityPaymaster, { value: parseEther('1') })
 const receipt = await tx.wait()
 
 console.log('receipt status', receipt?.status)
