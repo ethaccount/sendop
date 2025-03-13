@@ -53,7 +53,7 @@ describe('sendop', () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
 			validatorAddress: ADDRESS.ECDSAValidator,
-			initData: await resolveAddress(signer),
+			validatorInitData: await resolveAddress(signer),
 		}
 
 		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
@@ -92,7 +92,7 @@ describe('sendop', () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
 			validatorAddress: ADDRESS.ECDSAValidator,
-			initData: await resolveAddress(signer),
+			validatorInitData: await resolveAddress(signer),
 		}
 
 		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
@@ -123,7 +123,7 @@ describe('sendop', () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
 			validatorAddress: ADDRESS.ECDSAValidator,
-			initData: await resolveAddress(signer),
+			validatorInitData: await resolveAddress(signer),
 		}
 
 		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
@@ -185,7 +185,7 @@ describe('sendop', () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
 			validatorAddress: ADDRESS.ECDSAValidator,
-			initData: await resolveAddress(signer),
+			validatorInitData: await resolveAddress(signer),
 		}
 		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
 
