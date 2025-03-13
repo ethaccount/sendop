@@ -7,13 +7,22 @@ import { SendopError } from '@/error'
 import { connectEntryPointV07 } from '@/utils/contract-helper'
 import { abiEncode, is32BytesHexString, padLeft } from '@/utils/ethers-helper'
 import type { BytesLike } from 'ethers'
-import { concat, Contract, hexlify, isAddress, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
+import { concat, Contract, hexlify, isAddress, isHexString, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
 import { SmartAccount } from './SmartAccount'
+
+export enum KernelValidationType {
+	ROOT = '0x00',
+	VALIDATOR = '0x01',
+	PERMISSION = '0x02',
+}
 
 export type KernelCreationOptions = {
 	salt: string
 	validatorAddress: string
-	initData: BytesLike
+	validatorInitData: string
+	hookAddress?: string
+	hookData?: string
+	initConfig?: string[]
 }
 
 type BaseModuleConfig<T extends ERC7579_MODULE_TYPE> = {
@@ -57,30 +66,28 @@ export class KernelV3Account extends SmartAccount {
 	}
 
 	static override async getNewAddress(client: JsonRpcProvider, creationOptions: KernelCreationOptions) {
-		const { salt, validatorAddress, initData } = creationOptions
+		const { salt, validatorAddress, validatorInitData, hookAddress, hookData, initConfig } = creationOptions
 
 		if (!is32BytesHexString(salt)) {
 			throw new KernelError('Salt should be 32 bytes in getNewAddress')
 		}
 
-		function getInitializeData(validator: string, initData: BytesLike) {
-			if (!isAddress(validator)) {
-				throw new KernelError('Invalid address in getInitializeData')
-			}
-
-			return KernelV3Account.interface.encodeFunctionData('initialize', [
-				concat(['0x01', validator]),
-				ZeroAddress,
-				initData,
-				'0x',
-				[],
-			])
-		}
-
 		// Note: Since getAddress is also a method of BaseContract, special handling is required here
 		const kernelFactory = new Contract(ADDRESS.KernelV3Factory, KernelV3Account.factoryInterface, client)
+		const rootValidator = concat([KernelValidationType.VALIDATOR, validatorAddress])
+		// assert rootValidator is 21 bytes
+		if (!isHexString(rootValidator, 21)) {
+			throw new KernelError('Invalid rootValidator')
+		}
+
 		const address = await kernelFactory['getAddress(bytes,bytes32)'](
-			getInitializeData(validatorAddress, initData),
+			KernelV3Account.interface.encodeFunctionData('initialize', [
+				rootValidator,
+				hookAddress ?? ZeroAddress,
+				validatorInitData,
+				hookData ?? '0x',
+				initConfig ?? [],
+			]),
 			salt,
 		)
 
@@ -159,25 +166,35 @@ export class KernelV3Account extends SmartAccount {
 		})
 	}
 
+	/**
+	 * @dev userOp.initCode = factory address + calldata to the factory
+	 * @param creationOptions
+	 * @returns
+	 */
 	getInitCode(creationOptions: KernelCreationOptions) {
-		const { salt, validatorAddress, initData } = creationOptions
-		return concat([ADDRESS.KernelV3Factory, this.getCreateAccountData(validatorAddress, initData, salt)])
-	}
+		const { salt, validatorAddress, validatorInitData, hookAddress, hookData, initConfig } = creationOptions
 
-	private getCreateAccountData(validator: string, initData: BytesLike, salt: string) {
-		if (!is32BytesHexString(salt)) {
-			throw new KernelError('Salt should be 32 bytes in getCreateAccountData')
+		const rootValidator = concat([KernelValidationType.VALIDATOR, validatorAddress])
+		if (!isHexString(rootValidator, 21)) {
+			throw new KernelError('Invalid rootValidator')
 		}
+		const encodedInitializeCalldata = this.interface().encodeFunctionData('initialize', [
+			rootValidator,
+			hookAddress ?? ZeroAddress,
+			validatorInitData,
+			hookData ?? '0x',
+			initConfig ?? [],
+		])
 
-		return this.factoryInterface().encodeFunctionData('createAccount', [
-			this.getInitializeData(validator, initData),
-			salt,
+		return concat([
+			ADDRESS.KernelV3Factory,
+			this.factoryInterface().encodeFunctionData('createAccount', [encodedInitializeCalldata, salt]),
 		])
 	}
 
-	private getInitializeData(validator: string, initData: BytesLike) {
+	private encodeInitialize(validator: string, initData: BytesLike) {
 		if (!isAddress(validator)) {
-			throw new KernelError('Invalid address in getInitializeData')
+			throw new KernelError('encodeInitialize: Invalid address')
 		}
 
 		return this.interface().encodeFunctionData('initialize', [

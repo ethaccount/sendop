@@ -13,7 +13,7 @@ const client = new JsonRpcProvider(CLIENT_URL)
 const creationOptions = {
 	salt: hexlify(randomBytes(32)), // random salt
 	validatorAddress: ADDRESS.ECDSAValidator,
-	initData: await signer.getAddress(),
+	validatorInitData: await signer.getAddress(),
 }
 
 logger.info(`salt: ${creationOptions.salt}`)

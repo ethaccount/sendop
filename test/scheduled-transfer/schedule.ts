@@ -25,6 +25,11 @@ const signer = new Wallet(privateKey)
 const client = new JsonRpcProvider(CLIENT_URL)
 const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 	debugHandleOps: true,
+	// async onBeforeSendUserOp(userOp) {
+	// 	logger.info('userOp', userOp)
+	// 	logger.info('callData', userOp.callData)
+	// 	return userOp
+	// },
 })
 
 const pmGetter = new MyPaymaster({
@@ -35,7 +40,7 @@ const pmGetter = new MyPaymaster({
 const creationOptions = {
 	salt: randomBytes32(),
 	validatorAddress: ADDRESS.ECDSAValidator,
-	initData: await signer.getAddress(),
+	validatorInitData: await signer.getAddress(),
 }
 
 logger.info(`Salt: ${creationOptions.salt}`)
@@ -89,6 +94,8 @@ const scheduledTransfersInitData = concat([
 	padLeft(toBeHex(startDate), 6),
 	abiEncode(['address', 'address', 'uint256'], [recipient, token, amount]),
 ])
+
+console.log('scheduledTransfersInitData', scheduledTransfersInitData)
 
 const kernel = new KernelV3Account(computedAddress, {
 	client,

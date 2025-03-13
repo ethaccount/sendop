@@ -25,6 +25,11 @@ export function is32BytesHexString(data: string) {
 	return data.startsWith('0x') && data.length === 66
 }
 
+export function isHexString(data: string, bytesLength: number) {
+	const expectedLength = bytesLength * 2 + 2
+	return data.startsWith('0x') && data.length === expectedLength
+}
+
 export function padLeft(data: string, length: number = 32) {
 	if (!data.startsWith('0x')) {
 		throw new EthersHelperError('data must start with 0x in padLeft')

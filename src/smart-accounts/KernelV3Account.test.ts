@@ -43,56 +43,6 @@ describe('KernelV3Account', () => {
 		logger.info(`Signer: ${signer.address}`)
 	})
 
-	describe('Unit tests', () => {
-		describe('private getInitializeData', () => {
-			it('should return correct initialization data', async () => {
-				const validatorAddress = '0xd577C0746c19DeB788c0D698EcAf66721DC2F7A4'
-				const owner = '0xd78B5013757Ea4A7841811eF770711e6248dC282'
-
-				const data = (kernel as any).getInitializeData(validatorAddress, owner)
-
-				expect(typeof data).toBe('string')
-				expect(data.startsWith('0x')).toBe(true)
-			})
-
-			it('should throw error for invalid addresses', () => {
-				const invalidAddress = '0x123' // Invalid address
-
-				expect(() => {
-					;(kernel as any).getInitializeData(invalidAddress, invalidAddress)
-				}).toThrow('Invalid address')
-			})
-		})
-
-		describe('private getCreateAccountData', () => {
-			it('should return correct create account data', async () => {
-				const validatorAddress = '0xd577C0746c19DeB788c0D698EcAf66721DC2F7A4'
-				const owner = '0xd78B5013757Ea4A7841811eF770711e6248dC282'
-				const salt = hexlify(randomBytes(32))
-
-				const data = (kernel as any).getCreateAccountData(validatorAddress, owner, salt)
-
-				expect(typeof data).toBe('string')
-				expect(data.startsWith('0x')).toBe(true)
-			})
-
-			it('should throw error for invalid addresses or salt', () => {
-				const invalidAddress = '0x123'
-				let salt = '0x12345678901234567890123456789012345678901234567890123456789012345678910'
-
-				expect(() => {
-					;(kernel as any).getCreateAccountData(invalidAddress, invalidAddress, salt)
-				}).toThrow('Salt should be 32 bytes')
-
-				salt = hexlify(randomBytes(32))
-
-				expect(() => {
-					;(kernel as any).getCreateAccountData(invalidAddress, invalidAddress, salt)
-				}).toThrow('Invalid address')
-			})
-		})
-	})
-
 	describe('Deploy and setNumber', () => {
 		let kernel: KernelV3Account
 		let creationOptions: KernelCreationOptions
@@ -102,7 +52,7 @@ describe('KernelV3Account', () => {
 			creationOptions = {
 				salt: hexlify(randomBytes(32)),
 				validatorAddress: ADDRESS.ECDSAValidator,
-				initData: await resolveAddress(signer),
+				validatorInitData: await resolveAddress(signer),
 			}
 		})
 
@@ -145,7 +95,7 @@ describe('KernelV3Account', () => {
 			const creationOptions = {
 				salt: randomBytes32(),
 				validatorAddress: ADDRESS.ECDSAValidator,
-				initData: signer.address,
+				validatorInitData: signer.address,
 			}
 			const computedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
 			const kernel = new KernelV3Account(computedAddress, {
