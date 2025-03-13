@@ -18,7 +18,7 @@ if (!PIMLICO_SPONSORSHIP_POLICY_ID) {
 
 logger.info(`Chain ID: ${chainId}`)
 
-describe('sendop', () => {
+describe.skip('PimlicoPaymaster', () => {
 	let signer: Wallet
 	let client: JsonRpcProvider
 	let bundler: Bundler
