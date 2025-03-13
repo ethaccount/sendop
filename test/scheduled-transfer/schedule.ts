@@ -12,6 +12,7 @@ import {
 	ScheduledTransfers__factory,
 	sendop,
 	SMART_SESSIONS_ENABLE_MODE,
+	SMART_SESSIONS_UNSAFE_ENABLE_MODE,
 	SmartSession__factory,
 } from '@/index'
 import { concat, JsonRpcProvider, parseEther, toBeHex, Wallet, ZeroAddress } from 'ethers'
@@ -24,7 +25,7 @@ logger.info(`Chain ID: ${chainId}`)
 const signer = new Wallet(privateKey)
 const client = new JsonRpcProvider(CLIENT_URL)
 const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
-	debugHandleOps: true,
+	// debugHandleOps: true,
 	// async onBeforeSendUserOp(userOp) {
 	// 	logger.info('userOp', userOp)
 	// 	logger.info('callData', userOp.callData)
@@ -72,11 +73,11 @@ const session: SessionStruct = {
 }
 
 const sessions: SessionStruct[] = [session]
-const enableSessionEncodedParams = getEncodedFunctionParams(
+const encodedSessions = getEncodedFunctionParams(
 	SmartSession__factory.createInterface().encodeFunctionData('enableSessions', [sessions]),
 )
 
-const smartSessionInitData = concat([SMART_SESSIONS_ENABLE_MODE, enableSessionEncodedParams])
+const smartSessionInitData = concat([SMART_SESSIONS_ENABLE_MODE, encodedSessions])
 
 // install scheduled transfers module
 
@@ -95,8 +96,6 @@ const scheduledTransfersInitData = concat([
 	abiEncode(['address', 'address', 'uint256'], [recipient, token, amount]),
 ])
 
-console.log('scheduledTransfersInitData', scheduledTransfersInitData)
-
 const kernel = new KernelV3Account(computedAddress, {
 	client,
 	bundler,
@@ -111,18 +110,15 @@ const op = await sendop({
 	bundler,
 	executions: [
 		// install smart session module
-		// {
-		// 	to: computedAddress,
-		// 	value: '0x0',
-		// 	data: KernelV3Account.encodeInstallModule({
-		// 		moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
-		// 		moduleAddress: ADDRESS.SmartSession,
-		// 		hookAddress: ZeroAddress,
-		// 		validatorData: smartSessionInitData,
-		// 		hookData: '0x',
-		// 		selectorData: ZeroBytes4,
-		// 	}),
-		// },
+		{
+			to: computedAddress,
+			value: '0x0',
+			data: KernelV3Account.encodeInstallModule({
+				moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
+				moduleAddress: ADDRESS.SmartSession,
+				validatorData: smartSessionInitData,
+			}),
+		},
 		// install scheduled transfers module
 		{
 			to: computedAddress,
@@ -131,8 +127,6 @@ const op = await sendop({
 				moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
 				moduleAddress: ADDRESS.ScheduledTransfers,
 				executorData: scheduledTransfersInitData,
-				hookAddress: ZeroAddress,
-				hookData: '0x',
 			}),
 		},
 	],

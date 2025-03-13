@@ -31,16 +31,16 @@ type BaseModuleConfig<T extends ERC7579_MODULE_TYPE> = {
 }
 
 type ValidatorModuleConfig = BaseModuleConfig<ERC7579_MODULE_TYPE.VALIDATOR> & {
-	hookAddress: string
+	hookAddress?: string
 	validatorData: string
-	hookData: string
-	selectorData: string // 4 bytes
+	hookData?: string
+	selectorData?: string // 4 bytes
 }
 
 type ExecutorModuleConfig = BaseModuleConfig<ERC7579_MODULE_TYPE.EXECUTOR> & {
-	hookAddress: string
+	hookAddress?: string
 	executorData: string
-	hookData: string
+	hookData?: string
 }
 
 type FallbackModuleConfig = BaseModuleConfig<ERC7579_MODULE_TYPE.FALLBACK> & {
@@ -261,24 +261,34 @@ export class KernelV3Account extends SmartAccount {
 
 		switch (config.moduleType) {
 			case ERC7579_MODULE_TYPE.VALIDATOR:
-				initData = abiEncode(
-					['address', 'bytes', 'bytes', 'bytes4'],
-					[config.hookAddress, config.validatorData, config.hookData, config.selectorData],
-				)
+				{
+					// default values
+					const hookAddress = config.hookAddress ?? ZeroAddress
+					const hookData = config.hookData ?? '0x'
+					const selectorData = config.selectorData ?? '0x'
+
+					initData = concat([
+						hookAddress,
+						abiEncode(['bytes', 'bytes', 'bytes'], [config.validatorData, hookData, selectorData]),
+					])
+				}
 				break
 
 			case ERC7579_MODULE_TYPE.EXECUTOR:
-				initData = abiEncode(
-					['address', 'bytes', 'bytes'],
-					[config.hookAddress, config.executorData, config.hookData],
-				)
+				{
+					// default values
+					const hookAddress = config.hookAddress ?? ZeroAddress
+					const hookData = config.hookData ?? '0x'
+					initData = concat([hookAddress, abiEncode(['bytes', 'bytes'], [config.executorData, hookData])])
+				}
 				break
 
 			case ERC7579_MODULE_TYPE.FALLBACK:
-				initData = abiEncode(
-					['bytes4', 'address', 'bytes', 'bytes'],
-					[config.selector, config.hookAddress, config.selectorData, config.hookData],
-				)
+				initData = concat([
+					config.selector,
+					config.hookAddress,
+					abiEncode(['bytes', 'bytes'], [config.selectorData, config.hookData]),
+				])
 				break
 
 			case ERC7579_MODULE_TYPE.HOOK:

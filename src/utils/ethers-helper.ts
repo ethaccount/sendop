@@ -7,8 +7,11 @@ export const ERC7579Interface = new Interface([
 	'function uninstallModule(uint256 moduleType, address module, bytes calldata deInitData)',
 ])
 
-export const ZeroBytes4 = '0x00000000'
-
+/**
+ * Remove the function selector from the calldata
+ * @param callData hex string
+ * @returns hex string
+ */
 export function getEncodedFunctionParams(callData: string) {
 	return '0x' + callData.slice(10)
 }
