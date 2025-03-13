@@ -16,6 +16,8 @@ jobs:
         env:
             ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
             SALT: ${{ secrets.SALT }}
+            PIMLICO_API_KEY: ${{ secrets.PIMLICO_API_KEY }}
+            PIMLICO_SPONSORSHIP_POLICY_ID: ${{ secrets.PIMLICO_SPONSORSHIP_POLICY_ID }}
 
         steps:
             - name: Checkout code
