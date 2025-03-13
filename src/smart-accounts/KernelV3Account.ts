@@ -1,5 +1,6 @@
 import ADDRESS from '@/addresses'
 import { KernelV3__factory, KernelV3Factory__factory } from '@/contract-types'
+import { ERC7579_MODULE_TYPE } from '@/core'
 import type { Bundler, ERC7579Validator, Execution, PaymasterGetter, SendOpResult, UserOp } from '@/core'
 import { sendop } from '@/core'
 import { SendopError } from '@/error'
@@ -14,6 +15,41 @@ export type KernelCreationOptions = {
 	validatorAddress: string
 	initData: BytesLike
 }
+
+type BaseModuleConfig<T extends ERC7579_MODULE_TYPE> = {
+	moduleType: T
+	moduleAddress: string
+}
+
+type ValidatorModuleConfig = BaseModuleConfig<ERC7579_MODULE_TYPE.VALIDATOR> & {
+	hookAddress: string
+	validatorData: string
+	hookData: string
+	selectorData: string // 4 bytes
+}
+
+type ExecutorModuleConfig = BaseModuleConfig<ERC7579_MODULE_TYPE.EXECUTOR> & {
+	hookAddress: string
+	executorData: string
+	hookData: string
+}
+
+type FallbackModuleConfig = BaseModuleConfig<ERC7579_MODULE_TYPE.FALLBACK> & {
+	selector: string // 4 bytes
+	hookAddress: string
+	selectorData: string
+	hookData: string
+}
+
+type SimpleModuleConfig<T extends ERC7579_MODULE_TYPE.HOOK> = BaseModuleConfig<T> & {
+	initData: string
+}
+
+type ModuleConfig =
+	| ValidatorModuleConfig
+	| ExecutorModuleConfig
+	| FallbackModuleConfig
+	| SimpleModuleConfig<ERC7579_MODULE_TYPE.HOOK>
 
 export class KernelV3Account extends SmartAccount {
 	static override accountId() {
@@ -189,18 +225,54 @@ export class KernelV3Account extends SmartAccount {
 			return executions[0].data
 		}
 
-		const executionsData = executions.map(execution => ({
+		const formattedExecutions = executions.map(execution => ({
 			target: execution.to || '0x',
 			value: BigInt(execution.value || '0x0'),
 			data: execution.data || '0x',
 		}))
 
-		const executionCalldata = abiEncode(
+		const encodedExecutions = abiEncode(
 			['tuple(address,uint256,bytes)[]'],
-			[executionsData.map(execution => [execution.target, execution.value, execution.data])],
+			[formattedExecutions.map(execution => [execution.target, execution.value, execution.data])],
 		)
 
-		return this.interface().encodeFunctionData('execute', [execMode, executionCalldata])
+		return this.interface().encodeFunctionData('execute', [execMode, encodedExecutions])
+	}
+
+	static encodeInstallModule(config: ModuleConfig): string {
+		let initData: string
+
+		switch (config.moduleType) {
+			case ERC7579_MODULE_TYPE.VALIDATOR:
+				initData = abiEncode(
+					['address', 'bytes', 'bytes', 'bytes4'],
+					[config.hookAddress, config.validatorData, config.hookData, config.selectorData],
+				)
+				break
+
+			case ERC7579_MODULE_TYPE.EXECUTOR:
+				initData = abiEncode(
+					['address', 'bytes', 'bytes'],
+					[config.hookAddress, config.executorData, config.hookData],
+				)
+				break
+
+			case ERC7579_MODULE_TYPE.FALLBACK:
+				initData = abiEncode(
+					['bytes4', 'address', 'bytes', 'bytes'],
+					[config.selector, config.hookAddress, config.selectorData, config.hookData],
+				)
+				break
+
+			case ERC7579_MODULE_TYPE.HOOK:
+				initData = (config as SimpleModuleConfig<ERC7579_MODULE_TYPE.HOOK>).initData
+				break
+
+			default:
+				throw new KernelError('Unsupported module type')
+		}
+
+		return this.interface.encodeFunctionData('installModule', [config.moduleType, config.moduleAddress, initData])
 	}
 
 	/**

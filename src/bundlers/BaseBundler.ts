@@ -53,7 +53,8 @@ export abstract class BaseBundler implements Bundler {
 		}
 
 		if (this.debugHandleOps) {
-			console.log('handleOpsCalldata:', encodeHandleOpsCalldata([userOp], randomAddress()))
+			console.log('handleOpsCalldata:')
+			console.log(encodeHandleOpsCalldata([userOp], randomAddress()))
 		}
 
 		return await this.rpcProvider.send({

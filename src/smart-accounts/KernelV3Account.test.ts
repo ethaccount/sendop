@@ -93,7 +93,7 @@ describe('KernelV3Account', () => {
 		})
 	})
 
-	describe('Deploy KernelV3Account and setNumber', () => {
+	describe('Deploy and setNumber', () => {
 		let kernel: KernelV3Account
 		let creationOptions: KernelCreationOptions
 		let deployedAddress: string

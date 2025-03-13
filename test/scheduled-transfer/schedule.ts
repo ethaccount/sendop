@@ -1,10 +1,12 @@
 import ADDRESS from '@/addresses'
 import type { SessionStruct } from '@/contract-types/SmartSession'
 import {
+	abiEncode,
 	ECDSAValidatorModule,
+	ERC7579_MODULE_TYPE,
 	getEncodedFunctionParams,
-	IERC7579Account__factory,
 	KernelV3Account,
+	padLeft,
 	PimlicoBundler,
 	randomBytes32,
 	ScheduledTransfers__factory,
@@ -12,17 +14,17 @@ import {
 	SMART_SESSIONS_ENABLE_MODE,
 	SmartSession__factory,
 } from '@/index'
-import { concat, Interface, JsonRpcProvider, Wallet, ZeroAddress } from 'ethers'
+import { concat, JsonRpcProvider, parseEther, toBeHex, Wallet, ZeroAddress } from 'ethers'
 import { MyPaymaster, setup } from '../../test/utils'
 
-const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, account0, account1 } = await setup({ chainId: 'local' })
+const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, account1 } = await setup({ chainId: 'local' })
 
 logger.info(`Chain ID: ${chainId}`)
 
 const signer = new Wallet(privateKey)
 const client = new JsonRpcProvider(CLIENT_URL)
 const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
-	// debugHandleOps: true,
+	debugHandleOps: true,
 })
 
 const pmGetter = new MyPaymaster({
@@ -71,6 +73,23 @@ const enableSessionEncodedParams = getEncodedFunctionParams(
 
 const smartSessionInitData = concat([SMART_SESSIONS_ENABLE_MODE, enableSessionEncodedParams])
 
+// install scheduled transfers module
+
+const executeInterval = 10
+const numOfExecutions = 3
+const startDate = Math.floor(Date.now() / 1000) + 25 * 60 // 25 minutes from now
+const recipient = account1.address
+const token = ZeroAddress
+const amount = toBeHex(parseEther('0.001'))
+
+// initData: executeInterval (6) ++ numOfExecutions (2) ++ startDate (6) ++ executionData
+const scheduledTransfersInitData = concat([
+	padLeft(toBeHex(executeInterval), 6),
+	padLeft(toBeHex(numOfExecutions), 2),
+	padLeft(toBeHex(startDate), 6),
+	abiEncode(['address', 'address', 'uint256'], [recipient, token, amount]),
+])
+
 const kernel = new KernelV3Account(computedAddress, {
 	client,
 	bundler,
@@ -84,26 +103,34 @@ const kernel = new KernelV3Account(computedAddress, {
 const op = await sendop({
 	bundler,
 	executions: [
+		// install smart session module
+		// {
+		// 	to: computedAddress,
+		// 	value: '0x0',
+		// 	data: KernelV3Account.encodeInstallModule({
+		// 		moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
+		// 		moduleAddress: ADDRESS.SmartSession,
+		// 		hookAddress: ZeroAddress,
+		// 		validatorData: smartSessionInitData,
+		// 		hookData: '0x',
+		// 		selectorData: ZeroBytes4,
+		// 	}),
+		// },
+		// install scheduled transfers module
 		{
 			to: computedAddress,
 			value: '0x0',
-			data: IERC7579Account__factory.createInterface().encodeFunctionData('installModule', [
-				1,
-				ADDRESS.SmartSession,
-				KernelV3Account.getInstallModuleInitData(ZeroAddress, smartSessionInitData, '0x', '0x00000000'),
-			]),
-		},
-		// Set a random number on the counter contract
-		{
-			to: ADDRESS.Counter,
-			data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [
-				Math.floor(Math.random() * 1000000),
-			]),
-			value: '0x0',
+			data: KernelV3Account.encodeInstallModule({
+				moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
+				moduleAddress: ADDRESS.ScheduledTransfers,
+				executorData: scheduledTransfersInitData,
+				hookAddress: ZeroAddress,
+				hookData: '0x',
+			}),
 		},
 	],
 	opGetter: kernel,
-	initCode: kernel.getInitCode(creationOptions),
+	initCode: kernel.getInitCode(creationOptions), // create account
 	pmGetter,
 })
 
