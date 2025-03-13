@@ -1,5 +1,5 @@
-const fs = require('fs')
-const path = require('path')
+import fs from 'fs'
+import path from 'path'
 
 // Read the addresses.json file
 const addressesPath = path.join(__dirname, '../src', 'addresses.json')

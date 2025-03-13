@@ -16,11 +16,12 @@
 	},
 	"scripts": {
 		"build": "vite build",
+		"build:address": "bun run gen-addresses && bun run gen-interfaces && bun run fetch-abis && bun run typechain",
 		"test": "vitest --run",
 		"deploy-contracts:local": "forge script --root contracts contracts/script/deploy-contracts.s.sol --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://localhost:8545 --broadcast",
 		"deploy-contracts:sepolia": "forge script --root contracts contracts/script/deploy-contracts.s.sol --account dev --rpc-url $sepolia --broadcast",
-		"build:address": "bun run gen-address-const && bun run fetch-abis && bun run typechain",
-		"gen-address-const": "bun run script/gen-address-const.ts",
+		"gen-addresses": "bun run script/gen-addresses.ts",
+		"gen-interfaces": "bun run script/gen-interfaces.ts",
 		"fetch-abis": "rm -rf src/abis/*.json && bun run script/fetch-abis.ts",
 		"typechain": "rm -rf src/contract-types && typechain --target ethers-v6 --out-dir src/contract-types src/abis/**/*.json",
 		"typecheck": "tsc -p tsconfig.json --noEmit"
