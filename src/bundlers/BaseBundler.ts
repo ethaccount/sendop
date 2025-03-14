@@ -30,7 +30,7 @@ export abstract class BaseBundler implements Bundler {
 	protected onBeforeEstimation?: (userOp: UserOp) => Promise<UserOp>
 	protected onBeforeSendUserOp?: (userOp: UserOp) => Promise<UserOp>
 	protected debugHandleOps?: boolean
-	protected parseError: boolean = true
+	protected parseError: boolean = false
 
 	constructor(chainId: string, url: string, options?: BundlerOptions) {
 		this.chainId = chainId
@@ -41,7 +41,7 @@ export abstract class BaseBundler implements Bundler {
 		this.onGetGasValues = options?.onGetGasValues
 		this.onBeforeSendUserOp = options?.onBeforeSendUserOp
 		this.debugHandleOps = options?.debugHandleOps ?? false
-		this.parseError = options?.parseError ?? true
+		this.parseError = options?.parseError ?? false
 
 		if (this.debugHandleOps) {
 			console.warn('debugHandleOps is enabled. It will skip gas estimation.')
