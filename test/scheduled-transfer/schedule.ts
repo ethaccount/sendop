@@ -9,6 +9,7 @@ import {
 	padLeft,
 	PimlicoBundler,
 	randomBytes32,
+	Registry__factory,
 	ScheduledTransfers__factory,
 	sendop,
 	SMART_SESSIONS_ENABLE_MODE,
@@ -107,9 +108,20 @@ const kernel = new KernelV3Account(computedAddress, {
 	}),
 })
 
+const RHINESTONE_ATTESTER_ADDRESS = '0x000000333034E9f539ce08819E12c1b8Cb29084d'
+
 const op = await sendop({
 	bundler,
 	executions: [
+		// trust attester
+		{
+			to: ADDRESS.Registry,
+			value: '0x0',
+			data: Registry__factory.createInterface().encodeFunctionData('trustAttesters', [
+				1,
+				[RHINESTONE_ATTESTER_ADDRESS],
+			]),
+		},
 		// install smart session module
 		{
 			to: computedAddress,
