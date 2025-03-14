@@ -10,6 +10,8 @@ import type {
 	UserOpReceipt,
 } from './types'
 import ADDRESS from '@/addresses'
+import { is32BytesHexString } from '@/utils'
+import { SendopError } from '@/error'
 
 export async function sendop(options: {
 	bundler: Bundler
@@ -93,7 +95,7 @@ export async function sendop(options: {
 export function getEmptyUserOp(): UserOp {
 	return {
 		sender: '',
-		nonce: '0x',
+		nonce: '0x0',
 		factory: null,
 		factoryData: '0x',
 		callData: '0x',
