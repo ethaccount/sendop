@@ -1,6 +1,11 @@
 import { config } from 'dotenv'
 import fs from 'fs/promises'
 import path from 'path'
+import { createConsola } from 'consola'
+
+export const logger = createConsola({
+	level: 4,
+})
 
 config()
 

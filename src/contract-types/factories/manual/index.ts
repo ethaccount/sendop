@@ -3,3 +3,5 @@
 /* eslint-disable */
 export * as ierc7579AccountSol from "./IERC7579Account.sol";
 export * as ierc7579ModulesSol from "./IERC7579Modules.sol";
+export { ScheduledOrders__factory } from "./ScheduledOrders__factory";
+export { ScheduledTransfers__factory } from "./ScheduledTransfers__factory";

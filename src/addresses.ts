@@ -5,15 +5,15 @@ const ADDRESS = {
     "KernelV3": "0xbac849bb641841b44e965fb01a4bf5f074f84b4d",
     "MyAccountFactory": "0xd4650238fcc60f64DfCa4e095dEe0081Dd4734b0",
     "ECDSAValidator": "0x971208C0409CFB2fD44C64E6158cf3335abb4476",
-    "OwnableValidator": "0xbf2137a23f439ca5aa4360cc6970d70b24d07ea2",
     "K1Validator": "0x0000002D6DB27c52E3C11c1Cf24072004AC75cBa",
     "WebAuthnValidator": "0xD990393C670dCcE8b4d8F858FB98c9912dBFAa06",
     "SmartSession": "0x00000000002b0ecfbd0496ee71e01257da0e37de",
     "SudoPolicy": "0x0000003111cD8e92337C100F22B7A9dbf8DEE301",
     "UniActionPolicy": "0x0000006DDA6c463511C4e9B05CFc34C1247fCF1F",
     "ERC20SpendingLimitPolicy": "0x00000088D48cF102A8Cdb0137A9b173f957c6343",
-    "ScheduledTransfers": "0xf1ae317941efeb1ffb103d959ef58170f1e577e0",
-    "ScheduledOrders": "0x5341b4e7b347b7db9e124b15eba10a5c236ec3bb",
+    "OwnableValidator": "0x2483DA3A338895199E5e538530213157e931Bf06",
+    "ScheduledTransfers": "0xA8E374779aeE60413c974b484d6509c7E4DDb6bA",
+    "ScheduledOrders": "0x40dc90D670C89F322fa8b9f685770296428DCb6b",
     "Counter": "0xB6a6520911fcaD76C23c0654cCbaD42c6D582Ca7",
     "CharityPaymaster": "0xB92bEc664f089021F33B8D6913F45E6A57DA666c"
 };

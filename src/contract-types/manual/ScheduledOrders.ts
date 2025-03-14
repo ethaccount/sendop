@@ -21,20 +21,25 @@ import type {
   TypedLogDescription,
   TypedListener,
   TypedContractMethod,
-} from "./common";
+} from "../common";
 
-export interface ScheduledTransfersInterface extends Interface {
+export interface ScheduledOrdersInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "_swapRouters"
       | "accountJobCount"
       | "addOrder"
+      | "checkTokenOrder"
       | "executeOrder"
       | "executionLog"
+      | "getPoolAddress"
+      | "getSqrtPriceX96"
       | "isInitialized"
       | "isModuleType"
       | "name"
       | "onInstall"
       | "onUninstall"
+      | "setSwapRouter"
       | "toggleOrder"
       | "version"
   ): FunctionFragment;
@@ -45,20 +50,37 @@ export interface ScheduledTransfersInterface extends Interface {
       | "ExecutionStatusUpdated"
       | "ExecutionTriggered"
       | "ExecutionsCancelled"
+      | "SwapRouterInitialized"
   ): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "_swapRouters",
+    values: [AddressLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "accountJobCount",
     values: [AddressLike]
   ): string;
   encodeFunctionData(functionFragment: "addOrder", values: [BytesLike]): string;
   encodeFunctionData(
+    functionFragment: "checkTokenOrder",
+    values: [AddressLike, AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "executeOrder",
-    values: [BigNumberish]
+    values: [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "executionLog",
     values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getPoolAddress",
+    values: [AddressLike, AddressLike, AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getSqrtPriceX96",
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "isInitialized",
@@ -78,22 +100,42 @@ export interface ScheduledTransfersInterface extends Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "setSwapRouter",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "toggleOrder",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "version", values?: undefined): string;
 
   decodeFunctionResult(
+    functionFragment: "_swapRouters",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "accountJobCount",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "addOrder", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "checkTokenOrder",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "executeOrder",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "executionLog",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getPoolAddress",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getSqrtPriceX96",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -108,6 +150,10 @@ export interface ScheduledTransfersInterface extends Interface {
   decodeFunctionResult(functionFragment: "onInstall", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "onUninstall",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setSwapRouter",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -168,11 +214,29 @@ export namespace ExecutionsCancelledEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export interface ScheduledTransfers extends BaseContract {
-  connect(runner?: ContractRunner | null): ScheduledTransfers;
+export namespace SwapRouterInitializedEvent {
+  export type InputTuple = [
+    account: AddressLike,
+    swaprouter: AddressLike,
+    fee: BigNumberish
+  ];
+  export type OutputTuple = [account: string, swaprouter: string, fee: bigint];
+  export interface OutputObject {
+    account: string;
+    swaprouter: string;
+    fee: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export interface ScheduledOrders extends BaseContract {
+  connect(runner?: ContractRunner | null): ScheduledOrders;
   waitForDeployment(): Promise<this>;
 
-  interface: ScheduledTransfersInterface;
+  interface: ScheduledOrdersInterface;
 
   queryFilter<TCEvent extends TypedContractEvent>(
     event: TCEvent,
@@ -211,6 +275,8 @@ export interface ScheduledTransfers extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  _swapRouters: TypedContractMethod<[account: AddressLike], [string], "view">;
+
   accountJobCount: TypedContractMethod<
     [smartAccount: AddressLike],
     [bigint],
@@ -219,8 +285,19 @@ export interface ScheduledTransfers extends BaseContract {
 
   addOrder: TypedContractMethod<[orderData: BytesLike], [void], "nonpayable">;
 
+  checkTokenOrder: TypedContractMethod<
+    [tokenSwappedFrom: AddressLike, poolAddress: AddressLike],
+    [boolean],
+    "view"
+  >;
+
   executeOrder: TypedContractMethod<
-    [jobId: BigNumberish],
+    [
+      jobId: BigNumberish,
+      sqrtPriceLimitX96: BigNumberish,
+      amountOutMinimum: BigNumberish,
+      fee: BigNumberish
+    ],
     [void],
     "nonpayable"
   >;
@@ -241,6 +318,23 @@ export interface ScheduledTransfers extends BaseContract {
     "view"
   >;
 
+  getPoolAddress: TypedContractMethod<
+    [
+      factoryAddress: AddressLike,
+      token0: AddressLike,
+      token1: AddressLike,
+      fee: BigNumberish
+    ],
+    [string],
+    "view"
+  >;
+
+  getSqrtPriceX96: TypedContractMethod<
+    [poolAddress: AddressLike],
+    [bigint],
+    "view"
+  >;
+
   isInitialized: TypedContractMethod<
     [smartAccount: AddressLike],
     [boolean],
@@ -255,6 +349,12 @@ export interface ScheduledTransfers extends BaseContract {
 
   onUninstall: TypedContractMethod<[arg0: BytesLike], [void], "nonpayable">;
 
+  setSwapRouter: TypedContractMethod<
+    [swapRouter: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
   toggleOrder: TypedContractMethod<[jobId: BigNumberish], [void], "nonpayable">;
 
   version: TypedContractMethod<[], [string], "view">;
@@ -264,14 +364,33 @@ export interface ScheduledTransfers extends BaseContract {
   ): T;
 
   getFunction(
+    nameOrSignature: "_swapRouters"
+  ): TypedContractMethod<[account: AddressLike], [string], "view">;
+  getFunction(
     nameOrSignature: "accountJobCount"
   ): TypedContractMethod<[smartAccount: AddressLike], [bigint], "view">;
   getFunction(
     nameOrSignature: "addOrder"
   ): TypedContractMethod<[orderData: BytesLike], [void], "nonpayable">;
   getFunction(
+    nameOrSignature: "checkTokenOrder"
+  ): TypedContractMethod<
+    [tokenSwappedFrom: AddressLike, poolAddress: AddressLike],
+    [boolean],
+    "view"
+  >;
+  getFunction(
     nameOrSignature: "executeOrder"
-  ): TypedContractMethod<[jobId: BigNumberish], [void], "nonpayable">;
+  ): TypedContractMethod<
+    [
+      jobId: BigNumberish,
+      sqrtPriceLimitX96: BigNumberish,
+      amountOutMinimum: BigNumberish,
+      fee: BigNumberish
+    ],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "executionLog"
   ): TypedContractMethod<
@@ -290,6 +409,21 @@ export interface ScheduledTransfers extends BaseContract {
     "view"
   >;
   getFunction(
+    nameOrSignature: "getPoolAddress"
+  ): TypedContractMethod<
+    [
+      factoryAddress: AddressLike,
+      token0: AddressLike,
+      token1: AddressLike,
+      fee: BigNumberish
+    ],
+    [string],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "getSqrtPriceX96"
+  ): TypedContractMethod<[poolAddress: AddressLike], [bigint], "view">;
+  getFunction(
     nameOrSignature: "isInitialized"
   ): TypedContractMethod<[smartAccount: AddressLike], [boolean], "view">;
   getFunction(
@@ -304,6 +438,9 @@ export interface ScheduledTransfers extends BaseContract {
   getFunction(
     nameOrSignature: "onUninstall"
   ): TypedContractMethod<[arg0: BytesLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "setSwapRouter"
+  ): TypedContractMethod<[swapRouter: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "toggleOrder"
   ): TypedContractMethod<[jobId: BigNumberish], [void], "nonpayable">;
@@ -338,6 +475,13 @@ export interface ScheduledTransfers extends BaseContract {
     ExecutionsCancelledEvent.InputTuple,
     ExecutionsCancelledEvent.OutputTuple,
     ExecutionsCancelledEvent.OutputObject
+  >;
+  getEvent(
+    key: "SwapRouterInitialized"
+  ): TypedContractEvent<
+    SwapRouterInitializedEvent.InputTuple,
+    SwapRouterInitializedEvent.OutputTuple,
+    SwapRouterInitializedEvent.OutputObject
   >;
 
   filters: {
@@ -383,6 +527,17 @@ export interface ScheduledTransfers extends BaseContract {
       ExecutionsCancelledEvent.InputTuple,
       ExecutionsCancelledEvent.OutputTuple,
       ExecutionsCancelledEvent.OutputObject
+    >;
+
+    "SwapRouterInitialized(address,address,uint24)": TypedContractEvent<
+      SwapRouterInitializedEvent.InputTuple,
+      SwapRouterInitializedEvent.OutputTuple,
+      SwapRouterInitializedEvent.OutputObject
+    >;
+    SwapRouterInitialized: TypedContractEvent<
+      SwapRouterInitializedEvent.InputTuple,
+      SwapRouterInitializedEvent.OutputTuple,
+      SwapRouterInitializedEvent.OutputObject
     >;
   };
 }

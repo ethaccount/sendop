@@ -5,3 +5,5 @@ import type * as ierc7579AccountSol from "./IERC7579Account.sol";
 export type { ierc7579AccountSol };
 import type * as ierc7579ModulesSol from "./IERC7579Modules.sol";
 export type { ierc7579ModulesSol };
+export type { ScheduledOrders } from "./ScheduledOrders";
+export type { ScheduledTransfers } from "./ScheduledTransfers";

@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import { logger } from './common'
 
 // Read the addresses.json file
 const addressesPath = path.join(__dirname, '../src', 'addresses.json')
@@ -19,4 +20,4 @@ const output = `const ADDRESS = ${JSON.stringify(transformedAddresses, null, 4)}
 const outputPath = path.join(__dirname, '../src', 'addresses.ts')
 fs.writeFileSync(outputPath, output)
 
-console.log(`${outputPath} generated successfully!`)
+logger.success(`${outputPath} generated successfully!`)

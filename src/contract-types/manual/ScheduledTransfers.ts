@@ -21,9 +21,9 @@ import type {
   TypedLogDescription,
   TypedListener,
   TypedContractMethod,
-} from "./common";
+} from "../common";
 
-export interface ScheduledOrdersInterface extends Interface {
+export interface ScheduledTransfersInterface extends Interface {
   getFunction(
     nameOrSignature:
       | "accountJobCount"
@@ -168,11 +168,11 @@ export namespace ExecutionsCancelledEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export interface ScheduledOrders extends BaseContract {
-  connect(runner?: ContractRunner | null): ScheduledOrders;
+export interface ScheduledTransfers extends BaseContract {
+  connect(runner?: ContractRunner | null): ScheduledTransfers;
   waitForDeployment(): Promise<this>;
 
-  interface: ScheduledOrdersInterface;
+  interface: ScheduledTransfersInterface;
 
   queryFilter<TCEvent extends TypedContractEvent>(
     event: TCEvent,

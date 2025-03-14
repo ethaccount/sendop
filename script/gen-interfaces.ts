@@ -1,25 +1,41 @@
 import fs from 'fs'
 import path from 'path'
+import { logger } from './common'
 
-// Read the addresses.json file
-const addressesPath = path.join(__dirname, '../src', 'addresses.json')
-const addressesData = fs.readFileSync(addressesPath, 'utf8')
-const addressesRaw = JSON.parse(addressesData)
+// Recursively find all factory files
+function findFactoryFiles(dir: string): string[] {
+	const files: string[] = []
+	const entries = fs.readdirSync(dir, { withFileTypes: true })
 
-// Transform addresses object to have contract names as keys
-const addresses: Record<string, string> = {}
-Object.entries(addressesRaw).forEach(([address, name]) => {
-	addresses[name as string] = address as string
-})
+	for (const entry of entries) {
+		const fullPath = path.join(dir, entry.name)
+		if (entry.isDirectory()) {
+			files.push(...findFactoryFiles(fullPath))
+		} else if (entry.name.endsWith('__factory.ts')) {
+			files.push(fullPath)
+		}
+	}
+
+	return files
+}
+
+// Read all factory files from contract-types directory
+const factoriesPath = path.join(__dirname, '../src/contract-types/factories')
+const factoryFiles = findFactoryFiles(factoriesPath)
+	.map(file => path.relative(factoriesPath, file)) // Get relative path
+	.map(file => file.replace('.ts', '')) // Remove .ts extension
 
 // Create import statements
-const imports = Object.keys(addresses)
-	.map(name => `import { ${name}__factory } from '@/contract-types';`)
+const imports = factoryFiles
+	.map(factory => `import { ${path.basename(factory)} } from '@/contract-types/factories/${factory}';`)
 	.join('\n')
 
 // Create interface mappings
-const interfaceEntries = Object.keys(addresses)
-	.map(name => `    ${name}: ${name}__factory.createInterface()`)
+const interfaceEntries = factoryFiles
+	.map(
+		factory =>
+			`    ${path.basename(factory).replace('__factory', '')}: ${path.basename(factory)}.createInterface()`,
+	)
 	.join(',\n')
 
 // Create the output string
@@ -36,4 +52,4 @@ export default INTERFACES;
 const outputPath = path.join(__dirname, '../src', 'interfaces.ts')
 fs.writeFileSync(outputPath, output)
 
-console.log(`${outputPath} generated successfully!`)
+logger.success(`${outputPath} generated successfully!`)
