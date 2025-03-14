@@ -3,11 +3,11 @@ import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
 import { KernelV3Account, KernelValidationType, PimlicoBundler, sendop, SMART_SESSIONS_USE_MODE } from '@/index'
 import INTERFACES from '@/interfaces'
 import { concat, JsonRpcProvider } from 'ethers'
-import { MyPaymaster, setup } from '../../test/utils'
 import fs from 'fs'
 import path from 'path'
-import { hideBin } from 'yargs/helpers'
 import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
+import { MyPaymaster, setup } from '../../test/utils'
 
 const argv = await yargs(hideBin(process.argv))
 	.option('network', {
@@ -24,21 +24,22 @@ const { logger, chainId, CLIENT_URL, BUNDLER_URL, account1 } = await setup({ cha
 
 const jobId = 1
 const permissionId = '0xba06d407c8d9ddaaac3b680421283c1c424cd21e8205173dfef1840705aa9957'
-const kerneAddress = fs.readFileSync(path.join(__dirname, 'deployed-address.txt'), 'utf8')
+const kernelAddress = fs.readFileSync(path.join(__dirname, 'deployed-address.txt'), 'utf8')
+logger.info(`Kernel address: ${kernelAddress}`)
 
 logger.info(`Chain ID: ${chainId}`)
 
 const client = new JsonRpcProvider(CLIENT_URL)
 const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 	parseError: true,
-	async onBeforeEstimation(userOp) {
-		logger.info('onBeforeEstimation', userOp)
-		return userOp
-	},
-	async onBeforeSendUserOp(userOp) {
-		logger.info('onBeforeSendUserOp', userOp)
-		return userOp
-	},
+	// async onBeforeEstimation(userOp) {
+	// 	logger.info('onBeforeEstimation', userOp)
+	// 	return userOp
+	// },
+	// async onBeforeSendUserOp(userOp) {
+	// 	logger.info('onBeforeSendUserOp', userOp)
+	// 	return userOp
+	// },
 	// debugHandleOps: true,
 })
 
@@ -47,7 +48,7 @@ const pmGetter = new MyPaymaster({
 	paymasterAddress: ADDRESS.CharityPaymaster,
 })
 
-const kernel = new KernelV3Account(kerneAddress, {
+const kernel = new KernelV3Account(kernelAddress, {
 	client,
 	bundler,
 	erc7579Validator: {

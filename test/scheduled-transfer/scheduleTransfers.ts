@@ -1,11 +1,11 @@
-import { ScheduledTransfers__factory } from '@/contract-types'
-import { setup } from '../utils'
-import { JsonRpcProvider } from 'ethers'
 import ADDRESS from '@/addresses'
+import { ScheduledTransfers__factory } from '@/contract-types'
+import { JsonRpcProvider } from 'ethers'
+import fs from 'fs'
 import path from 'path'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import fs from 'fs'
+import { setup } from '../utils'
 
 const argv = await yargs(hideBin(process.argv))
 	.option('network', {
@@ -49,6 +49,6 @@ logger.info(
 		startDate: ${log.startDate},
 		isEnabled: ${log.isEnabled},
 		lastExecutionTime: ${log.lastExecutionTime},
-		executionData: ${log.executionData.toString('hex')}
+		executionData: ${log.executionData}
 	}`,
 )

@@ -17,11 +17,11 @@ import {
 } from '@/index'
 import INTERFACES from '@/interfaces'
 import { concat, JsonRpcProvider, parseEther, toBeHex, Wallet, ZeroAddress } from 'ethers'
-import { MyPaymaster, setup } from '../../test/utils'
 import fs from 'fs'
 import path from 'path'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
+import { MyPaymaster, setup } from '../../test/utils'
 
 const argv = await yargs(hideBin(process.argv))
 	.option('network', {
@@ -29,6 +29,13 @@ const argv = await yargs(hideBin(process.argv))
 		choices: ['local', 'sepolia'] as const,
 		description: 'Network (local or sepolia)',
 		demandOption: true,
+	})
+	.option('bundler', {
+		alias: 'b',
+		choices: ['alchemy', 'pimlico'] as const,
+		description: 'Bundler (alchemy or pimlico)',
+		demandOption: false,
+		default: 'pimlico',
 	})
 	.help().argv
 

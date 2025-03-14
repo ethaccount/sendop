@@ -9,3 +9,5 @@ contracts/out/
 contracts/docs/
 contracts/broadcast/
 contracts/dependencies/
+
+deployed-address.txt
