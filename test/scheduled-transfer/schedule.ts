@@ -18,8 +18,23 @@ import {
 import INTERFACES from '@/interfaces'
 import { concat, JsonRpcProvider, parseEther, toBeHex, Wallet, ZeroAddress } from 'ethers'
 import { MyPaymaster, setup } from '../../test/utils'
+import fs from 'fs'
+import path from 'path'
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
 
-const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, account1 } = await setup({ chainId: 'local' })
+const argv = await yargs(hideBin(process.argv))
+	.option('network', {
+		alias: 'n',
+		choices: ['local', 'sepolia'] as const,
+		description: 'Network (local or sepolia)',
+		demandOption: true,
+	})
+	.help().argv
+
+const network = argv.network === 'sepolia' ? '11155111' : 'local'
+
+const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, account1 } = await setup({ chainId: network })
 
 logger.info(`Chain ID: ${chainId}`)
 
@@ -54,7 +69,12 @@ const session: SessionStruct = {
 	sessionValidator: ADDRESS.OwnableValidator,
 	sessionValidatorInitData: abiEncode(['uint256', 'address[]'], [1, [account1.address]]), // threshold, signers
 	salt: padLeft(toBeHex(1), 32),
-	userOpPolicies: [],
+	userOpPolicies: [
+		{
+			policy: ADDRESS.SudoPolicy,
+			initData: '0x',
+		},
+	],
 	erc7739Policies: {
 		erc1271Policies: [],
 		allowedERC7739Content: [],
@@ -155,3 +175,5 @@ logger.info(`hash: ${op.hash}`)
 const receipt = await op.wait()
 logger.info('deployed address:', computedAddress)
 logger.info('userOp success:', receipt.success)
+
+fs.writeFileSync(path.join(__dirname, 'deployed-address.txt'), computedAddress)

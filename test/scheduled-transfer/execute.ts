@@ -4,12 +4,27 @@ import { KernelV3Account, KernelValidationType, PimlicoBundler, sendop, SMART_SE
 import INTERFACES from '@/interfaces'
 import { concat, JsonRpcProvider } from 'ethers'
 import { MyPaymaster, setup } from '../../test/utils'
+import fs from 'fs'
+import path from 'path'
+import { hideBin } from 'yargs/helpers'
+import yargs from 'yargs'
+
+const argv = await yargs(hideBin(process.argv))
+	.option('network', {
+		alias: 'n',
+		choices: ['local', 'sepolia'] as const,
+		description: 'Network (local or sepolia)',
+		demandOption: true,
+	})
+	.help().argv
+
+const network = argv.network === 'sepolia' ? '11155111' : 'local'
+
+const { logger, chainId, CLIENT_URL, BUNDLER_URL, account1 } = await setup({ chainId: network })
 
 const jobId = 1
 const permissionId = '0xba06d407c8d9ddaaac3b680421283c1c424cd21e8205173dfef1840705aa9957'
-const kerneAddress = '0xac3E5b60a45B120E0659b533f37345ACae6D66dE'
-
-const { logger, chainId, CLIENT_URL, BUNDLER_URL, account1 } = await setup({ chainId: 'local' })
+const kerneAddress = fs.readFileSync(path.join(__dirname, 'deployed-address.txt'), 'utf8')
 
 logger.info(`Chain ID: ${chainId}`)
 
@@ -20,7 +35,11 @@ const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 		logger.info('onBeforeEstimation', userOp)
 		return userOp
 	},
-	// debugHandleOps: true,
+	async onBeforeSendUserOp(userOp) {
+		logger.info('onBeforeSendUserOp', userOp)
+		return userOp
+	},
+	debugHandleOps: true,
 })
 
 const pmGetter = new MyPaymaster({
