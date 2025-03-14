@@ -114,7 +114,10 @@ const smartSessionInitData = concat([SMART_SESSIONS_ENABLE_MODE, encodedSessions
 
 const executeInterval = 10
 const numOfExecutions = 3
-const startDate = Math.floor(Date.now() / 1000)
+const startDate =
+	network === 'local'
+		? 1 // Use a smaller fixed timestamp for local testing
+		: Math.floor(Date.now() / 1000)
 const recipient = account1.address
 const token = ZeroAddress
 const amount = toBeHex(parseEther('0.001'))
