@@ -33,6 +33,7 @@ export function isHexString(data: string, bytesLength: number) {
 	return data.startsWith('0x') && data.length === expectedLength
 }
 
+// TODO: rename with zeroPadLeft
 export function padLeft(data: string, length: number = 32) {
 	if (!data.startsWith('0x')) {
 		throw new EthersHelperError('data must start with 0x in padLeft')
@@ -43,6 +44,7 @@ export function padLeft(data: string, length: number = 32) {
 	return zeroPadValue(data, length)
 }
 
+// TODO: rename with zeroPadRight
 export function padRight(data: string, length: number = 32) {
 	if (!data.startsWith('0x')) {
 		throw new EthersHelperError('data must start with 0x in padRight')
