@@ -46,6 +46,8 @@ export type { ISigner } from "./manual/IERC7579Modules.sol/ISigner";
 export { ISigner__factory } from "./factories/manual/IERC7579Modules.sol/ISigner__factory";
 export type { IValidator } from "./manual/IERC7579Modules.sol/IValidator";
 export { IValidator__factory } from "./factories/manual/IERC7579Modules.sol/IValidator__factory";
+export type { OwnableValidator } from "./manual/OwnableValidator";
+export { OwnableValidator__factory } from "./factories/manual/OwnableValidator__factory";
 export type { ScheduledOrders } from "./manual/ScheduledOrders";
 export { ScheduledOrders__factory } from "./factories/manual/ScheduledOrders__factory";
 export type { ScheduledTransfers } from "./manual/ScheduledTransfers";

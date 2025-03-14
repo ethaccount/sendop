@@ -1,6 +1,6 @@
 import ADDRESS from '@/addresses'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import { KernelV3Account, PimlicoBundler, sendop, SMART_SESSIONS_USE_MODE } from '@/index'
+import { getUserOpHash, KernelV3Account, packUserOp, PimlicoBundler, sendop, SMART_SESSIONS_USE_MODE } from '@/index'
 import INTERFACES from '@/interfaces'
 import { concat, JsonRpcProvider } from 'ethers'
 import { MyPaymaster, setup } from '../../test/utils'
@@ -16,9 +16,11 @@ logger.info(`Chain ID: ${chainId}`)
 const client = new JsonRpcProvider(CLIENT_URL)
 const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 	parseError: true,
-	async onBeforeEstimation(userOp) {
+	// skipGasEstimation: true,
+	async onBeforeSendUserOp(userOp) {
 		logger.info(userOp)
-		logger.info((userOp.nonce.length - 2) / 2)
+		logger.info(getUserOpHash(packUserOp(userOp), ADDRESS.EntryPointV7, chainId))
+
 		return userOp
 	},
 })
