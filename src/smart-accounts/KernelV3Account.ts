@@ -1,13 +1,11 @@
 import ADDRESS from '@/addresses'
 import { KernelV3__factory, KernelV3Factory__factory } from '@/contract-types'
-import { ERC7579_MODULE_TYPE } from '@/core'
 import type { Bundler, ERC7579Validator, Execution, PaymasterGetter, SendOpResult, UserOp } from '@/core'
-import { sendop } from '@/core'
+import { ERC7579_MODULE_TYPE, sendop } from '@/core'
 import { SendopError } from '@/error'
 import { connectEntryPointV07 } from '@/utils/contract-helper'
-import { abiEncode, is32BytesHexString, padLeft } from '@/utils/ethers-helper'
-import type { BytesLike } from 'ethers'
-import { concat, Contract, hexlify, isAddress, isHexString, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
+import { abiEncode, is32BytesHexString } from '@/utils/ethers-helper'
+import { concat, Contract, isAddress, isHexString, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
 import { SmartAccount } from './SmartAccount'
 
 export enum KernelValidationType {
@@ -189,20 +187,6 @@ export class KernelV3Account extends SmartAccount {
 		return concat([
 			ADDRESS.KernelV3Factory,
 			this.factoryInterface().encodeFunctionData('createAccount', [encodedInitializeCalldata, salt]),
-		])
-	}
-
-	private encodeInitialize(validator: string, initData: BytesLike) {
-		if (!isAddress(validator)) {
-			throw new KernelError('encodeInitialize: Invalid address')
-		}
-
-		return this.interface().encodeFunctionData('initialize', [
-			concat(['0x01', validator]),
-			ZeroAddress,
-			initData,
-			'0x',
-			[],
 		])
 	}
 
