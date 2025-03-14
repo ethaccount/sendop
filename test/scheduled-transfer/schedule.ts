@@ -10,13 +10,11 @@ import {
 	PimlicoBundler,
 	randomBytes32,
 	Registry__factory,
-	ScheduledTransfers__factory,
 	sendop,
 	SMART_SESSIONS_ENABLE_MODE,
-	SMART_SESSIONS_UNSAFE_ENABLE_MODE,
-	SMART_SESSIONS_USE_MODE,
 	SmartSession__factory,
 } from '@/index'
+import INTERFACES from '@/interfaces'
 import { concat, JsonRpcProvider, parseEther, toBeHex, Wallet, ZeroAddress } from 'ethers'
 import { MyPaymaster, setup } from '../../test/utils'
 
@@ -51,8 +49,8 @@ logger.info(`Salt: ${creationOptions.salt}`)
 const computedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
 
 const session: SessionStruct = {
-	sessionValidator: ADDRESS.K1Validator,
-	sessionValidatorInitData: account1.address, // session key owner
+	sessionValidator: ADDRESS.OwnableValidator,
+	sessionValidatorInitData: abiEncode(['uint256', 'address[]'], [1, [account1.address]]), // threshold, signers
 	salt: randomBytes32(),
 	userOpPolicies: [],
 	erc7739Policies: {
@@ -61,7 +59,7 @@ const session: SessionStruct = {
 	},
 	actions: [
 		{
-			actionTargetSelector: ScheduledTransfers__factory.createInterface().getFunction('executeOrder').selector,
+			actionTargetSelector: INTERFACES.ScheduledTransfers.getFunction('executeOrder').selector,
 			actionTarget: ADDRESS.ScheduledTransfers,
 			actionPolicies: [
 				{
@@ -122,7 +120,7 @@ const op = await sendop({
 				[RHINESTONE_ATTESTER_ADDRESS],
 			]),
 		},
-		// install smart session module
+		// install smart session module and enable the session
 		{
 			to: computedAddress,
 			value: '0x0',
@@ -133,15 +131,15 @@ const op = await sendop({
 			}),
 		},
 		// install scheduled transfers module
-		// {
-		// 	to: computedAddress,
-		// 	value: '0x0',
-		// 	data: KernelV3Account.encodeInstallModule({
-		// 		moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
-		// 		moduleAddress: ADDRESS.ScheduledTransfers,
-		// 		executorData: scheduledTransfersInitData,
-		// 	}),
-		// },
+		{
+			to: computedAddress,
+			value: '0x0',
+			data: KernelV3Account.encodeInstallModule({
+				moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
+				moduleAddress: ADDRESS.ScheduledTransfers,
+				executorData: scheduledTransfersInitData,
+			}),
+		},
 	],
 	opGetter: kernel,
 	initCode: kernel.getInitCode(creationOptions), // create account
