@@ -1,5 +1,5 @@
 import ADDRESS from '@/addresses'
-import { EntryPointV7__factory } from '@/contract-types'
+import { EntryPointV7__factory, Registry__factory } from '@/contract-types'
 import type { UserOp } from '@/core'
 import { packUserOp } from '@/core'
 import INTERFACES from '@/interfaces'
@@ -7,6 +7,10 @@ import type { ContractRunner } from 'ethers'
 
 export function connectEntryPointV07(runner: ContractRunner) {
 	return EntryPointV7__factory.connect(ADDRESS.EntryPointV7, runner)
+}
+
+export function connectRegistry(runner: ContractRunner) {
+	return Registry__factory.connect(ADDRESS.Registry, runner)
 }
 
 export function encodeHandleOpsCalldata(userOps: UserOp[], beneficiary: string) {
