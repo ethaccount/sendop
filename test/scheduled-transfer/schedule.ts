@@ -107,7 +107,7 @@ const smartSessionInitData = concat([SMART_SESSIONS_ENABLE_MODE, encodedSessions
 
 const executeInterval = 10
 const numOfExecutions = 3
-const startDate = Math.floor(Date.now() / 1000) + 25 * 60 // 25 minutes from now
+const startDate = Math.floor(Date.now() / 1000)
 const recipient = account1.address
 const token = ZeroAddress
 const amount = toBeHex(parseEther('0.001'))
@@ -152,6 +152,7 @@ const op = await sendop({
 				moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 				moduleAddress: ADDRESS.SmartSession,
 				validatorData: smartSessionInitData,
+				selectorData: INTERFACES.KernelV3.getFunction('execute').selector,
 			}),
 		},
 		// install scheduled transfers module

@@ -153,8 +153,6 @@ export class KernelV3Account extends SmartAccount {
 			key = '0x0000',
 		} = options
 		const nonceKey = this.getNonceKey(mode, type, identifier, key)
-		console.log('nonceKey', nonceKey)
-		console.log('nonceKey BigInt', BigInt(nonceKey))
 		return await connectEntryPointV07(this.client).getNonce(this.address, nonceKey)
 	}
 

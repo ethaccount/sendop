@@ -39,7 +39,7 @@ const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 		logger.info('onBeforeSendUserOp', userOp)
 		return userOp
 	},
-	debugHandleOps: true,
+	// debugHandleOps: true,
 })
 
 const pmGetter = new MyPaymaster({
