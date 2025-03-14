@@ -1,3 +1,4 @@
+import ADDRESS from '@/addresses'
 import { AbiCoder, concat, getBytes, keccak256, toBeHex, zeroPadValue } from 'ethers'
 import type {
 	Bundler,
@@ -9,9 +10,6 @@ import type {
 	UserOp,
 	UserOpReceipt,
 } from './types'
-import ADDRESS from '@/addresses'
-import { is32BytesHexString } from '@/utils'
-import { SendopError } from '@/error'
 
 export async function sendop(options: {
 	bundler: Bundler
@@ -19,8 +17,9 @@ export async function sendop(options: {
 	opGetter: OperationGetter
 	pmGetter?: PaymasterGetter
 	initCode?: string // userOp.factory ++ userOp.factoryData
+	nonce?: bigint
 }): Promise<SendOpResult> {
-	const { bundler, executions, opGetter, pmGetter, initCode } = options
+	const { bundler, executions, opGetter, pmGetter, initCode, nonce } = options
 
 	// build userOp
 	const userOp = getEmptyUserOp()
@@ -37,7 +36,7 @@ export async function sendop(options: {
 		// console.log('userOp.factoryData', userOp.factoryData)
 	}
 
-	userOp.nonce = await opGetter.getNonce()
+	userOp.nonce = nonce ? toBeHex(nonce) : await opGetter.getNonce()
 	userOp.callData = await opGetter.getCallData(executions)
 
 	// if pm, get pmStubData

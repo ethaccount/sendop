@@ -1,13 +1,13 @@
 import ADDRESS from '@/addresses'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import { getUserOpHash, KernelV3Account, packUserOp, PimlicoBundler, sendop, SMART_SESSIONS_USE_MODE } from '@/index'
+import { KernelV3Account, KernelValidationType, PimlicoBundler, sendop, SMART_SESSIONS_USE_MODE } from '@/index'
 import INTERFACES from '@/interfaces'
 import { concat, JsonRpcProvider } from 'ethers'
 import { MyPaymaster, setup } from '../../test/utils'
 
 const jobId = 1
 const permissionId = '0xba06d407c8d9ddaaac3b680421283c1c424cd21e8205173dfef1840705aa9957'
-const kerneAddress = '0x1e1657CE5DDB70654707355f2c6fDA43Daf066De'
+const kerneAddress = '0xac3E5b60a45B120E0659b533f37345ACae6D66dE'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, account1 } = await setup({ chainId: 'local' })
 
@@ -16,13 +16,11 @@ logger.info(`Chain ID: ${chainId}`)
 const client = new JsonRpcProvider(CLIENT_URL)
 const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 	parseError: true,
-	// skipGasEstimation: true,
-	async onBeforeSendUserOp(userOp) {
-		logger.info(userOp)
-		logger.info(getUserOpHash(packUserOp(userOp), ADDRESS.EntryPointV7, chainId))
-
+	async onBeforeEstimation(userOp) {
+		logger.info('onBeforeEstimation', userOp)
 		return userOp
 	},
+	// debugHandleOps: true,
 })
 
 const pmGetter = new MyPaymaster({
@@ -52,6 +50,9 @@ const kernel = new KernelV3Account(kerneAddress, {
 
 const op = await sendop({
 	bundler,
+	nonce: await kernel.getCustomNonce({
+		type: KernelValidationType.VALIDATOR,
+	}),
 	executions: [
 		{
 			to: ADDRESS.ScheduledTransfers,

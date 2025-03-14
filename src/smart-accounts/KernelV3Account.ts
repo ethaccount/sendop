@@ -8,6 +8,12 @@ import { abiEncode, is32BytesHexString } from '@/utils/ethers-helper'
 import { concat, Contract, isAddress, isHexString, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
 import { SmartAccount } from './SmartAccount'
 
+export enum KernelValidationMode {
+	DEFAULT = '0x00',
+	ENABLE = '0x01',
+	INSTALL = '0x02',
+}
+
 export enum KernelValidationType {
 	ROOT = '0x00',
 	VALIDATOR = '0x01',
@@ -134,10 +140,38 @@ export class KernelV3Account extends SmartAccount {
 		return this.erc7579Validator.getSignature(userOpHash, userOp)
 	}
 
+	async getCustomNonce(options: {
+		mode?: KernelValidationMode
+		type?: KernelValidationType
+		identifier?: string
+		key?: string
+	}) {
+		const {
+			mode = KernelValidationMode.DEFAULT,
+			type = KernelValidationType.ROOT,
+			identifier = this.erc7579Validator.address(),
+			key = '0x0000',
+		} = options
+		const nonceKey = this.getNonceKey(mode, type, identifier, key)
+		return await connectEntryPointV07(this.client).getNonce(this.address, nonceKey)
+	}
+
 	async getNonce() {
-		const nonceKey = await this.getNonceKey(await this.erc7579Validator.address())
+		const nonceKey = this.getNonceKey(
+			KernelValidationMode.DEFAULT,
+			KernelValidationType.ROOT,
+			this.erc7579Validator.address(),
+			'0x0000',
+		)
 		const nonce = await connectEntryPointV07(this.client).getNonce(this.address, nonceKey)
 		return toBeHex(nonce)
+	}
+
+	/**
+	 * 1byte mode  | 1byte type | 20bytes identifierWithoutType | 2byte nonceKey = 24 bytes nonceKey
+	 */
+	getNonceKey(mode: KernelValidationMode, type: KernelValidationType, identifierWithoutType: string, key: string) {
+		return concat([mode, type, identifierWithoutType, key])
 	}
 
 	async send(executions: Execution[], pmGetter?: PaymasterGetter): Promise<SendOpResult> {
@@ -196,15 +230,6 @@ export class KernelV3Account extends SmartAccount {
 
 	factoryInterface() {
 		return KernelV3Account.factoryInterface
-	}
-
-	/**
-	 * see kernel "function decodeNonce"
-	 * 1byte mode  | 1byte type | 20bytes identifierWithoutType | 2byte nonceKey | 8byte nonce == 32bytes
-	 */
-	async getNonceKey(validator: string) {
-		// TODO: custom nonce key when constructing kernel
-		return concat(['0x00', '0x00', validator, '0x0000'])
 	}
 
 	async getCallData(

@@ -16,7 +16,7 @@ import {
 	SmartSession__factory,
 } from '@/index'
 import INTERFACES from '@/interfaces'
-import { concat, JsonRpcProvider, parseEther, toBeHex, Wallet, ZeroAddress, zeroPadBytes } from 'ethers'
+import { concat, JsonRpcProvider, parseEther, toBeHex, Wallet, ZeroAddress } from 'ethers'
 import { MyPaymaster, setup } from '../../test/utils'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, account1 } = await setup({ chainId: 'local' })
@@ -26,6 +26,7 @@ logger.info(`Chain ID: ${chainId}`)
 const signer = new Wallet(privateKey)
 const client = new JsonRpcProvider(CLIENT_URL)
 const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
+	parseError: true,
 	// debugHandleOps: true,
 	// async onBeforeSendUserOp(userOp) {
 	// 	logger.info('userOp', userOp)
