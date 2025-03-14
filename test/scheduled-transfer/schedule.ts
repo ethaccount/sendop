@@ -5,6 +5,7 @@ import {
 	ECDSAValidatorModule,
 	ERC7579_MODULE_TYPE,
 	getEncodedFunctionParams,
+	getPermissionId,
 	KernelV3Account,
 	padLeft,
 	PimlicoBundler,
@@ -15,7 +16,7 @@ import {
 	SmartSession__factory,
 } from '@/index'
 import INTERFACES from '@/interfaces'
-import { concat, JsonRpcProvider, parseEther, toBeHex, Wallet, ZeroAddress } from 'ethers'
+import { concat, JsonRpcProvider, parseEther, toBeHex, Wallet, ZeroAddress, zeroPadBytes } from 'ethers'
 import { MyPaymaster, setup } from '../../test/utils'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, account1 } = await setup({ chainId: 'local' })
@@ -51,7 +52,7 @@ const computedAddress = await KernelV3Account.getNewAddress(client, creationOpti
 const session: SessionStruct = {
 	sessionValidator: ADDRESS.OwnableValidator,
 	sessionValidatorInitData: abiEncode(['uint256', 'address[]'], [1, [account1.address]]), // threshold, signers
-	salt: randomBytes32(),
+	salt: padLeft(toBeHex(1), 32),
 	userOpPolicies: [],
 	erc7739Policies: {
 		erc1271Policies: [],
@@ -71,6 +72,8 @@ const session: SessionStruct = {
 	],
 	permitERC4337Paymaster: true,
 }
+const permissionId = getPermissionId(session)
+logger.info(`Permission ID: ${permissionId}`)
 
 const sessions: SessionStruct[] = [session]
 const encodedSessions = getEncodedFunctionParams(
