@@ -90,11 +90,10 @@ export abstract class BaseBundler implements Bundler {
 		} catch (error: unknown) {
 			const err = normalizeError(error)
 			if (this.parseError) {
-				const hasReason = err.message.toLowerCase().includes('reason')
 				const hexDataMatch = err.message.match(/(0x[a-fA-F0-9]+)(?![0-9a-fA-F])/)
 				const hasHexData = hexDataMatch?.[1]
 
-				if (hasReason && hasHexData) {
+				if (hasHexData) {
 					const parsedError = parseContractError(hasHexData)
 					if (parsedError) {
 						// replace hex data with parsed error
