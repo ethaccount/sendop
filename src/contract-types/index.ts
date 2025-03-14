@@ -12,6 +12,7 @@ export type { K1Validator } from "./K1Validator";
 export type { KernelV3 } from "./KernelV3";
 export type { KernelV3Factory } from "./KernelV3Factory";
 export type { MyAccountFactory } from "./MyAccountFactory";
+export type { OwnableValidator } from "./OwnableValidator";
 export type { Registry } from "./Registry";
 export type { ScheduledOrders } from "./ScheduledOrders";
 export type { ScheduledTransfers } from "./ScheduledTransfers";
@@ -49,6 +50,7 @@ export { ISigner__factory } from "./factories/manual/IERC7579Modules.sol/ISigner
 export type { IValidator } from "./manual/IERC7579Modules.sol/IValidator";
 export { IValidator__factory } from "./factories/manual/IERC7579Modules.sol/IValidator__factory";
 export { MyAccountFactory__factory } from "./factories/MyAccountFactory__factory";
+export { OwnableValidator__factory } from "./factories/OwnableValidator__factory";
 export { Registry__factory } from "./factories/Registry__factory";
 export { ScheduledOrders__factory } from "./factories/ScheduledOrders__factory";
 export { ScheduledTransfers__factory } from "./factories/ScheduledTransfers__factory";

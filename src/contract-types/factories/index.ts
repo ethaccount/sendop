@@ -11,6 +11,7 @@ export { K1Validator__factory } from "./K1Validator__factory";
 export { KernelV3__factory } from "./KernelV3__factory";
 export { KernelV3Factory__factory } from "./KernelV3Factory__factory";
 export { MyAccountFactory__factory } from "./MyAccountFactory__factory";
+export { OwnableValidator__factory } from "./OwnableValidator__factory";
 export { Registry__factory } from "./Registry__factory";
 export { ScheduledOrders__factory } from "./ScheduledOrders__factory";
 export { ScheduledTransfers__factory } from "./ScheduledTransfers__factory";

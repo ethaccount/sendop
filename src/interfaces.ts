@@ -1,9 +1,10 @@
 import { EntryPointV7__factory } from '@/contract-types';
 import { Registry__factory } from '@/contract-types';
 import { KernelV3Factory__factory } from '@/contract-types';
-import { MyAccountFactory__factory } from '@/contract-types';
 import { KernelV3__factory } from '@/contract-types';
+import { MyAccountFactory__factory } from '@/contract-types';
 import { ECDSAValidator__factory } from '@/contract-types';
+import { OwnableValidator__factory } from '@/contract-types';
 import { K1Validator__factory } from '@/contract-types';
 import { WebAuthnValidator__factory } from '@/contract-types';
 import { SmartSession__factory } from '@/contract-types';
@@ -19,9 +20,10 @@ const INTERFACES = {
     EntryPointV7: EntryPointV7__factory.createInterface(),
     Registry: Registry__factory.createInterface(),
     KernelV3Factory: KernelV3Factory__factory.createInterface(),
-    MyAccountFactory: MyAccountFactory__factory.createInterface(),
     KernelV3: KernelV3__factory.createInterface(),
+    MyAccountFactory: MyAccountFactory__factory.createInterface(),
     ECDSAValidator: ECDSAValidator__factory.createInterface(),
+    OwnableValidator: OwnableValidator__factory.createInterface(),
     K1Validator: K1Validator__factory.createInterface(),
     WebAuthnValidator: WebAuthnValidator__factory.createInterface(),
     SmartSession: SmartSession__factory.createInterface(),
