@@ -1,28 +1,31 @@
-import { K1Validator__factory, type K1Validator } from '@/contract-types'
+import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
 import { ERC7579Validator, type UserOp } from '@/core'
 import type { BytesLike } from 'ethers'
-import { JsonRpcProvider, type Signer } from 'ethers'
+import { type Signer } from 'ethers'
 
-type ConstructorOptions = {
+type EOAValidatorModuleOptions = {
 	address: string
-	client: JsonRpcProvider
 	signer: Signer
 }
 
 export class EOAValidatorModule extends ERC7579Validator {
-	readonly #address: string
-	readonly #client: JsonRpcProvider
-	readonly #signer: Signer
+	private readonly _options: EOAValidatorModuleOptions
 
-	k1Validator: K1Validator
-
-	constructor(options: ConstructorOptions) {
+	constructor(options: EOAValidatorModuleOptions) {
 		super()
-		this.#address = options.address
-		this.#client = options.client
-		this.#signer = options.signer
+		this._options = options
+	}
 
-		this.k1Validator = K1Validator__factory.connect(this.#address, this.#client)
+	address() {
+		return this._options.address
+	}
+
+	getDummySignature(userOp: UserOp) {
+		return DUMMY_ECDSA_SIGNATURE
+	}
+
+	async getSignature(userOpHash: Uint8Array, userOp: UserOp) {
+		return await this._options.signer.signMessage(userOpHash)
 	}
 
 	static getInitData(address: string): BytesLike {
@@ -31,17 +34,5 @@ export class EOAValidatorModule extends ERC7579Validator {
 
 	static getDeInitData(): BytesLike {
 		return '0x'
-	}
-
-	address() {
-		return this.#address
-	}
-
-	getDummySignature(userOp: UserOp) {
-		return '0xfffffffffffffffffffffffffffffff0000000000000000000000000000000007aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1c'
-	}
-
-	async getSignature(userOpHash: Uint8Array, userOp: UserOp) {
-		return await this.#signer.signMessage(userOpHash)
 	}
 }

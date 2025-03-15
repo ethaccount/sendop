@@ -32,7 +32,6 @@ const op = await sendop({
 		bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 		erc7579Validator: new EOAValidatorModule({
 			address: ADDRESS.K1Validator,
-			client: new JsonRpcProvider(CLIENT_URL),
 			signer: new Wallet(privateKey),
 		}),
 	}),

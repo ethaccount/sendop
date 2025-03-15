@@ -80,7 +80,6 @@ describe.skip('AlchemyBundler', () => {
 			bundler: new AlchemyBundler(chainId, BUNDLER_URL),
 			erc7579Validator: new EOAValidatorModule({
 				address: ADDRESS.K1Validator,
-				client,
 				signer,
 			}),
 		})
@@ -136,7 +135,6 @@ describe.skip('AlchemyBundler', () => {
 			bundler: new AlchemyBundler(chainId, BUNDLER_URL),
 			erc7579Validator: new EOAValidatorModule({
 				address: ADDRESS.K1Validator,
-				client,
 				signer,
 			}),
 			pmGetter: myPaymaster,
@@ -192,7 +190,6 @@ describe.skip('AlchemyBundler', () => {
 			bundler: alchemyBundler,
 			erc7579Validator: new EOAValidatorModule({
 				address: ADDRESS.K1Validator,
-				client,
 				signer,
 			}),
 		})

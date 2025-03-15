@@ -28,7 +28,6 @@ describe.skip('YourAccount', () => {
 		})
 		erc7579Validator = new EOAValidatorModule({
 			address: ADDRESS.K1Validator,
-			client,
 			signer: new Wallet(privateKey),
 		})
 		pmGetter = new MyPaymaster({

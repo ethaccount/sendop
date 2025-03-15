@@ -36,7 +36,6 @@ describe('sendop', () => {
 		})
 		erc7579Validator = new EOAValidatorModule({
 			address: ADDRESS.K1Validator,
-			client,
 			signer,
 		})
 		creationOptions = {
