@@ -1,6 +1,11 @@
 import type { ERC7579_MODULE_TYPE } from '@/core/erc7579'
 
-// TODO:
+export enum NexusValidationMode {
+	VALIDATION = '0x00',
+	MODULE_ENABLE = '0x01',
+}
+
+// TODO: add other bootstrap functions
 export type NexusCreationOptions = SingleValidatorCreation
 
 export type SingleValidatorCreation = {

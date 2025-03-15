@@ -14,3 +14,19 @@ export enum PolicyType {
 	ACTION = 2,
 	ERC1271 = 3,
 }
+
+// =============================== ExecutionMode ===============================
+
+export enum CallType {
+	SIGNLE = '0x00',
+	BATCH = '0x01',
+}
+
+export enum ExecType {
+	DEFAULT = '0x00',
+	TRY_REVERT = '0x01',
+}
+
+export enum ModeSelector {
+	DEFAULT = '0x00',
+}

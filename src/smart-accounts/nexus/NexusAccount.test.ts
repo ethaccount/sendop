@@ -52,9 +52,13 @@ describe('NexusAccount', () => {
 
 		beforeAll(async () => {
 			creationOptions = {
+				bootstrap: 'initNexusWithSingleValidator',
 				salt: hexlify(randomBytes(32)),
 				validatorAddress: ADDRESS.ECDSAValidator,
 				validatorInitData: await resolveAddress(signer),
+				registryAddress: ADDRESS.Registry,
+				attesters: [ADDRESS.ECDSAValidator],
+				threshold: 1,
 			}
 		})
 
@@ -95,11 +99,16 @@ describe('NexusAccount', () => {
 		it('should deploy and setNumber in one transaction', async () => {
 			const number = Math.floor(Math.random() * 1000000)
 
-			const creationOptions = {
+			const creationOptions: NexusCreationOptions = {
+				bootstrap: 'initNexusWithSingleValidator',
 				salt: randomBytes32(),
 				validatorAddress: ADDRESS.ECDSAValidator,
 				validatorInitData: signer.address,
+				registryAddress: ADDRESS.Registry,
+				attesters: [ADDRESS.ECDSAValidator],
+				threshold: 1,
 			}
+
 			const computedAddress = await NexusAccount.getNewAddress(client, creationOptions)
 			const account = new NexusAccount({
 				address: computedAddress,

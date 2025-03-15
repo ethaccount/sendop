@@ -1,7 +1,13 @@
 import ADDRESS from '@/addresses'
 import { NexusFactory__factory } from '@/contract-types'
 import {
+	CallType,
+	encodeExecution,
+	encodeExecutions,
 	ERC7579_MODULE_TYPE,
+	ExecType,
+	ModeSelector,
+	sendop,
 	type Bundler,
 	type ERC7579Validator,
 	type Execution,
@@ -11,11 +17,11 @@ import {
 } from '@/core'
 import { SendopError } from '@/error'
 import INTERFACES from '@/interfaces'
-import { abiEncode } from '@/utils'
+import { abiEncode, connectEntryPointV07, zeroBytes } from '@/utils'
 import type { JsonRpcProvider } from 'ethers'
-import { concat } from 'ethers/utils'
-import { SmartAccount } from '../SmartAccount'
-import type { NexusCreationOptions, NexusInstallModuleConfig } from './types'
+import { concat, toBeHex } from 'ethers/utils'
+import { NoAddressAccountError, SmartAccount } from '../SmartAccount'
+import { NexusValidationMode, type NexusCreationOptions, type NexusInstallModuleConfig } from './types'
 
 export type NexusAccountOptions = {
 	address?: string
@@ -23,6 +29,12 @@ export type NexusAccountOptions = {
 	bundler: Bundler
 	erc7579Validator: ERC7579Validator
 	pmGetter?: PaymasterGetter
+	config?: {
+		callType?: CallType
+		execType?: ExecType
+		modeSelector?: ModeSelector
+		modePayload?: string
+	}
 }
 
 export class NexusAccount extends SmartAccount {
@@ -53,30 +65,112 @@ export class NexusAccount extends SmartAccount {
 		return this._options.pmGetter
 	}
 
-	override getSender(): Promise<string> | string {
-		return ''
-	}
-	override getNonce(): Promise<string> | string {
-		return ''
-	}
-	override getCallData(executions: Execution[]): Promise<string> | string {
-		return ''
-	}
-	override getDummySignature(userOp: UserOp): Promise<string> | string {
-		return ''
-	}
-	override getSignature(userOpHash: Uint8Array, userOp: UserOp): Promise<string> | string {
-		return ''
+	override async getSender() {
+		if (!this.address) {
+			throw new NoAddressAccountError()
+		}
+		return this.address
 	}
 
-	override connect(address: string): SmartAccount {
-		return this
+	override async getNonce() {
+		const nonce = await connectEntryPointV07(this.client).getNonce(this.getSender(), this.getNonceKey())
+		return toBeHex(nonce)
 	}
-	override async deploy(creationOptions: any, pmGetter?: PaymasterGetter): Promise<SendOpResult> {
-		return '' as any
+
+	async getCustomNonce(options: { mode?: NexusValidationMode; validator?: string; key?: string }) {
+		const nonce = await connectEntryPointV07(this.client).getNonce(this.getSender(), this.getNonceKey(options))
+		return toBeHex(nonce)
 	}
-	override send(executions: Execution[], pmGetter?: PaymasterGetter): Promise<SendOpResult> {
-		return '' as any
+
+	/**
+	 * @dev [3 bytes empty][1 bytes validation mode][20 bytes validator][8 bytes nonce]
+	 * @param options default value is { mode: KernelValidationMode.DEFAULT, type: KernelValidationType.ROOT, identifierWithoutType: this.erc7579Validator.address(), key: zeroBytes(2) }
+	 * @returns hex string
+	 */
+	getNonceKey(options?: { mode?: NexusValidationMode; validator?: string; key?: string }) {
+		const defaultOptions = {
+			mode: NexusValidationMode.VALIDATION,
+			validator: this.erc7579Validator.address(),
+			key: zeroBytes(3),
+		}
+		const { mode, validator, key } = { ...defaultOptions, ...options }
+		return concat([key, mode, validator])
+	}
+
+	///
+	/// |--------------------------------------------------------------------|
+	/// | CALLTYPE  | EXECTYPE  |   UNUSED   | ModeSelector  |  ModePayload  |
+	/// |--------------------------------------------------------------------|
+	/// | 1 byte    | 1 byte    |   4 bytes  | 4 bytes       |   22 bytes    |
+	/// |--------------------------------------------------------------------|
+	///
+	override getCallData(executions: Execution[]): Promise<string> | string {
+		if (!executions.length) {
+			return '0x'
+		}
+
+		// Execute 1 function directly on the smart account if it's the only one and to address is itself
+		if (executions.length === 1 && executions[0].to == this.address) {
+			return executions[0].data
+		}
+
+		const defaultExecutionMode = {
+			callType: CallType.BATCH,
+			execType: ExecType.DEFAULT,
+			modeSelector: ModeSelector.DEFAULT,
+			modePayload: zeroBytes(22),
+		}
+		let { callType, execType, modeSelector, modePayload } = { ...defaultExecutionMode, ...this._options.config }
+
+		// If there is only one execution, set callType to SIGNLE
+		if (executions.length === 1) {
+			callType = CallType.SIGNLE
+		}
+		const execMode = concat([callType, execType, modeSelector, modePayload])
+
+		switch (callType) {
+			case CallType.SIGNLE:
+				return this.interface.encodeFunctionData('execute', [execMode, encodeExecution(executions[0])])
+			case CallType.BATCH:
+				return this.interface.encodeFunctionData('execute', [execMode, encodeExecutions(executions)])
+			default:
+				throw new NexusError('Unsupported call type')
+		}
+	}
+
+	override async getDummySignature(userOp: UserOp) {
+		return this.erc7579Validator.getDummySignature(userOp)
+	}
+
+	override async getSignature(userOpHash: Uint8Array, userOp: UserOp) {
+		return this.erc7579Validator.getSignature(userOpHash, userOp)
+	}
+
+	override connect(address: string): NexusAccount {
+		return new NexusAccount({
+			...this._options,
+			address,
+		})
+	}
+
+	override async deploy(creationOptions: NexusCreationOptions, pmGetter?: PaymasterGetter): Promise<SendOpResult> {
+		const computedAddress = await NexusAccount.getNewAddress(this.client, creationOptions)
+		return await sendop({
+			bundler: this.bundler,
+			executions: [],
+			opGetter: this.connect(computedAddress),
+			pmGetter: pmGetter ?? this.pmGetter,
+			initCode: this.getInitCode(creationOptions),
+		})
+	}
+
+	override async send(executions: Execution[], pmGetter?: PaymasterGetter): Promise<SendOpResult> {
+		return await sendop({
+			bundler: this.bundler,
+			executions,
+			opGetter: this,
+			pmGetter: pmGetter ?? this.pmGetter,
+		})
 	}
 
 	/**
