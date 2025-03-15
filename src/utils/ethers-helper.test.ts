@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getBytesLength, isBytes, isHexString, randomAddress, randomBytes32, zeroBytes } from './ethers-helper'
+import { getBytesLength, isBytes, randomAddress, randomBytes32, zeroBytes } from './ethers-helper'
 
 describe('ethers-helper', () => {
 	it('isBytes', () => {
@@ -50,13 +50,13 @@ describe('ethers-helper', () => {
 
 	it('should validate hex strings correctly', () => {
 		// Valid hex strings
-		expect(isHexString('0x1234', 2)).toBe(true)
-		expect(isHexString('0xabcdef0123456789', 8)).toBe(true)
+		expect(isBytes('0x1234', 2)).toBe(true)
+		expect(isBytes('0xabcdef0123456789', 8)).toBe(true)
 
 		// Invalid cases
-		expect(isHexString('0x123', 2)).toBe(false) // Too short
-		expect(isHexString('0x12345', 2)).toBe(false) // Too long
-		expect(isHexString('1234', 2)).toBe(false) // Missing 0x prefix
-		expect(isHexString('0xghijk', 2)).toBe(false) // Invalid hex characters
+		expect(isBytes('0x123', 2)).toBe(false) // Too short
+		expect(isBytes('0x12345', 2)).toBe(false) // Too long
+		expect(isBytes('1234', 2)).toBe(false) // Missing 0x prefix
+		expect(isBytes('0xghijk', 2)).toBe(false) // Invalid hex characters
 	})
 })

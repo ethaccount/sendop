@@ -1,8 +1,8 @@
 import ADDRESS from '@/addresses'
 import type { Bundler, UserOp, UserOpReceipt } from '@/core'
 import { normalizeError, SendopError } from '@/error'
-import { encodeHandleOpsCalldata, randomAddress, RpcProvider } from '@/utils'
-import { parseContractError } from '@/utils'
+import { RpcProvider } from '@/RpcProvider'
+import { encodeHandleOpsCalldata, parseContractError, randomAddress } from '@/utils'
 
 export type GasValues = {
 	maxFeePerGas: string

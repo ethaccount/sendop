@@ -9,7 +9,7 @@ import {
 } from '@/core'
 import { connectEntryPointV07 } from '@/utils/contract-helper'
 import { SendopError } from '@/error'
-import { abiEncode, padLeft } from '@/utils/ethers-helper'
+import { abiEncode, zeroPadLeft } from '@/utils/ethers-helper'
 import {
 	concat,
 	Contract,
@@ -94,7 +94,7 @@ export class MyAccount extends SmartAccount {
 	}
 
 	async getNonceKey(validator: string) {
-		return padLeft(validator, 24)
+		return zeroPadLeft(validator, 24)
 	}
 
 	async send(executions: Execution[], pmGetter?: PaymasterGetter): Promise<SendOpResult> {
@@ -216,13 +216,13 @@ export class MyAccount extends SmartAccount {
 			new JsonRpcProvider(clientUrl),
 		)
 
-		const validators = await myAccount.getValidatorsPaginated(padLeft('0x1', 20), 5)
+		const validators = await myAccount.getValidatorsPaginated(zeroPadLeft('0x1', 20), 5)
 		const prev = findPrevious(validators.array, uninstallModuleAddress)
 		function findPrevious(array: string[], entry: string): string {
 			for (let i = 0; i < array.length; i++) {
 				if (array[i].toLowerCase() === entry.toLowerCase()) {
 					if (i === 0) {
-						return padLeft('0x1', 20)
+						return zeroPadLeft('0x1', 20)
 					} else {
 						return array[i - 1]
 					}

@@ -8,7 +8,7 @@ import {
 	getEncodedFunctionParams,
 	getPermissionId,
 	KernelV3Account,
-	padLeft,
+	zeroPadLeft,
 	PimlicoBundler,
 	randomBytes32,
 	Registry__factory,
@@ -76,7 +76,7 @@ const computedAddress = await KernelV3Account.getNewAddress(client, creationOpti
 const session: SessionStruct = {
 	sessionValidator: ADDRESS.OwnableValidator,
 	sessionValidatorInitData: abiEncode(['uint256', 'address[]'], [1, [account1.address]]), // threshold, signers
-	salt: padLeft(toBeHex(1), 32),
+	salt: zeroPadLeft(toBeHex(1), 32),
 	userOpPolicies: [
 		{
 			policy: ADDRESS.SudoPolicy,
@@ -125,9 +125,9 @@ const amount = toBeHex(parseEther('0.001'))
 
 // initData: executeInterval (6) ++ numOfExecutions (2) ++ startDate (6) ++ executionData
 const scheduledTransfersInitData = concat([
-	padLeft(toBeHex(executeInterval), 6),
-	padLeft(toBeHex(numOfExecutions), 2),
-	padLeft(toBeHex(startDate), 6),
+	zeroPadLeft(toBeHex(executeInterval), 6),
+	zeroPadLeft(toBeHex(numOfExecutions), 2),
+	zeroPadLeft(toBeHex(startDate), 6),
 	abiEncode(['address', 'address', 'uint256'], [recipient, token, amount]),
 ])
 

@@ -1,7 +1,7 @@
-import type { GetPaymasterDataResult, GetPaymasterStubDataResult, PaymasterGetter, UserOp } from '@/core'
-import { Contract, JsonRpcProvider, toBeHex } from 'ethers'
 import ADDRESS from '@/addresses'
-import { RpcProvider } from '@/utils'
+import type { GetPaymasterDataResult, GetPaymasterStubDataResult, PaymasterGetter, UserOp } from '@/core'
+import { RpcProvider } from '@/RpcProvider'
+import { Contract, JsonRpcProvider, toBeHex } from 'ethers'
 
 export class MyPaymaster implements PaymasterGetter {
 	#client: JsonRpcProvider

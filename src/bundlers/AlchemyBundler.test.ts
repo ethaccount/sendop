@@ -1,6 +1,7 @@
 import { getEmptyUserOp, sendop, type Bundler } from '@/core'
 import { KernelV3Account } from '@/smart-accounts'
-import { isSameAddress, RpcProvider } from '@/utils'
+import { isSameAddress } from '@/utils'
+import { RpcProvider } from '@/RpcProvider'
 import { ECDSAValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
 import { MyPaymaster, setup } from 'test/utils'

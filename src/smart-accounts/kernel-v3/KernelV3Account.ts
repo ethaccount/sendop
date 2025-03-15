@@ -3,9 +3,8 @@ import { KernelV3__factory, KernelV3Factory__factory } from '@/contract-types'
 import type { Bundler, ERC7579Validator, Execution, PaymasterGetter, SendOpResult, UserOp } from '@/core'
 import { ERC7579_MODULE_TYPE, sendop } from '@/core'
 import { SendopError } from '@/error'
-import { connectEntryPointV07 } from '@/utils/contract-helper'
-import { abiEncode, is32BytesHexString, zeroBytes } from '@/utils/ethers-helper'
-import { concat, Contract, isAddress, isHexString, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
+import { abiEncode, connectEntryPointV07, isBytes32, isBytes, zeroBytes } from '@/utils'
+import { concat, Contract, isAddress, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
 import { SmartAccount } from '../SmartAccount'
 import type { KernelCreationOptions, KernelV3AccountOptions, ModuleConfig, SimpleModuleConfig } from './types'
 import { KernelValidationMode, KernelValidationType } from './types'
@@ -18,7 +17,7 @@ export class KernelV3Account extends SmartAccount {
 	static override async getNewAddress(client: JsonRpcProvider, creationOptions: KernelCreationOptions) {
 		const { salt, validatorAddress, validatorInitData, hookAddress, hookData, initConfig } = creationOptions
 
-		if (!is32BytesHexString(salt)) {
+		if (!isBytes32(salt)) {
 			throw new KernelError('Salt should be 32 bytes in getNewAddress')
 		}
 
@@ -26,7 +25,7 @@ export class KernelV3Account extends SmartAccount {
 		const kernelFactory = new Contract(ADDRESS.KernelV3Factory, KernelV3Account.factoryInterface, client)
 		const rootValidator = concat([KernelValidationType.VALIDATOR, validatorAddress])
 		// assert rootValidator is 21 bytes
-		if (!isHexString(rootValidator, 21)) {
+		if (!isBytes(rootValidator, 21)) {
 			throw new KernelError('Invalid rootValidator')
 		}
 
@@ -181,7 +180,7 @@ export class KernelV3Account extends SmartAccount {
 		const { salt, validatorAddress, validatorInitData, hookAddress, hookData, initConfig } = creationOptions
 
 		const rootValidator = concat([KernelValidationType.VALIDATOR, validatorAddress])
-		if (!isHexString(rootValidator, 21)) {
+		if (!isBytes(rootValidator, 21)) {
 			throw new KernelError('Invalid rootValidator')
 		}
 		const encodedInitializeCalldata = this.interface.encodeFunctionData('initialize', [

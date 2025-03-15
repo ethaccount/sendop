@@ -1,11 +1,6 @@
 import { SendopError } from '@/error'
 import type { ParamType } from 'ethers'
-import { AbiCoder, getAddress, hexlify, Interface, randomBytes, zeroPadBytes, zeroPadValue } from 'ethers'
-
-export const ERC7579Interface = new Interface([
-	'function installModule(uint256 moduleType, address module, bytes calldata initData)',
-	'function uninstallModule(uint256 moduleType, address module, bytes calldata deInitData)',
-])
+import { AbiCoder, getAddress, hexlify, randomBytes, zeroPadBytes, zeroPadValue } from 'ethers'
 
 /**
  * @param length bytes length
@@ -58,33 +53,20 @@ export function isBytes(data: string, bytesLength?: number) {
 	return true
 }
 
-export function is32BytesHexString(data: string) {
-	return data.startsWith('0x') && data.length === 66
+export function isBytes32(data: string) {
+	return isBytes(data, 32)
 }
 
-export function isHexString(data: string, bytesLength: number) {
-	const expectedLength = bytesLength * 2 + 2
-	return data.startsWith('0x') && data.length === expectedLength
-}
-
-// TODO: rename with zeroPadLeft
-export function padLeft(data: string, length: number = 32) {
-	if (!data.startsWith('0x')) {
-		throw new EthersHelperError('data must start with 0x in padLeft')
-	}
-	if (data.length % 2 !== 0) {
-		data = data.slice(0, 2) + '0' + data.slice(2)
+export function zeroPadLeft(data: string, length: number = 32) {
+	if (!isBytes(data)) {
+		throw new InvalidHexStringError()
 	}
 	return zeroPadValue(data, length)
 }
 
-// TODO: rename with zeroPadRight
-export function padRight(data: string, length: number = 32) {
-	if (!data.startsWith('0x')) {
-		throw new EthersHelperError('data must start with 0x in padRight')
-	}
-	if (data.length % 2 !== 0) {
-		data = data.slice(0, 2) + '0' + data.slice(2)
+export function zeroPadRight(data: string, length: number = 32) {
+	if (!isBytes(data)) {
+		throw new InvalidHexStringError()
 	}
 	return zeroPadBytes(data, length)
 }
@@ -97,9 +79,9 @@ export function isSameAddress(address1: string, address2: string) {
 	return getAddress(address1) === getAddress(address2)
 }
 
-export class EthersHelperError extends SendopError {
-	constructor(message: string, cause?: Error) {
-		super(message, cause)
-		this.name = 'EthersHelperError'
+export class InvalidHexStringError extends SendopError {
+	constructor(message?: string, cause?: Error) {
+		super(message ?? 'Invalid hex string', cause)
+		this.name = 'InvalidHexStringError'
 	}
 }
