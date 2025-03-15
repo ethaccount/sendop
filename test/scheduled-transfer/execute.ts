@@ -74,7 +74,7 @@ const op = await sendop({
 	executions: [
 		{
 			to: ADDRESS.ScheduledTransfers,
-			value: '0x0',
+			value: 0n,
 			data: INTERFACES.ScheduledTransfers.encodeFunctionData('executeOrder', [jobId]),
 		},
 	],

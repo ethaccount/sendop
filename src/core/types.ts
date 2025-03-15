@@ -63,7 +63,7 @@ export interface PaymasterGetter {
 export type Execution = {
 	to: string
 	data: string
-	value: string
+	value: bigint
 }
 
 export type GetPaymasterStubDataResult = {

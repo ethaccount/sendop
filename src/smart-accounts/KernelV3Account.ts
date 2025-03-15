@@ -258,7 +258,7 @@ export class KernelV3Account extends SmartAccount {
 
 		const formattedExecutions = executions.map(execution => ({
 			target: execution.to || '0x',
-			value: BigInt(execution.value || '0x0'),
+			value: execution.value || BigInt(0),
 			data: execution.data || '0x',
 		}))
 

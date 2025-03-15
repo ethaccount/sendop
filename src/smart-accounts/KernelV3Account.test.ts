@@ -83,7 +83,7 @@ describe('KernelV3Account', () => {
 				{
 					to: ADDRESS.Counter,
 					data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
-					value: '0x0',
+					value: 0n,
 				},
 			])
 			const receipt = await op.wait()
@@ -116,7 +116,7 @@ describe('KernelV3Account', () => {
 					{
 						to: ADDRESS.Counter,
 						data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
-						value: '0x0',
+						value: 0n,
 					},
 				],
 			})

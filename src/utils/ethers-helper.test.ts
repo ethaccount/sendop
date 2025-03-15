@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { randomAddress, randomBytes32, isHexString } from './ethers-helper'
+import { isHexString, randomAddress, randomBytes32 } from './ethers-helper'
 
-describe('Ethers Helper', () => {
+describe('ethers-helper', () => {
 	it('should create random address', async () => {
 		const address = randomAddress()
 		expect(address).toBeDefined()

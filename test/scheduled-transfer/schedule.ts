@@ -148,7 +148,7 @@ const op = await sendop({
 		// trust attester
 		{
 			to: ADDRESS.Registry,
-			value: '0x0',
+			value: 0n,
 			data: Registry__factory.createInterface().encodeFunctionData('trustAttesters', [
 				1,
 				[RHINESTONE_ATTESTER_ADDRESS],
@@ -157,7 +157,7 @@ const op = await sendop({
 		// install smart session module and enable the session
 		{
 			to: computedAddress,
-			value: '0x0',
+			value: 0n,
 			data: KernelV3Account.encodeInstallModule({
 				moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 				moduleAddress: ADDRESS.SmartSession,
@@ -168,7 +168,7 @@ const op = await sendop({
 		// install scheduled transfers module
 		{
 			to: computedAddress,
-			value: '0x0',
+			value: 0n,
 			data: KernelV3Account.encodeInstallModule({
 				moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
 				moduleAddress: ADDRESS.ScheduledTransfers,

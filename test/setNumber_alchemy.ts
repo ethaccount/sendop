@@ -25,7 +25,7 @@ const op = await sendop({
 		{
 			to: ADDRESS.Counter,
 			data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
-			value: '0x0',
+			value: 0n,
 		},
 	],
 	opGetter: new KernelV3Account(FROM, {

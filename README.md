@@ -16,6 +16,7 @@ docker compose up -d
 
 bun run test
 bun test
+bun test -t 'should validate hex strings correctly'
 
 bun run build
 ```
