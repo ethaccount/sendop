@@ -3,7 +3,7 @@ import { RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 import type { SessionStruct } from '@/contract-types/SmartSession'
 import {
 	abiEncode,
-	ECDSAValidatorModule,
+	K1ValidatorModule,
 	ERC7579_MODULE_TYPE,
 	getEncodedFunctionParams,
 	getPermissionId,
@@ -65,7 +65,7 @@ const pmGetter = new MyPaymaster({
 
 const creationOptions = {
 	salt: randomBytes32(),
-	validatorAddress: ADDRESS.ECDSAValidator,
+	validatorAddress: ADDRESS.K1Validator,
 	validatorInitData: await signer.getAddress(),
 }
 
@@ -135,8 +135,8 @@ const kernel = new KernelV3Account({
 	address: computedAddress,
 	client,
 	bundler,
-	erc7579Validator: new ECDSAValidatorModule({
-		address: ADDRESS.ECDSAValidator,
+	erc7579Validator: new K1ValidatorModule({
+		address: ADDRESS.K1Validator,
 		client,
 		signer,
 	}),

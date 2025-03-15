@@ -2,7 +2,7 @@ import { getEmptyUserOp, sendop, type Bundler } from '@/core'
 import { KernelV3Account } from '@/smart-accounts'
 import { isSameAddress } from '@/utils'
 import { RpcProvider } from '@/RpcProvider'
-import { ECDSAValidatorModule } from '@/validators'
+import { K1ValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
 import { MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -68,7 +68,7 @@ describe.skip('AlchemyBundler', () => {
 		// Create a test userop for kernel deployment
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)), // random salt
-			validatorAddress: ADDRESS.ECDSAValidator,
+			validatorAddress: ADDRESS.K1Validator,
 			validatorInitData: await resolveAddress(signer),
 		}
 
@@ -78,8 +78,8 @@ describe.skip('AlchemyBundler', () => {
 			address: deployedAddress,
 			client,
 			bundler: new AlchemyBundler(chainId, BUNDLER_URL),
-			erc7579Validator: new ECDSAValidatorModule({
-				address: ADDRESS.ECDSAValidator,
+			erc7579Validator: new K1ValidatorModule({
+				address: ADDRESS.K1Validator,
 				client,
 				signer,
 			}),
@@ -124,7 +124,7 @@ describe.skip('AlchemyBundler', () => {
 
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ADDRESS.ECDSAValidator,
+			validatorAddress: ADDRESS.K1Validator,
 			validatorInitData: await resolveAddress(signer),
 		}
 
@@ -134,8 +134,8 @@ describe.skip('AlchemyBundler', () => {
 			address: deployedAddress,
 			client,
 			bundler: new AlchemyBundler(chainId, BUNDLER_URL),
-			erc7579Validator: new ECDSAValidatorModule({
-				address: ADDRESS.ECDSAValidator,
+			erc7579Validator: new K1ValidatorModule({
+				address: ADDRESS.K1Validator,
 				client,
 				signer,
 			}),
@@ -180,7 +180,7 @@ describe.skip('AlchemyBundler', () => {
 	it.skip('cannot deploy kernel without staking factory', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ADDRESS.ECDSAValidator,
+			validatorAddress: ADDRESS.K1Validator,
 			validatorInitData: await resolveAddress(signer),
 		}
 
@@ -190,8 +190,8 @@ describe.skip('AlchemyBundler', () => {
 			address: deployedAddress,
 			client,
 			bundler: alchemyBundler,
-			erc7579Validator: new ECDSAValidatorModule({
-				address: ADDRESS.ECDSAValidator,
+			erc7579Validator: new K1ValidatorModule({
+				address: ADDRESS.K1Validator,
 				client,
 				signer,
 			}),

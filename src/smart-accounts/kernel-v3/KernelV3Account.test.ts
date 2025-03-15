@@ -2,7 +2,7 @@ import ADDRESS from '@/addresses'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
 import { randomBytes32 } from '@/utils/ethers-helper'
-import { ECDSAValidatorModule } from '@/validators'
+import { K1ValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
 import { MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -27,8 +27,8 @@ describe('KernelV3Account', () => {
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 			parseError: true,
 		})
-		erc7579Validator = new ECDSAValidatorModule({
-			address: ADDRESS.ECDSAValidator,
+		erc7579Validator = new K1ValidatorModule({
+			address: ADDRESS.K1Validator,
 			client,
 			signer: new Wallet(privateKey),
 		})
@@ -54,7 +54,7 @@ describe('KernelV3Account', () => {
 		beforeAll(async () => {
 			creationOptions = {
 				salt: hexlify(randomBytes(32)),
-				validatorAddress: ADDRESS.ECDSAValidator,
+				validatorAddress: ADDRESS.K1Validator,
 				validatorInitData: await resolveAddress(signer),
 			}
 		})
@@ -98,7 +98,7 @@ describe('KernelV3Account', () => {
 
 			const creationOptions = {
 				salt: randomBytes32(),
-				validatorAddress: ADDRESS.ECDSAValidator,
+				validatorAddress: ADDRESS.K1Validator,
 				validatorInitData: signer.address,
 			}
 			const computedAddress = await KernelV3Account.getNewAddress(client, creationOptions)

@@ -2,7 +2,7 @@ import ADDRESS from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
 import { randomBytes32 } from '@/utils'
-import { ECDSAValidatorModule } from '@/validators'
+import { K1ValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
 import { MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -27,7 +27,7 @@ describe('NexusAccount', () => {
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 			parseError: true,
 		})
-		erc7579Validator = new ECDSAValidatorModule({
+		erc7579Validator = new K1ValidatorModule({
 			address: ADDRESS.K1Validator,
 			client,
 			signer: new Wallet(privateKey),

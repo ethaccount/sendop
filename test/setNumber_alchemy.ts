@@ -2,7 +2,7 @@ import ADDRESS from '@/addresses'
 import { AlchemyBundler } from '@/bundlers/AlchemyBundler'
 import { sendop } from '@/core'
 import { KernelV3Account } from '@/smart-accounts'
-import { ECDSAValidatorModule } from '@/validators/ECDSAValidatorModule'
+import { K1ValidatorModule } from '@/validators/K1ValidatorModule'
 import { getAddress, Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import { MyPaymaster, setup } from './utils'
 
@@ -32,8 +32,8 @@ const op = await sendop({
 		address: FROM,
 		client,
 		bundler,
-		erc7579Validator: new ECDSAValidatorModule({
-			address: ADDRESS.ECDSAValidator,
+		erc7579Validator: new K1ValidatorModule({
+			address: ADDRESS.K1Validator,
 			client,
 			signer,
 		}),

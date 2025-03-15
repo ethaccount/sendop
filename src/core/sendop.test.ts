@@ -2,7 +2,7 @@ import ADDRESS from '@/addresses'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { KernelV3Account } from '@/smart-accounts'
 import { connectEntryPointV07 } from '@/utils/contract-helper'
-import { ECDSAValidatorModule } from '@/validators'
+import { K1ValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, parseEther, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
 import { MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -34,14 +34,14 @@ describe('sendop', () => {
 			client,
 			paymasterAddress: ADDRESS.CharityPaymaster,
 		})
-		erc7579Validator = new ECDSAValidatorModule({
-			address: ADDRESS.ECDSAValidator,
+		erc7579Validator = new K1ValidatorModule({
+			address: ADDRESS.K1Validator,
 			client,
 			signer,
 		})
 		creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ADDRESS.ECDSAValidator,
+			validatorAddress: ADDRESS.K1Validator,
 			owner: signer.address,
 		}
 
@@ -52,7 +52,7 @@ describe('sendop', () => {
 	it.skip('cannot pay prefund for kernel deployment when estimateUserOperationGas with reason: AA13 initCode failed or OOG', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ADDRESS.ECDSAValidator,
+			validatorAddress: ADDRESS.K1Validator,
 			validatorInitData: await resolveAddress(signer),
 		}
 
@@ -92,7 +92,7 @@ describe('sendop', () => {
 	it('should deploy KernelV3Account with charity paymaster', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ADDRESS.ECDSAValidator,
+			validatorAddress: ADDRESS.K1Validator,
 			validatorInitData: await resolveAddress(signer),
 		}
 
@@ -123,7 +123,7 @@ describe('sendop', () => {
 	it('should deploy KernelV3Account with charity paymaster and set number without paymaster', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ADDRESS.ECDSAValidator,
+			validatorAddress: ADDRESS.K1Validator,
 			validatorInitData: await resolveAddress(signer),
 		}
 
@@ -185,7 +185,7 @@ describe('sendop', () => {
 	it('should deploy KernelV3Account and set number in one user operation', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ADDRESS.ECDSAValidator,
+			validatorAddress: ADDRESS.K1Validator,
 			validatorInitData: await resolveAddress(signer),
 		}
 		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)

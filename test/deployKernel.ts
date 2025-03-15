@@ -1,5 +1,5 @@
 import ADDRESS from '@/addresses'
-import { ECDSAValidatorModule, KernelV3Account, PimlicoBundler, sendop } from '@/index'
+import { K1ValidatorModule, KernelV3Account, PimlicoBundler, sendop } from '@/index'
 import { hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
 import { MyPaymaster, setup } from './utils'
 
@@ -12,7 +12,7 @@ const client = new JsonRpcProvider(CLIENT_URL)
 
 const creationOptions = {
 	salt: hexlify(randomBytes(32)), // random salt
-	validatorAddress: ADDRESS.ECDSAValidator,
+	validatorAddress: ADDRESS.K1Validator,
 	validatorInitData: await signer.getAddress(),
 }
 
@@ -32,8 +32,8 @@ const kernel = new KernelV3Account({
 	address: computedAddress,
 	client,
 	bundler,
-	erc7579Validator: new ECDSAValidatorModule({
-		address: ADDRESS.ECDSAValidator,
+	erc7579Validator: new K1ValidatorModule({
+		address: ADDRESS.K1Validator,
 		client,
 		signer,
 	}),

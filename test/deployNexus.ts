@@ -1,7 +1,7 @@
 import ADDRESS from '@/addresses'
 import {
 	BICONOMY_ATTESTER_ADDRESS,
-	ECDSAValidatorModule,
+	K1ValidatorModule,
 	PimlicoBundler,
 	RHINESTONE_ATTESTER_ADDRESS,
 	sendop,
@@ -53,7 +53,7 @@ const nexus = new NexusAccount({
 	address: computedAddress,
 	client,
 	bundler,
-	erc7579Validator: new ECDSAValidatorModule({
+	erc7579Validator: new K1ValidatorModule({
 		address: ADDRESS.K1Validator,
 		client,
 		signer,

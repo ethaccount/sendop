@@ -1,2 +1,2 @@
-export * from './ECDSAValidatorModule'
+export * from './K1ValidatorModule'
 export * from './WebAuthnValidatorModule'
