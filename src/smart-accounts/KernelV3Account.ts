@@ -4,7 +4,7 @@ import type { Bundler, ERC7579Validator, Execution, PaymasterGetter, SendOpResul
 import { ERC7579_MODULE_TYPE, sendop } from '@/core'
 import { SendopError } from '@/error'
 import { connectEntryPointV07 } from '@/utils/contract-helper'
-import { abiEncode, is32BytesHexString } from '@/utils/ethers-helper'
+import { abiEncode, is32BytesHexString, zeroBytes } from '@/utils/ethers-helper'
 import { concat, Contract, isAddress, isHexString, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
 import { SmartAccount } from './SmartAccount'
 
@@ -110,6 +110,7 @@ export class KernelV3Account extends SmartAccount {
 	readonly bundler: Bundler
 	readonly erc7579Validator: ERC7579Validator
 	readonly pmGetter?: PaymasterGetter
+	readonly vType?: KernelValidationType
 
 	constructor(
 		address: string,
@@ -118,6 +119,7 @@ export class KernelV3Account extends SmartAccount {
 			bundler: Bundler
 			erc7579Validator: ERC7579Validator
 			pmGetter?: PaymasterGetter
+			vType?: KernelValidationType
 		},
 	) {
 		super()
@@ -126,6 +128,15 @@ export class KernelV3Account extends SmartAccount {
 		this.bundler = options.bundler
 		this.erc7579Validator = options.erc7579Validator
 		this.pmGetter = options.pmGetter
+		this.vType = options.vType
+	}
+
+	interface() {
+		return KernelV3Account.interface
+	}
+
+	factoryInterface() {
+		return KernelV3Account.factoryInterface
 	}
 
 	async getSender() {
@@ -140,38 +151,40 @@ export class KernelV3Account extends SmartAccount {
 		return this.erc7579Validator.getSignature(userOpHash, userOp)
 	}
 
+	async getNonce() {
+		const nonce = await connectEntryPointV07(this.client).getNonce(this.address, this.getNonceKey())
+		return toBeHex(nonce)
+	}
+
 	async getCustomNonce(options: {
 		mode?: KernelValidationMode
 		type?: KernelValidationType
 		identifier?: string
 		key?: string
 	}) {
-		const {
-			mode = KernelValidationMode.DEFAULT,
-			type = KernelValidationType.ROOT,
-			identifier = this.erc7579Validator.address(),
-			key = '0x0000',
-		} = options
-		const nonceKey = this.getNonceKey(mode, type, identifier, key)
+		const nonceKey = this.getNonceKey(options)
 		return await connectEntryPointV07(this.client).getNonce(this.address, nonceKey)
 	}
 
-	async getNonce() {
-		const nonceKey = this.getNonceKey(
-			KernelValidationMode.DEFAULT,
-			KernelValidationType.ROOT,
-			this.erc7579Validator.address(),
-			'0x0000',
-		)
-		const nonce = await connectEntryPointV07(this.client).getNonce(this.address, nonceKey)
-		return toBeHex(nonce)
-	}
-
 	/**
-	 * 1byte mode  | 1byte type | 20bytes identifierWithoutType | 2byte nonceKey = 24 bytes nonceKey
+	 * @dev 1byte mode  | 1byte type | 20bytes identifierWithoutType | 2byte nonceKey = 24 bytes nonceKey
+	 * @param options default value is { mode: KernelValidationMode.DEFAULT, type: KernelValidationType.ROOT, identifierWithoutType: this.erc7579Validator.address(), key: zeroBytes(2) }
+	 * @returns hex string
 	 */
-	getNonceKey(mode: KernelValidationMode, type: KernelValidationType, identifierWithoutType: string, key: string) {
-		return concat([mode, type, identifierWithoutType, key])
+	getNonceKey(options?: {
+		mode?: KernelValidationMode
+		type?: KernelValidationType
+		identifier?: string
+		key?: string
+	}) {
+		const defaultOptions = {
+			mode: KernelValidationMode.DEFAULT,
+			type: this.vType ?? KernelValidationType.ROOT,
+			identifier: this.erc7579Validator.address(),
+			key: zeroBytes(2),
+		}
+		const { mode, type, identifier, key } = { ...defaultOptions, ...options }
+		return concat([mode, type, identifier, key])
 	}
 
 	async send(executions: Execution[], pmGetter?: PaymasterGetter): Promise<SendOpResult> {
@@ -222,14 +235,6 @@ export class KernelV3Account extends SmartAccount {
 			ADDRESS.KernelV3Factory,
 			this.factoryInterface().encodeFunctionData('createAccount', [encodedInitializeCalldata, salt]),
 		])
-	}
-
-	interface() {
-		return KernelV3Account.interface
-	}
-
-	factoryInterface() {
-		return KernelV3Account.factoryInterface
 	}
 
 	async getCallData(

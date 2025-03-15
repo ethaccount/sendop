@@ -23,7 +23,9 @@ describe('KernelV3Account', () => {
 	beforeAll(() => {
 		signer = new Wallet(privateKey)
 		client = new JsonRpcProvider(CLIENT_URL)
-		bundler = new PimlicoBundler(chainId, BUNDLER_URL)
+		bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
+			parseError: true,
+		})
 		erc7579Validator = new ECDSAValidatorModule({
 			address: ADDRESS.ECDSAValidator,
 			client,

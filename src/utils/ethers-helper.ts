@@ -8,6 +8,14 @@ export const ERC7579Interface = new Interface([
 ])
 
 /**
+ * @param length bytes length
+ * @returns hex string
+ */
+export function zeroBytes(length: number) {
+	return '0x' + '00'.repeat(length)
+}
+
+/**
  * Remove the function selector from the calldata
  * @param callData hex string
  * @returns hex string

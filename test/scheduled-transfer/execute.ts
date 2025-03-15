@@ -51,6 +51,7 @@ const pmGetter = new MyPaymaster({
 const kernel = new KernelV3Account(kernelAddress, {
 	client,
 	bundler,
+	vType: KernelValidationType.VALIDATOR,
 	erc7579Validator: {
 		address: () => ADDRESS.SmartSession,
 		getDummySignature: () => {
@@ -70,9 +71,6 @@ const kernel = new KernelV3Account(kernelAddress, {
 
 const op = await sendop({
 	bundler,
-	nonce: await kernel.getCustomNonce({
-		type: KernelValidationType.VALIDATOR,
-	}),
 	executions: [
 		{
 			to: ADDRESS.ScheduledTransfers,

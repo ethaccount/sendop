@@ -13,7 +13,7 @@ fi
 
 # Send ETH to the contract
 echo "Sending 0.001 ETH to contract..."
-cast send --account anvil0 --rpc-url $local $DEPLOYED_ADDRESS --value 0.001ether
+cast send --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url $local $DEPLOYED_ADDRESS --value 0.001ether
 
 # Execute the transfer
 echo "Executing transfer..."
