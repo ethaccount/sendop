@@ -15,7 +15,6 @@ export abstract class SmartAccount implements OperationGetter {
 	abstract send(executions: Execution[], pmGetter?: PaymasterGetter): Promise<SendOpResult>
 
 	abstract getInitCode(creationOptions: any): string
-	abstract encodeInitialize(creationOptions: any): string
 	abstract encodeInstallModule(config: any): string
 
 	// static

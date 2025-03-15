@@ -178,7 +178,7 @@ export class NexusAccount extends SmartAccount {
 	 */
 	override getInitCode(creationOptions: NexusCreationOptions): string {
 		const factoryCalldata = this.factoryInterface.encodeFunctionData('createAccount', [
-			this.encodeInitialize(creationOptions),
+			NexusAccount.getInitializeData(creationOptions),
 			creationOptions.salt,
 		])
 		return concat([ADDRESS.NexusFactory, factoryCalldata])
@@ -187,17 +187,16 @@ export class NexusAccount extends SmartAccount {
 	static override async getNewAddress(client: JsonRpcProvider, creationOptions: NexusCreationOptions) {
 		const factory = NexusFactory__factory.connect(ADDRESS.NexusFactory, client)
 		const address = await factory.computeAccountAddress(
-			this.encodeInitialize(creationOptions),
+			this.getInitializeData(creationOptions),
 			creationOptions.salt,
 		)
 		return address
 	}
 
-	override encodeInitialize(creationOptions: NexusCreationOptions): string {
-		return NexusAccount.encodeInitialize(creationOptions)
-	}
-	static encodeInitialize(creationOptions: NexusCreationOptions): string {
-		// initializeAccount's initData = abi.encode(bootstrap address, bootstrap calldata)
+	/**
+	 * @dev initializeAccount's initData = abi.encode(bootstrap address, bootstrap calldata)
+	 */
+	static getInitializeData(creationOptions: NexusCreationOptions): string {
 		let bootstrapCalldata: string
 		switch (creationOptions.bootstrap) {
 			case 'initNexusWithSingleValidator':
@@ -213,8 +212,7 @@ export class NexusAccount extends SmartAccount {
 			default:
 				throw new NexusError('Unsupported bootstrap function')
 		}
-		const initData = abiEncode(['address', 'bytes'], [ADDRESS.NexusBootstrap, bootstrapCalldata])
-		return this.interface.encodeFunctionData('initializeAccount', [initData])
+		return abiEncode(['address', 'bytes'], [ADDRESS.NexusBootstrap, bootstrapCalldata])
 	}
 
 	override encodeInstallModule(config: NexusInstallModuleConfig): string {

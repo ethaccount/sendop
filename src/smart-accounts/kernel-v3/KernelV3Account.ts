@@ -157,7 +157,7 @@ export class KernelV3Account extends SmartAccount {
 		return KernelV3Account.getInitCode(creationOptions)
 	}
 
-	override encodeInitialize(creationOptions: KernelCreationOptions) {
+	encodeInitialize(creationOptions: KernelCreationOptions) {
 		return KernelV3Account.encodeInitialize(creationOptions)
 	}
 
