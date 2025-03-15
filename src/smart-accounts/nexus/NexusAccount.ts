@@ -1,6 +1,7 @@
 import type { Bundler, ERC7579Validator, Execution, PaymasterGetter, SendOpResult, UserOp } from '@/core'
 import type { JsonRpcProvider } from 'ethers'
 import { SmartAccount } from '../SmartAccount'
+import type { NexusCreationOptions } from './types'
 
 export type NexusAccountOptions = {
 	address?: string
@@ -93,7 +94,7 @@ export class NexusAccount extends SmartAccount {
 		return ''
 	}
 
-	static override async getNewAddress(client: JsonRpcProvider, creationOptions: NexusAccountOptions) {
+	static override async getNewAddress(client: JsonRpcProvider, creationOptions: NexusCreationOptions) {
 		return ''
 	}
 }

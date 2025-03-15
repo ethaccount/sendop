@@ -1,6 +1,7 @@
 import type { Bundler, ERC7579Validator, Execution, PaymasterGetter, SendOpResult, UserOp } from '@/core'
 import type { JsonRpcProvider } from 'ethers'
 import { SmartAccount } from '../SmartAccount'
+import type { YourCreationOptions } from './types'
 
 export type YourAccountOptions = {
 	address?: string
@@ -93,7 +94,7 @@ export class YourAccount extends SmartAccount {
 		return ''
 	}
 
-	static override async getNewAddress(client: JsonRpcProvider, creationOptions: YourAccountOptions) {
+	static override async getNewAddress(client: JsonRpcProvider, creationOptions: YourCreationOptions) {
 		return ''
 	}
 }
