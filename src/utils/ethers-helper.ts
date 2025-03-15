@@ -1,6 +1,15 @@
 import { SendopError } from '@/error'
 import type { ParamType } from 'ethers'
-import { AbiCoder, getAddress, hexlify, randomBytes, zeroPadBytes, zeroPadValue } from 'ethers'
+import { AbiCoder, getAddress, hexlify, randomBytes, toBeHex, zeroPadBytes, zeroPadValue } from 'ethers'
+
+/**
+ * Turn bigint to 32 bytes hex string
+ * @param value bigint
+ * @returns hex string
+ */
+export function toBytes32(value: bigint): string {
+	return zeroPadValue(toBeHex(value), 32)
+}
 
 /**
  * @param length bytes length

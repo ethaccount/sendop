@@ -1,7 +1,17 @@
+import { toBeHex } from 'ethers'
 import { describe, expect, it } from 'vitest'
-import { getBytesLength, isBytes, randomAddress, randomBytes32, zeroBytes } from './ethers-helper'
+import { getBytesLength, isBytes, randomAddress, randomBytes32, toBytes32, zeroBytes } from './ethers-helper'
 
 describe('ethers-helper', () => {
+	it('should turn bigint to 32 bytes hex string', () => {
+		expect(toBytes32(1n)).toBe('0x0000000000000000000000000000000000000000000000000000000000000001')
+
+		// Test large numbers
+		const largeNumber = 2n ** 256n // This is larger than 32 bytes
+		expect(toBeHex(largeNumber).length).toBeGreaterThan(66) // 66 = '0x' + 64 hex chars (32 bytes)
+		expect(() => toBytes32(largeNumber)).toThrow()
+	})
+
 	it('isBytes', () => {
 		expect(isBytes('0x')).toBe(true)
 		expect(isBytes('0x1234')).toBe(true)

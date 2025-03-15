@@ -136,5 +136,8 @@ describe('NexusAccount', () => {
 			const log = receipt.logs[receipt.logs.length - 1]
 			expect(toNumber(log.data)).toBe(number)
 		}, 100_000)
+
+		// TODO: test batch execution
+		// TODO: test install module
 	})
 })

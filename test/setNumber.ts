@@ -1,22 +1,47 @@
+import ADDRESS from '@/addresses'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { sendop } from '@/core'
 import { KernelV3Account } from '@/smart-accounts'
 import { ECDSAValidatorModule } from '@/validators/ECDSAValidatorModule'
 import { getAddress, Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
 import { MyPaymaster, setup } from './utils'
-import ADDRESS from '@/addresses'
+import { NexusAccount } from '@/smart-accounts/nexus/NexusAccount'
 
-const { logger, chainId, CLIENT_URL, PIMLICO_BUNDLER_URL, privateKey } = await setup({ chainId: '11155111' })
+const argv = await yargs(hideBin(process.argv))
+	.option('network', {
+		alias: 'n',
+		choices: ['local', 'sepolia'] as const,
+		description: 'Network (local or sepolia)',
+		demandOption: true,
+	})
+	// address
+	.option('address', {
+		alias: 'a',
+		type: 'string',
+		description: 'Address',
+		demandOption: true,
+	})
+	.help().argv
+const network = argv.network === 'sepolia' ? '11155111' : 'local'
+const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup({ chainId: network })
 logger.info(`Chain ID: ${chainId}`)
 
-const FROM = '0x69F062dA4F6e200e235F66e151E2733E5ed306b9' // kernel on sepolia
+const signer = new Wallet(privateKey)
+const client = new JsonRpcProvider(CLIENT_URL)
+const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
+	parseError: true,
+	debugHandleOps: true,
+	// debugHandleOps: true,
+	async onBeforeEstimation(userOp) {
+		// logger.info('onBeforeEstimation', userOp)
+		return userOp
+	},
+})
 
 const number = Math.floor(Math.random() * 10000)
 logger.info(`Setting number to ${number}`)
-
-const client = new JsonRpcProvider(CLIENT_URL)
-const bundler = new PimlicoBundler(chainId, PIMLICO_BUNDLER_URL)
-const signer = new Wallet(privateKey)
 
 logger.info('Sending op...')
 const op = await sendop({
@@ -28,12 +53,12 @@ const op = await sendop({
 			value: 0n,
 		},
 	],
-	opGetter: new KernelV3Account({
-		address: FROM,
+	opGetter: new NexusAccount({
+		address: argv.address,
 		client,
 		bundler,
 		erc7579Validator: new ECDSAValidatorModule({
-			address: ADDRESS.ECDSAValidator,
+			address: ADDRESS.K1Validator,
 			client,
 			signer,
 		}),

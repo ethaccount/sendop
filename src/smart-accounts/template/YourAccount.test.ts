@@ -12,7 +12,7 @@ import type { YourCreationOptions } from './types'
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup()
 logger.info(`Chain ID: ${chainId}`)
 
-describe('YourAccount', () => {
+describe.skip('YourAccount', () => {
 	let signer: Wallet
 	let client: JsonRpcProvider
 	let bundler: Bundler

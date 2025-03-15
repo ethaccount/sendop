@@ -17,7 +17,7 @@ import {
 } from '@/core'
 import { SendopError } from '@/error'
 import INTERFACES from '@/interfaces'
-import { abiEncode, connectEntryPointV07, isBytes, zeroBytes } from '@/utils'
+import { abiEncode, connectEntryPointV07, isBytes, toBytes32, zeroBytes } from '@/utils'
 import type { JsonRpcProvider } from 'ethers'
 import { concat, toBeHex } from 'ethers/utils'
 import { NoAddressAccountError, SmartAccount } from '../SmartAccount'
@@ -154,7 +154,11 @@ export class NexusAccount extends SmartAccount {
 
 		switch (callType) {
 			case CallType.SIGNLE:
-				return this.interface.encodeFunctionData('execute', [execMode, encodeExecution(executions[0])])
+				return this.interface.encodeFunctionData('execute', [
+					execMode,
+					// Nexus's decodeSingle is address (20) + value (32) + data (bytes)
+					concat([executions[0].to, toBytes32(executions[0].value), executions[0].data]),
+				])
 			case CallType.BATCH:
 				return this.interface.encodeFunctionData('execute', [execMode, encodeExecutions(executions)])
 			default:

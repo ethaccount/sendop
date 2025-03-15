@@ -79,10 +79,6 @@ export class YourAccount extends SmartAccount {
 		return ''
 	}
 
-	override encodeInitialize(creationOptions: any): string {
-		return ''
-	}
-
 	override encodeInstallModule(config: any): string {
 		return ''
 	}
