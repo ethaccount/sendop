@@ -63,14 +63,14 @@ export class KernelV3Account extends SmartAccount {
 		return KernelV3Account.factoryInterface
 	}
 
-	async getSender() {
+	override async getSender() {
 		if (!this.address) {
 			throw new NoAddressAccountError()
 		}
 		return this.address
 	}
 
-	async getNonce() {
+	override async getNonce() {
 		const nonce = await connectEntryPointV07(this.client).getNonce(this.getSender(), this.getNonceKey())
 		return toBeHex(nonce)
 	}
@@ -106,7 +106,7 @@ export class KernelV3Account extends SmartAccount {
 		return concat([mode, type, identifier, key])
 	}
 
-	async getCallData(executions: Execution[]) {
+	override async getCallData(executions: Execution[]) {
 		if (!executions.length) {
 			return '0x'
 		}
@@ -118,37 +118,33 @@ export class KernelV3Account extends SmartAccount {
 		return this.interface.encodeFunctionData('execute', [this.execMode, encodeExecutions(executions)])
 	}
 
-	async getDummySignature(userOp: UserOp) {
+	override async getDummySignature(userOp: UserOp) {
 		return this.erc7579Validator.getDummySignature(userOp)
 	}
 
-	async getSignature(userOpHash: Uint8Array, userOp: UserOp) {
+	override async getSignature(userOpHash: Uint8Array, userOp: UserOp) {
 		return this.erc7579Validator.getSignature(userOpHash, userOp)
 	}
 
-	connect(address: string): KernelV3Account {
+	override connect(address: string): KernelV3Account {
 		return new KernelV3Account({
 			...this._options,
 			address,
 		})
 	}
 
-	async deploy(creationOptions: KernelCreationOptions, pmGetter?: PaymasterGetter): Promise<SendOpResult> {
-		const deployingAddress = await KernelV3Account.getNewAddress(this.client, creationOptions)
-		if (this.address !== deployingAddress) {
-			throw new KernelError('deploying address mismatch')
-		}
-
+	override async deploy(creationOptions: KernelCreationOptions, pmGetter?: PaymasterGetter): Promise<SendOpResult> {
+		const computedAddress = await KernelV3Account.getNewAddress(this.client, creationOptions)
 		return await sendop({
 			bundler: this.bundler,
 			executions: [],
-			opGetter: this,
+			opGetter: this.connect(computedAddress),
 			pmGetter: pmGetter ?? this.pmGetter,
 			initCode: this.getInitCode(creationOptions),
 		})
 	}
 
-	async send(executions: Execution[], pmGetter?: PaymasterGetter): Promise<SendOpResult> {
+	override async send(executions: Execution[], pmGetter?: PaymasterGetter): Promise<SendOpResult> {
 		return await sendop({
 			bundler: this.bundler,
 			executions,
@@ -157,17 +153,15 @@ export class KernelV3Account extends SmartAccount {
 		})
 	}
 
-	// ================================ static to abstract ================================
-
-	getInitCode(creationOptions: KernelCreationOptions) {
+	override getInitCode(creationOptions: KernelCreationOptions) {
 		return KernelV3Account.getInitCode(creationOptions)
 	}
 
-	encodeInitialize(creationOptions: KernelCreationOptions) {
+	override encodeInitialize(creationOptions: KernelCreationOptions) {
 		return KernelV3Account.encodeInitialize(creationOptions)
 	}
 
-	encodeInstallModule(config: KernelInstallModuleConfig) {
+	override encodeInstallModule(config: KernelInstallModuleConfig) {
 		return KernelV3Account.encodeInstallModule(config)
 	}
 
