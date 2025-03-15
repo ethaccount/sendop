@@ -1,5 +1,7 @@
-import type { PackedUserOp, UserOp } from './types'
-import { concat, zeroPadValue, toBeHex, keccak256, AbiCoder } from 'ethers'
+import { abiEncode, isBytes } from '@/utils'
+import type { Execution, PackedUserOp, UserOp } from './types'
+import { concat, zeroPadValue, toBeHex, keccak256, AbiCoder, isAddress } from 'ethers'
+import { SendopError } from '@/error'
 
 export function getEmptyUserOp(): UserOp {
 	return {
@@ -77,4 +79,32 @@ export function getUserOpHash(op: PackedUserOp, entryPointAddress: string, chain
 		],
 	)
 	return keccak256(encoded)
+}
+
+export function encodeExecution(execution: Execution) {
+	assertExecution(execution)
+	return abiEncode(['address', 'uint256', 'bytes'], [execution.to, execution.value, execution.data])
+}
+
+export function encodeExecutions(executions: Execution[]) {
+	assertExecutions(executions)
+	return abiEncode(
+		['tuple(address,uint256,bytes)[]'],
+		[executions.map(execution => [execution.to, execution.value, execution.data])],
+	)
+}
+
+export function assertExecution(execution: Execution) {
+	if (!isBytes(execution.data)) {
+		throw new SendopError(`Invalid execution data (${execution.data})`)
+	}
+	if (!isAddress(execution.to)) {
+		throw new SendopError(`Invalid execution to (${execution.to})`)
+	}
+}
+
+export function assertExecutions(executions: Execution[]) {
+	for (const execution of executions) {
+		assertExecution(execution)
+	}
 }

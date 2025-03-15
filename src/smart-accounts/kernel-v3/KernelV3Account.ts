@@ -1,55 +1,25 @@
 import ADDRESS from '@/addresses'
-import { KernelV3__factory, KernelV3Factory__factory } from '@/contract-types'
 import type { Bundler, ERC7579Validator, Execution, PaymasterGetter, SendOpResult, UserOp } from '@/core'
-import { ERC7579_MODULE_TYPE, sendop } from '@/core'
+import { encodeExecutions, ERC7579_MODULE_TYPE, sendop } from '@/core'
 import { SendopError } from '@/error'
-import { abiEncode, connectEntryPointV07, isBytes32, isBytes, zeroBytes } from '@/utils'
-import { concat, Contract, isAddress, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
-import { SmartAccount } from '../SmartAccount'
-import type { KernelCreationOptions, KernelV3AccountOptions, ModuleConfig, SimpleModuleConfig } from './types'
+import INTERFACES from '@/interfaces'
+import { abiEncode, connectEntryPointV07, isBytes, isBytes32, zeroBytes } from '@/utils'
+import { concat, Contract, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
+import { NoAddressAccountError, SmartAccount } from '../SmartAccount'
+import type { KernelCreationOptions, KernelInstallModuleConfig, SimpleKernelInstallModuleConfig } from './types'
 import { KernelValidationMode, KernelValidationType } from './types'
 
+export type KernelV3AccountOptions = {
+	client: JsonRpcProvider
+	bundler: Bundler
+	erc7579Validator: ERC7579Validator
+	address?: string
+	pmGetter?: PaymasterGetter
+	vType?: KernelValidationType
+	execMode?: string // TODO: what's this?
+}
+
 export class KernelV3Account extends SmartAccount {
-	static override accountId() {
-		return 'kernel.advanced.v0.3.1'
-	}
-
-	static override async getNewAddress(client: JsonRpcProvider, creationOptions: KernelCreationOptions) {
-		const { salt, validatorAddress, validatorInitData, hookAddress, hookData, initConfig } = creationOptions
-
-		if (!isBytes32(salt)) {
-			throw new KernelError('Salt should be 32 bytes in getNewAddress')
-		}
-
-		// Note: Since getAddress is also a method of BaseContract, special handling is required here
-		const kernelFactory = new Contract(ADDRESS.KernelV3Factory, KernelV3Account.factoryInterface, client)
-		const rootValidator = concat([KernelValidationType.VALIDATOR, validatorAddress])
-		// assert rootValidator is 21 bytes
-		if (!isBytes(rootValidator, 21)) {
-			throw new KernelError('Invalid rootValidator')
-		}
-
-		const address = await kernelFactory['getAddress(bytes,bytes32)'](
-			KernelV3Account.interface.encodeFunctionData('initialize', [
-				rootValidator,
-				hookAddress ?? ZeroAddress,
-				validatorInitData,
-				hookData ?? '0x',
-				initConfig ?? [],
-			]),
-			salt,
-		)
-
-		if (!isAddress(address)) {
-			throw new KernelError('Invalid address in getNewAddress')
-		}
-
-		return address
-	}
-
-	static readonly interface = KernelV3__factory.createInterface()
-	static readonly factoryInterface = KernelV3Factory__factory.createInterface()
-
 	private readonly _options: KernelV3AccountOptions
 
 	constructor(options: KernelV3AccountOptions) {
@@ -81,6 +51,10 @@ export class KernelV3Account extends SmartAccount {
 		return this._options.vType
 	}
 
+	get execMode(): string {
+		return this._options.execMode ?? '0x0100000000000000000000000000000000000000000000000000000000000000'
+	}
+
 	get interface() {
 		return KernelV3Account.interface
 	}
@@ -89,26 +63,11 @@ export class KernelV3Account extends SmartAccount {
 		return KernelV3Account.factoryInterface
 	}
 
-	connect(address: string): KernelV3Account {
-		return new KernelV3Account({
-			...this._options,
-			address,
-		})
-	}
-
 	async getSender() {
 		if (!this.address) {
-			throw new KernelError('account address is not set')
+			throw new NoAddressAccountError()
 		}
 		return this.address
-	}
-
-	async getDummySignature(userOp: UserOp) {
-		return this.erc7579Validator.getDummySignature(userOp)
-	}
-
-	async getSignature(userOpHash: Uint8Array, userOp: UserOp) {
-		return this.erc7579Validator.getSignature(userOpHash, userOp)
 	}
 
 	async getNonce() {
@@ -122,8 +81,8 @@ export class KernelV3Account extends SmartAccount {
 		identifier?: string
 		key?: string
 	}) {
-		const nonceKey = this.getNonceKey(options)
-		return await connectEntryPointV07(this.client).getNonce(this.getSender(), nonceKey)
+		const nonce = await connectEntryPointV07(this.client).getNonce(this.getSender(), this.getNonceKey(options))
+		return toBeHex(nonce)
 	}
 
 	/**
@@ -147,12 +106,30 @@ export class KernelV3Account extends SmartAccount {
 		return concat([mode, type, identifier, key])
 	}
 
-	async send(executions: Execution[], pmGetter?: PaymasterGetter): Promise<SendOpResult> {
-		return await sendop({
-			bundler: this.bundler,
-			executions,
-			opGetter: this,
-			pmGetter: pmGetter ?? this.pmGetter,
+	async getCallData(executions: Execution[]) {
+		if (!executions.length) {
+			return '0x'
+		}
+
+		// Execute 1 function directly on the smart account if it's the only one and to address is itself
+		if (executions.length === 1 && executions[0].to == this.address) {
+			return executions[0].data
+		}
+		return this.interface.encodeFunctionData('execute', [this.execMode, encodeExecutions(executions)])
+	}
+
+	async getDummySignature(userOp: UserOp) {
+		return this.erc7579Validator.getDummySignature(userOp)
+	}
+
+	async getSignature(userOpHash: Uint8Array, userOp: UserOp) {
+		return this.erc7579Validator.getSignature(userOpHash, userOp)
+	}
+
+	connect(address: string): KernelV3Account {
+		return new KernelV3Account({
+			...this._options,
+			address,
 		})
 	}
 
@@ -171,66 +148,79 @@ export class KernelV3Account extends SmartAccount {
 		})
 	}
 
-	/**
-	 * @dev userOp.initCode = factory address + calldata to the factory
-	 * @param creationOptions
-	 * @returns
-	 */
+	async send(executions: Execution[], pmGetter?: PaymasterGetter): Promise<SendOpResult> {
+		return await sendop({
+			bundler: this.bundler,
+			executions,
+			opGetter: this,
+			pmGetter: pmGetter ?? this.pmGetter,
+		})
+	}
+
+	// ================================ static to abstract ================================
+
 	getInitCode(creationOptions: KernelCreationOptions) {
-		const { salt, validatorAddress, validatorInitData, hookAddress, hookData, initConfig } = creationOptions
+		return KernelV3Account.getInitCode(creationOptions)
+	}
+
+	encodeInitialize(creationOptions: KernelCreationOptions) {
+		return KernelV3Account.encodeInitialize(creationOptions)
+	}
+
+	encodeInstallModule(config: KernelInstallModuleConfig) {
+		return KernelV3Account.encodeInstallModule(config)
+	}
+
+	// ================================ static ================================
+
+	static readonly interface = INTERFACES.KernelV3
+	static readonly factoryInterface = INTERFACES.KernelV3Factory
+
+	static override accountId() {
+		return 'kernel.advanced.v0.3.1'
+	}
+
+	static override async getNewAddress(client: JsonRpcProvider, creationOptions: KernelCreationOptions) {
+		const { salt } = creationOptions
+		if (!isBytes32(salt)) {
+			throw new KernelError('Invalid salt')
+		}
+		// Note: since getAddress is also a method of BaseContract, special handling is required here
+		const kernelFactory = new Contract(ADDRESS.KernelV3Factory, KernelV3Account.factoryInterface, client)
+		return await kernelFactory['getAddress(bytes,bytes32)'](KernelV3Account.encodeInitialize(creationOptions), salt)
+	}
+
+	static getInitCode(creationOptions: KernelCreationOptions) {
+		const { salt } = creationOptions
+		if (!isBytes32(salt)) {
+			throw new KernelError('Invalid salt')
+		}
+		return concat([
+			ADDRESS.KernelV3Factory,
+			this.factoryInterface.encodeFunctionData('createAccount', [
+				KernelV3Account.encodeInitialize(creationOptions),
+				salt,
+			]),
+		])
+	}
+
+	static encodeInitialize(creationOptions: KernelCreationOptions) {
+		const { validatorAddress, validatorInitData, hookAddress, hookData, initConfig } = creationOptions
 
 		const rootValidator = concat([KernelValidationType.VALIDATOR, validatorAddress])
 		if (!isBytes(rootValidator, 21)) {
 			throw new KernelError('Invalid rootValidator')
 		}
-		const encodedInitializeCalldata = this.interface.encodeFunctionData('initialize', [
+		return this.interface.encodeFunctionData('initialize', [
 			rootValidator,
 			hookAddress ?? ZeroAddress,
 			validatorInitData,
 			hookData ?? '0x',
 			initConfig ?? [],
 		])
-
-		return concat([
-			ADDRESS.KernelV3Factory,
-			this.factoryInterface.encodeFunctionData('createAccount', [encodedInitializeCalldata, salt]),
-		])
 	}
 
-	async getCallData(
-		executions: Execution[],
-		options: {
-			execMode: string
-		} = {
-			execMode: '0x0100000000000000000000000000000000000000000000000000000000000000',
-		},
-	) {
-		const { execMode } = options
-
-		if (!executions.length) {
-			return '0x'
-		}
-
-		// Execute 1 function directly on the smart account if it's the only one and to address is itself
-		if (executions.length === 1 && executions[0].to == this.address) {
-			return executions[0].data
-		}
-
-		const formattedExecutions = executions.map(execution => ({
-			target: execution.to || '0x',
-			value: execution.value || BigInt(0),
-			data: execution.data || '0x',
-		}))
-
-		const encodedExecutions = abiEncode(
-			['tuple(address,uint256,bytes)[]'],
-			[formattedExecutions.map(execution => [execution.target, execution.value, execution.data])],
-		)
-
-		return this.interface.encodeFunctionData('execute', [execMode, encodedExecutions])
-	}
-
-	static encodeInstallModule(config: ModuleConfig): string {
+	static encodeInstallModule(config: KernelInstallModuleConfig): string {
 		let initData: string
 
 		switch (config.moduleType) {
@@ -266,7 +256,7 @@ export class KernelV3Account extends SmartAccount {
 				break
 
 			case ERC7579_MODULE_TYPE.HOOK:
-				initData = (config as SimpleModuleConfig<ERC7579_MODULE_TYPE.HOOK>).initData
+				initData = (config as SimpleKernelInstallModuleConfig<ERC7579_MODULE_TYPE.HOOK>).initData
 				break
 
 			default:
@@ -274,26 +264,6 @@ export class KernelV3Account extends SmartAccount {
 		}
 
 		return this.interface.encodeFunctionData('installModule', [config.moduleType, config.moduleAddress, initData])
-	}
-
-	/**
-	 * @param hookAddress address
-	 * @param validationData bytes
-	 * @param hookData bytes
-	 * @param selectorData bytes4 Specify which function selector the validator is allowed to use. It can be empty if you don't want to set any selector restrictions.
-	 * @returns bytes
-	 */
-	static getInstallModuleInitData(
-		hookAddress: string,
-		validationData: string,
-		hookData: string,
-		selectorData: string,
-	) {
-		return abiEncode(['address', 'bytes', 'bytes', 'bytes4'], [hookAddress, validationData, hookData, selectorData])
-	}
-
-	async getUninstallModuleDeInitData() {
-		return '0x'
 	}
 }
 

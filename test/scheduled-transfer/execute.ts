@@ -53,6 +53,7 @@ const kernel = new KernelV3Account({
 	address: kernelAddress,
 	client,
 	bundler,
+	vType: KernelValidationType.VALIDATOR,
 	erc7579Validator: {
 		address: () => ADDRESS.SmartSession,
 		getDummySignature: () => {

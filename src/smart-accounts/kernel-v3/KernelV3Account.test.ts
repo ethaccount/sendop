@@ -114,7 +114,7 @@ describe('KernelV3Account', () => {
 				bundler,
 				opGetter: kernel,
 				pmGetter,
-				initCode: kernel.getInitCode(creationOptions),
+				initCode: KernelV3Account.getInitCode(creationOptions),
 				executions: [
 					{
 						to: ADDRESS.Counter,

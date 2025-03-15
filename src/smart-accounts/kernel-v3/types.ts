@@ -1,5 +1,4 @@
-import type { Bundler, ERC7579_MODULE_TYPE, ERC7579Validator, PaymasterGetter } from '@/core'
-import type { JsonRpcProvider } from 'node_modules/ethers/lib.esm/providers/provider-jsonrpc'
+import type { ERC7579_MODULE_TYPE } from '@/core'
 
 export enum KernelValidationMode {
 	DEFAULT = '0x00',
@@ -13,15 +12,6 @@ export enum KernelValidationType {
 	PERMISSION = '0x02',
 }
 
-export type KernelV3AccountOptions = {
-	client: JsonRpcProvider
-	bundler: Bundler
-	erc7579Validator: ERC7579Validator
-	address?: string
-	pmGetter?: PaymasterGetter
-	vType?: KernelValidationType
-}
-
 export type KernelCreationOptions = {
 	salt: string
 	validatorAddress: string
@@ -31,37 +21,37 @@ export type KernelCreationOptions = {
 	initConfig?: string[]
 }
 
-export type BaseModuleConfig<T extends ERC7579_MODULE_TYPE> = {
+export type BaseKernelInstallModuleConfig<T extends ERC7579_MODULE_TYPE> = {
 	moduleType: T
 	moduleAddress: string
 }
 
-export type ValidatorModuleConfig = BaseModuleConfig<ERC7579_MODULE_TYPE.VALIDATOR> & {
+export type ValidatorKernelInstallModuleConfig = BaseKernelInstallModuleConfig<ERC7579_MODULE_TYPE.VALIDATOR> & {
 	hookAddress?: string
 	validatorData: string
 	hookData?: string
 	selectorData?: string // 4 bytes
 }
 
-export type ExecutorModuleConfig = BaseModuleConfig<ERC7579_MODULE_TYPE.EXECUTOR> & {
+export type ExecutorKernelInstallModuleConfig = BaseKernelInstallModuleConfig<ERC7579_MODULE_TYPE.EXECUTOR> & {
 	hookAddress?: string
 	executorData: string
 	hookData?: string
 }
 
-export type FallbackModuleConfig = BaseModuleConfig<ERC7579_MODULE_TYPE.FALLBACK> & {
+export type FallbackKernelInstallModuleConfig = BaseKernelInstallModuleConfig<ERC7579_MODULE_TYPE.FALLBACK> & {
 	selector: string // 4 bytes
 	hookAddress: string
 	selectorData: string
 	hookData: string
 }
 
-export type SimpleModuleConfig<T extends ERC7579_MODULE_TYPE.HOOK> = BaseModuleConfig<T> & {
+export type SimpleKernelInstallModuleConfig<T extends ERC7579_MODULE_TYPE.HOOK> = BaseKernelInstallModuleConfig<T> & {
 	initData: string
 }
 
-export type ModuleConfig =
-	| ValidatorModuleConfig
-	| ExecutorModuleConfig
-	| FallbackModuleConfig
-	| SimpleModuleConfig<ERC7579_MODULE_TYPE.HOOK>
+export type KernelInstallModuleConfig =
+	| ValidatorKernelInstallModuleConfig
+	| ExecutorKernelInstallModuleConfig
+	| FallbackKernelInstallModuleConfig
+	| SimpleKernelInstallModuleConfig<ERC7579_MODULE_TYPE.HOOK>
