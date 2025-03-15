@@ -35,6 +35,29 @@ export function randomBytes32() {
 	return hexlify(randomBytes(32))
 }
 
+export function getBytesLength(data: string) {
+	if (!isBytes(data)) {
+		return 0
+	}
+	return (data.length - 2) / 2
+}
+
+export function isBytes(data: string, bytesLength?: number) {
+	if (bytesLength && data.length !== bytesLength * 2 + 2) {
+		return false
+	}
+	if (!data.startsWith('0x')) {
+		return false
+	}
+	if (data.length > 2 && !/^0x[0-9a-fA-F]+$/.test(data)) {
+		return false
+	}
+	if (data.length % 2 !== 0) {
+		return false
+	}
+	return true
+}
+
 export function is32BytesHexString(data: string) {
 	return data.startsWith('0x') && data.length === 66
 }

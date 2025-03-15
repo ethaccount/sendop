@@ -1,7 +1,27 @@
 import { describe, expect, it } from 'vitest'
-import { isHexString, randomAddress, randomBytes32, zeroBytes } from './ethers-helper'
+import { getBytesLength, isBytes, isHexString, randomAddress, randomBytes32, zeroBytes } from './ethers-helper'
 
 describe('ethers-helper', () => {
+	it('isBytes', () => {
+		expect(isBytes('0x')).toBe(true)
+		expect(isBytes('0x1234')).toBe(true)
+		expect(isBytes('0xabcdef0123456789')).toBe(true)
+		expect(isBytes('0x123')).toBe(false)
+		expect(isBytes('0x12345')).toBe(false)
+		expect(isBytes('0x1234', 2)).toBe(true)
+		expect(isBytes('0x1234', 1)).toBe(false)
+		expect(isBytes('0x12345', 3)).toBe(false)
+		expect(isBytes('0x1234%', 2)).toBe(false)
+	})
+
+	it('getBytesLength', () => {
+		expect(getBytesLength('0x')).toBe(0)
+		expect(getBytesLength('0x1234')).toBe(2)
+		expect(getBytesLength('0xabcdef0123456789')).toBe(8)
+		expect(getBytesLength('0x123')).toBe(0)
+		expect(getBytesLength('0x12345')).toBe(0)
+	})
+
 	it('zeroBytes', () => {
 		expect(zeroBytes()).toBe('0x')
 		expect(zeroBytes(1)).toBe('0x00')

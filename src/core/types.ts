@@ -1,84 +1,5 @@
-import { SendopError } from '@/error'
-import type { BytesLike, TransactionReceipt } from 'ethers'
-
-// ========================================== interfaces ==========================================
-
-export interface Bundler {
-	chainId: string
-	getGasValues(userOp: UserOp): Promise<{
-		maxFeePerGas: string
-		maxPriorityFeePerGas: string
-		preVerificationGas: string
-		verificationGasLimit: string
-		callGasLimit: string
-	}>
-	sendUserOperation(userOp: UserOp): Promise<string>
-	getUserOperationReceipt(hash: string): Promise<UserOpReceipt>
-}
-
-export interface OperationGetter extends AccountGetter, SignatureGetter {}
-
-export interface AccountGetter {
-	getSender(): Promise<string> | string
-	getNonce(): Promise<string> | string
-	getCallData(executions: Execution[]): Promise<string> | string
-}
-
-export interface SignatureGetter {
-	getDummySignature(userOp: UserOp): Promise<string> | string
-	getSignature(userOpHash: Uint8Array, userOp: UserOp): Promise<string> | string
-}
-
-export abstract class ERC7579Validator implements SignatureGetter {
-	abstract address(): string
-	abstract getDummySignature(userOp: UserOp): Promise<string> | string
-	abstract getSignature(userOpHash: Uint8Array, userOp: UserOp): Promise<string> | string
-
-	static getInitData(args: any): BytesLike {
-		throw new ERC7579ValidatorError('Not implemented')
-	}
-
-	static getDeInitData(args: any): BytesLike {
-		throw new ERC7579ValidatorError('Not implemented')
-	}
-}
-
-export class ERC7579ValidatorError extends SendopError {
-	constructor(message: string, cause?: Error) {
-		super(message, { cause })
-		this.name = 'ERC7579ValidatorError'
-	}
-}
-
-/**
- * refer to ERC-7677
- */
-export interface PaymasterGetter {
-	getPaymasterStubData(userOp: UserOp): Promise<GetPaymasterStubDataResult> | GetPaymasterStubDataResult
-	getPaymasterData?(userOp: UserOp): Promise<GetPaymasterDataResult> | GetPaymasterDataResult
-}
-
-// ========================================== types ==========================================
-
-export type Execution = {
-	to: string
-	data: string
-	value: bigint
-}
-
-export type GetPaymasterStubDataResult = {
-	sponsor?: { name: string; icon?: string } // Sponsor info
-	paymaster?: string // Paymaster address (entrypoint v0.7)
-	paymasterData?: string // Paymaster data (entrypoint v0.7)
-	paymasterVerificationGasLimit?: string // Paymaster validation gas (entrypoint v0.7)
-	paymasterPostOpGasLimit?: string // Paymaster post-op gas (entrypoint v0.7)
-	isFinal?: boolean // Indicates that the caller does not need to call pm_getPaymasterData
-}
-
-export type GetPaymasterDataResult = {
-	paymaster?: string // Paymaster address (entrypoint v0.7)
-	paymasterData?: string // Paymaster data (entrypoint v0.7)
-}
+import type { TransactionReceipt } from 'ethers'
+import type { Bundler, OperationGetter, PaymasterGetter } from './interface'
 
 export type UserOp = {
 	sender: string
@@ -134,7 +55,41 @@ export type UserOpReceipt = {
 	receipt: TransactionReceipt
 }
 
+export type SendopOptions = {
+	bundler: Bundler
+	executions: Execution[]
+	opGetter: OperationGetter
+	pmGetter?: PaymasterGetter
+	initCode?: string // userOp.factory ++ userOp.factoryData
+	nonce?: bigint
+}
+
 export type SendOpResult = {
 	hash: string
 	wait(): Promise<UserOpReceipt>
+}
+
+export type BuildopResult = {
+	userOp: UserOp
+	userOpHash: string
+}
+
+export type Execution = {
+	to: string
+	data: string
+	value: bigint
+}
+
+export type GetPaymasterStubDataResult = {
+	sponsor?: { name: string; icon?: string } // Sponsor info
+	paymaster?: string // Paymaster address (entrypoint v0.7)
+	paymasterData?: string // Paymaster data (entrypoint v0.7)
+	paymasterVerificationGasLimit?: string // Paymaster validation gas (entrypoint v0.7)
+	paymasterPostOpGasLimit?: string // Paymaster post-op gas (entrypoint v0.7)
+	isFinal?: boolean // Indicates that the caller does not need to call pm_getPaymasterData
+}
+
+export type GetPaymasterDataResult = {
+	paymaster?: string // Paymaster address (entrypoint v0.7)
+	paymasterData?: string // Paymaster data (entrypoint v0.7)
 }
