@@ -15,7 +15,7 @@ bun install
 docker compose up -d
 
 bun test # bun built-in test
-bun run test # vitest
+bun run test # vitest (isolate)
 bun test -t 'should validate hex strings correctly' # test specific test case
 
 bun run build
