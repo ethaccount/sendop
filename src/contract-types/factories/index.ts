@@ -10,7 +10,6 @@ export { EntryPointV7__factory } from "./EntryPointV7__factory";
 export { K1Validator__factory } from "./K1Validator__factory";
 export { KernelV3__factory } from "./KernelV3__factory";
 export { KernelV3Factory__factory } from "./KernelV3Factory__factory";
-export { MyAccountFactory__factory } from "./MyAccountFactory__factory";
 export { Nexus__factory } from "./Nexus__factory";
 export { NexusBootstrap__factory } from "./NexusBootstrap__factory";
 export { NexusFactory__factory } from "./NexusFactory__factory";

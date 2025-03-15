@@ -24,7 +24,6 @@ import { IERC7579AccountView__factory } from '@/contract-types/factories/manual/
 import { KernelV3__factory } from '@/contract-types/factories/KernelV3__factory';
 import { UniActionPolicy__factory } from '@/contract-types/factories/UniActionPolicy__factory';
 import { NexusFactory__factory } from '@/contract-types/factories/NexusFactory__factory';
-import { MyAccountFactory__factory } from '@/contract-types/factories/MyAccountFactory__factory';
 import { KernelV3Factory__factory } from '@/contract-types/factories/KernelV3Factory__factory';
 import { SmartSession__factory } from '@/contract-types/factories/SmartSession__factory';
 import { Counter__factory } from '@/contract-types/factories/Counter__factory';
@@ -56,7 +55,6 @@ const INTERFACES = {
     KernelV3: KernelV3__factory.createInterface(),
     UniActionPolicy: UniActionPolicy__factory.createInterface(),
     NexusFactory: NexusFactory__factory.createInterface(),
-    MyAccountFactory: MyAccountFactory__factory.createInterface(),
     KernelV3Factory: KernelV3Factory__factory.createInterface(),
     SmartSession: SmartSession__factory.createInterface(),
     Counter: Counter__factory.createInterface()

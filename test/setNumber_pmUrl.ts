@@ -1,5 +1,5 @@
 import { sendop } from '@/core'
-import { MyAccount } from '@/smart-accounts/my_account'
+import { KernelV3Account } from '@/smart-accounts'
 import { ECDSAValidatorModule } from '@/validators/ECDSAValidatorModule'
 import { Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import { PimlicoPaymaster, setup } from './utils'
@@ -26,7 +26,8 @@ const op = await sendop({
 			value: 0n,
 		},
 	],
-	opGetter: new MyAccount(FROM, {
+	opGetter: new KernelV3Account({
+		address: FROM,
 		client: new JsonRpcProvider(CLIENT_URL),
 		bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 		erc7579Validator: new ECDSAValidatorModule({
