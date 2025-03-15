@@ -28,7 +28,8 @@ const op = await sendop({
 			value: 0n,
 		},
 	],
-	opGetter: new KernelV3Account(FROM, {
+	opGetter: new KernelV3Account({
+		address: FROM,
 		client,
 		bundler,
 		erc7579Validator: new ECDSAValidatorModule({

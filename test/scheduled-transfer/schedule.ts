@@ -1,4 +1,5 @@
 import ADDRESS from '@/addresses'
+import { RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 import type { SessionStruct } from '@/contract-types/SmartSession'
 import {
 	abiEncode,
@@ -130,7 +131,8 @@ const scheduledTransfersInitData = concat([
 	abiEncode(['address', 'address', 'uint256'], [recipient, token, amount]),
 ])
 
-const kernel = new KernelV3Account(computedAddress, {
+const kernel = new KernelV3Account({
+	address: computedAddress,
 	client,
 	bundler,
 	erc7579Validator: new ECDSAValidatorModule({
@@ -139,8 +141,6 @@ const kernel = new KernelV3Account(computedAddress, {
 		signer,
 	}),
 })
-
-const RHINESTONE_ATTESTER_ADDRESS = '0x000000333034E9f539ce08819E12c1b8Cb29084d'
 
 const op = await sendop({
 	bundler,

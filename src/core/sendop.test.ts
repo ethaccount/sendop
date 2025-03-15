@@ -58,7 +58,8 @@ describe('sendop', () => {
 
 		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
 
-		const kernel = new KernelV3Account(deployedAddress, {
+		const kernel = new KernelV3Account({
+			address: deployedAddress,
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 			erc7579Validator,
@@ -97,11 +98,11 @@ describe('sendop', () => {
 
 		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
 
-		const kernel = new KernelV3Account(deployedAddress, {
+		const kernel = new KernelV3Account({
+			address: deployedAddress,
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 			erc7579Validator,
-			pmGetter,
 		})
 
 		const op = await sendop({
@@ -128,11 +129,11 @@ describe('sendop', () => {
 
 		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
 
-		const kernel = new KernelV3Account(deployedAddress, {
+		const kernel = new KernelV3Account({
+			address: deployedAddress,
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 			erc7579Validator,
-			pmGetter,
 		})
 
 		const op = await sendop({
@@ -189,11 +190,11 @@ describe('sendop', () => {
 		}
 		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
 
-		const kernel = new KernelV3Account(deployedAddress, {
+		const kernel = new KernelV3Account({
+			address: deployedAddress,
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 			erc7579Validator,
-			pmGetter,
 		})
 
 		const number = Math.floor(Math.random() * 10000)

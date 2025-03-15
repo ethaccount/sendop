@@ -73,7 +73,8 @@ describe.skip('AlchemyBundler', () => {
 
 		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
 
-		const kernel = new KernelV3Account(deployedAddress, {
+		const kernel = new KernelV3Account({
+			address: deployedAddress,
 			client,
 			bundler: new AlchemyBundler(chainId, BUNDLER_URL),
 			erc7579Validator: new ECDSAValidatorModule({
@@ -128,9 +129,10 @@ describe.skip('AlchemyBundler', () => {
 
 		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
 
-		const kernel = new KernelV3Account(deployedAddress, {
-			client: new JsonRpcProvider(CLIENT_URL),
-			bundler: pimlicoBundler,
+		const kernel = new KernelV3Account({
+			address: deployedAddress,
+			client,
+			bundler: new AlchemyBundler(chainId, BUNDLER_URL),
 			erc7579Validator: new ECDSAValidatorModule({
 				address: ADDRESS.ECDSAValidator,
 				client,
@@ -183,8 +185,9 @@ describe.skip('AlchemyBundler', () => {
 
 		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
 
-		const kernel = new KernelV3Account(deployedAddress, {
-			client: new JsonRpcProvider(CLIENT_URL),
+		const kernel = new KernelV3Account({
+			address: deployedAddress,
+			client,
 			bundler: alchemyBundler,
 			erc7579Validator: new ECDSAValidatorModule({
 				address: ADDRESS.ECDSAValidator,

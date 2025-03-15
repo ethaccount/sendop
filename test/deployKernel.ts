@@ -28,7 +28,8 @@ const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 	},
 })
 
-const kernel = new KernelV3Account(computedAddress, {
+const kernel = new KernelV3Account({
+	address: computedAddress,
 	client,
 	bundler,
 	erc7579Validator: new ECDSAValidatorModule({

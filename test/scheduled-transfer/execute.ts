@@ -1,6 +1,7 @@
 import ADDRESS from '@/addresses'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import { KernelV3Account, KernelValidationType, PimlicoBundler, sendop, SMART_SESSIONS_USE_MODE } from '@/index'
+import { KernelV3Account, PimlicoBundler, sendop, SMART_SESSIONS_USE_MODE } from '@/index'
+import { KernelValidationType } from '@/smart-accounts/kernel-v3/types'
 import INTERFACES from '@/interfaces'
 import { concat, JsonRpcProvider } from 'ethers'
 import fs from 'fs'
@@ -48,10 +49,10 @@ const pmGetter = new MyPaymaster({
 	paymasterAddress: ADDRESS.CharityPaymaster,
 })
 
-const kernel = new KernelV3Account(kernelAddress, {
+const kernel = new KernelV3Account({
+	address: kernelAddress,
 	client,
 	bundler,
-	vType: KernelValidationType.VALIDATOR,
 	erc7579Validator: {
 		address: () => ADDRESS.SmartSession,
 		getDummySignature: () => {

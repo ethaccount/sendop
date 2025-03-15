@@ -6,63 +6,9 @@ import { SendopError } from '@/error'
 import { connectEntryPointV07 } from '@/utils/contract-helper'
 import { abiEncode, is32BytesHexString, zeroBytes } from '@/utils/ethers-helper'
 import { concat, Contract, isAddress, isHexString, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
-import { SmartAccount } from './SmartAccount'
-
-export enum KernelValidationMode {
-	DEFAULT = '0x00',
-	ENABLE = '0x01',
-	INSTALL = '0x02',
-}
-
-export enum KernelValidationType {
-	ROOT = '0x00',
-	VALIDATOR = '0x01',
-	PERMISSION = '0x02',
-}
-
-export type KernelCreationOptions = {
-	salt: string
-	validatorAddress: string
-	validatorInitData: string
-	hookAddress?: string
-	hookData?: string
-	initConfig?: string[]
-}
-
-type BaseModuleConfig<T extends ERC7579_MODULE_TYPE> = {
-	moduleType: T
-	moduleAddress: string
-}
-
-type ValidatorModuleConfig = BaseModuleConfig<ERC7579_MODULE_TYPE.VALIDATOR> & {
-	hookAddress?: string
-	validatorData: string
-	hookData?: string
-	selectorData?: string // 4 bytes
-}
-
-type ExecutorModuleConfig = BaseModuleConfig<ERC7579_MODULE_TYPE.EXECUTOR> & {
-	hookAddress?: string
-	executorData: string
-	hookData?: string
-}
-
-type FallbackModuleConfig = BaseModuleConfig<ERC7579_MODULE_TYPE.FALLBACK> & {
-	selector: string // 4 bytes
-	hookAddress: string
-	selectorData: string
-	hookData: string
-}
-
-type SimpleModuleConfig<T extends ERC7579_MODULE_TYPE.HOOK> = BaseModuleConfig<T> & {
-	initData: string
-}
-
-type ModuleConfig =
-	| ValidatorModuleConfig
-	| ExecutorModuleConfig
-	| FallbackModuleConfig
-	| SimpleModuleConfig<ERC7579_MODULE_TYPE.HOOK>
+import { SmartAccount } from '../SmartAccount'
+import type { KernelCreationOptions, KernelV3AccountOptions, ModuleConfig, SimpleModuleConfig } from './types'
+import { KernelValidationMode, KernelValidationType } from './types'
 
 export class KernelV3Account extends SmartAccount {
 	static override accountId() {
@@ -105,41 +51,56 @@ export class KernelV3Account extends SmartAccount {
 	static readonly interface = KernelV3__factory.createInterface()
 	static readonly factoryInterface = KernelV3Factory__factory.createInterface()
 
-	readonly address: string
-	readonly client: JsonRpcProvider
-	readonly bundler: Bundler
-	readonly erc7579Validator: ERC7579Validator
-	readonly pmGetter?: PaymasterGetter
-	readonly vType?: KernelValidationType
+	private readonly _options: KernelV3AccountOptions
 
-	constructor(
-		address: string,
-		options: {
-			client: JsonRpcProvider
-			bundler: Bundler
-			erc7579Validator: ERC7579Validator
-			pmGetter?: PaymasterGetter
-			vType?: KernelValidationType
-		},
-	) {
+	constructor(options: KernelV3AccountOptions) {
 		super()
-		this.address = address
-		this.client = options.client
-		this.bundler = options.bundler
-		this.erc7579Validator = options.erc7579Validator
-		this.pmGetter = options.pmGetter
-		this.vType = options.vType
+		this._options = options
 	}
 
-	interface() {
+	get address(): string | undefined {
+		return this._options.address
+	}
+
+	get client(): JsonRpcProvider {
+		return this._options.client
+	}
+
+	get bundler(): Bundler {
+		return this._options.bundler
+	}
+
+	get erc7579Validator(): ERC7579Validator {
+		return this._options.erc7579Validator
+	}
+
+	get pmGetter(): PaymasterGetter | undefined {
+		return this._options.pmGetter
+	}
+
+	get vType(): KernelValidationType | undefined {
+		return this._options.vType
+	}
+
+	get interface() {
 		return KernelV3Account.interface
 	}
 
-	factoryInterface() {
+	get factoryInterface() {
 		return KernelV3Account.factoryInterface
 	}
 
+	connect(address: string): KernelV3Account {
+		return new KernelV3Account({
+			...this._options,
+			address,
+		})
+	}
+
 	async getSender() {
+		if (!this.address) {
+			throw new KernelError('account address is not set')
+		}
 		return this.address
 	}
 
@@ -152,7 +113,7 @@ export class KernelV3Account extends SmartAccount {
 	}
 
 	async getNonce() {
-		const nonce = await connectEntryPointV07(this.client).getNonce(this.address, this.getNonceKey())
+		const nonce = await connectEntryPointV07(this.client).getNonce(this.getSender(), this.getNonceKey())
 		return toBeHex(nonce)
 	}
 
@@ -163,7 +124,7 @@ export class KernelV3Account extends SmartAccount {
 		key?: string
 	}) {
 		const nonceKey = this.getNonceKey(options)
-		return await connectEntryPointV07(this.client).getNonce(this.address, nonceKey)
+		return await connectEntryPointV07(this.client).getNonce(this.getSender(), nonceKey)
 	}
 
 	/**
@@ -223,7 +184,7 @@ export class KernelV3Account extends SmartAccount {
 		if (!isHexString(rootValidator, 21)) {
 			throw new KernelError('Invalid rootValidator')
 		}
-		const encodedInitializeCalldata = this.interface().encodeFunctionData('initialize', [
+		const encodedInitializeCalldata = this.interface.encodeFunctionData('initialize', [
 			rootValidator,
 			hookAddress ?? ZeroAddress,
 			validatorInitData,
@@ -233,7 +194,7 @@ export class KernelV3Account extends SmartAccount {
 
 		return concat([
 			ADDRESS.KernelV3Factory,
-			this.factoryInterface().encodeFunctionData('createAccount', [encodedInitializeCalldata, salt]),
+			this.factoryInterface.encodeFunctionData('createAccount', [encodedInitializeCalldata, salt]),
 		])
 	}
 
@@ -267,7 +228,7 @@ export class KernelV3Account extends SmartAccount {
 			[formattedExecutions.map(execution => [execution.target, execution.value, execution.data])],
 		)
 
-		return this.interface().encodeFunctionData('execute', [execMode, encodedExecutions])
+		return this.interface.encodeFunctionData('execute', [execMode, encodedExecutions])
 	}
 
 	static encodeInstallModule(config: ModuleConfig): string {

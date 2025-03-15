@@ -1,6 +1,6 @@
 import { setup } from 'test/utils'
 import { describe, expect, it } from 'vitest'
-import { KernelV3Account } from './KernelV3Account'
+import { KernelV3Account } from './kernel-v3/KernelV3Account'
 
 const { logger, chainId } = await setup()
 

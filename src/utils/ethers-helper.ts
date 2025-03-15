@@ -11,7 +11,10 @@ export const ERC7579Interface = new Interface([
  * @param length bytes length
  * @returns hex string
  */
-export function zeroBytes(length: number) {
+export function zeroBytes(length?: number) {
+	if (length === undefined) {
+		return '0x'
+	}
 	return '0x' + '00'.repeat(length)
 }
 
