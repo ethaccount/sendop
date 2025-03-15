@@ -99,7 +99,7 @@ export interface ECDSAValidatorInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "postCheck",
-    values: [BytesLike]
+    values: [BytesLike, boolean, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "preCheck",
@@ -219,7 +219,11 @@ export interface ECDSAValidator extends BaseContract {
 
   onUninstall: TypedContractMethod<[arg0: BytesLike], [void], "payable">;
 
-  postCheck: TypedContractMethod<[hookData: BytesLike], [void], "payable">;
+  postCheck: TypedContractMethod<
+    [hookData: BytesLike, success: boolean, res: BytesLike],
+    [void],
+    "payable"
+  >;
 
   preCheck: TypedContractMethod<
     [msgSender: AddressLike, value: BigNumberish, arg2: BytesLike],
@@ -261,7 +265,11 @@ export interface ECDSAValidator extends BaseContract {
   ): TypedContractMethod<[arg0: BytesLike], [void], "payable">;
   getFunction(
     nameOrSignature: "postCheck"
-  ): TypedContractMethod<[hookData: BytesLike], [void], "payable">;
+  ): TypedContractMethod<
+    [hookData: BytesLike, success: boolean, res: BytesLike],
+    [void],
+    "payable"
+  >;
   getFunction(
     nameOrSignature: "preCheck"
   ): TypedContractMethod<

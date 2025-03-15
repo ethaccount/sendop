@@ -180,6 +180,16 @@ const _abi = [
         name: "hookData",
         type: "bytes",
       },
+      {
+        internalType: "bool",
+        name: "success",
+        type: "bool",
+      },
+      {
+        internalType: "bytes",
+        name: "res",
+        type: "bytes",
+      },
     ],
     name: "postCheck",
     outputs: [],
