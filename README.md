@@ -14,13 +14,13 @@ npm install ethers sendop
 bun install
 docker compose up -d
 
-bun run test
-bun test
-bun test -t 'should validate hex strings correctly'
+bun test # bun built-in test
+bun run test # vitest
+bun test -t 'should validate hex strings correctly' # test specific test case
 
 bun run build
 ```
 
 ### Usage
 
-Please refer to *.test.ts
+Please refer to *.test.ts file or test folder

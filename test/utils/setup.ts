@@ -1,6 +1,8 @@
 import { createConsola } from 'consola'
 import { Wallet } from 'ethers'
 
+import 'dotenv/config'
+
 const logger = createConsola({
 	level: 4,
 })
