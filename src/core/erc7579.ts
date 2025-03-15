@@ -28,5 +28,5 @@ export enum ExecType {
 }
 
 export enum ModeSelector {
-	DEFAULT = '0x00',
+	DEFAULT = '0x00000000',
 }

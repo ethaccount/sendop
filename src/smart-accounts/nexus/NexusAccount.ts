@@ -17,7 +17,7 @@ import {
 } from '@/core'
 import { SendopError } from '@/error'
 import INTERFACES from '@/interfaces'
-import { abiEncode, connectEntryPointV07, zeroBytes } from '@/utils'
+import { abiEncode, connectEntryPointV07, isBytes, zeroBytes } from '@/utils'
 import type { JsonRpcProvider } from 'ethers'
 import { concat, toBeHex } from 'ethers/utils'
 import { NoAddressAccountError, SmartAccount } from '../SmartAccount'
@@ -30,10 +30,18 @@ export type NexusAccountOptions = {
 	erc7579Validator: ERC7579Validator
 	pmGetter?: PaymasterGetter
 	config?: {
-		callType?: CallType
-		execType?: ExecType
-		modeSelector?: ModeSelector
-		modePayload?: string
+		nonce?: {
+			mode?: NexusValidationMode // 1 byte
+			validator?: string // 20 bytes
+			key?: string // 3 bytes
+		}
+		execMode?: {
+			callType?: CallType // 1 byte
+			execType?: ExecType // 1 byte
+			unused?: string // 4 bytes
+			modeSelector?: ModeSelector // 4 bytes
+			modePayload?: string // 22 bytes
+		}
 	}
 }
 
@@ -73,12 +81,21 @@ export class NexusAccount extends SmartAccount {
 	}
 
 	override async getNonce() {
-		const nonce = await connectEntryPointV07(this.client).getNonce(this.getSender(), this.getNonceKey())
+		const nonce = await connectEntryPointV07(this.client).getNonce(
+			this.getSender(),
+			this.getNonceKey(this._options.config?.nonce),
+		)
 		return toBeHex(nonce)
 	}
 
 	async getCustomNonce(options: { mode?: NexusValidationMode; validator?: string; key?: string }) {
-		const nonce = await connectEntryPointV07(this.client).getNonce(this.getSender(), this.getNonceKey(options))
+		const nonce = await connectEntryPointV07(this.client).getNonce(
+			this.getSender(),
+			this.getNonceKey({
+				...this._options.config?.nonce,
+				...options,
+			}),
+		)
 		return toBeHex(nonce)
 	}
 
@@ -97,13 +114,6 @@ export class NexusAccount extends SmartAccount {
 		return concat([key, mode, validator])
 	}
 
-	///
-	/// |--------------------------------------------------------------------|
-	/// | CALLTYPE  | EXECTYPE  |   UNUSED   | ModeSelector  |  ModePayload  |
-	/// |--------------------------------------------------------------------|
-	/// | 1 byte    | 1 byte    |   4 bytes  | 4 bytes       |   22 bytes    |
-	/// |--------------------------------------------------------------------|
-	///
 	override getCallData(executions: Execution[]): Promise<string> | string {
 		if (!executions.length) {
 			return '0x'
@@ -117,16 +127,30 @@ export class NexusAccount extends SmartAccount {
 		const defaultExecutionMode = {
 			callType: CallType.BATCH,
 			execType: ExecType.DEFAULT,
+			unused: zeroBytes(4),
 			modeSelector: ModeSelector.DEFAULT,
 			modePayload: zeroBytes(22),
 		}
-		let { callType, execType, modeSelector, modePayload } = { ...defaultExecutionMode, ...this._options.config }
+		let { callType, execType, modeSelector, modePayload, unused } = {
+			...defaultExecutionMode,
+			...this._options.config?.execMode,
+		}
 
 		// If there is only one execution, set callType to SIGNLE
 		if (executions.length === 1) {
 			callType = CallType.SIGNLE
 		}
-		const execMode = concat([callType, execType, modeSelector, modePayload])
+		/// |--------------------------------------------------------------------|
+		/// | CALLTYPE  | EXECTYPE  |   UNUSED   | ModeSelector  |  ModePayload  |
+		/// |--------------------------------------------------------------------|
+		/// | 1 byte    | 1 byte    |   4 bytes  | 4 bytes       |   22 bytes    |
+		/// |--------------------------------------------------------------------|
+		if (!isBytes(callType, 1)) throw new NexusError(`invalid callType ${callType}`)
+		if (!isBytes(execType, 1)) throw new NexusError(`invalid execType ${execType}`)
+		if (!isBytes(unused, 4)) throw new NexusError(`invalid unused ${unused}`)
+		if (!isBytes(modeSelector, 4)) throw new NexusError(`invalid modeSelector ${modeSelector}`)
+		if (!isBytes(modePayload, 22)) throw new NexusError(`invalid modePayload ${modePayload}`)
+		const execMode = concat([callType, execType, unused, modeSelector, modePayload])
 
 		switch (callType) {
 			case CallType.SIGNLE:
@@ -134,7 +158,7 @@ export class NexusAccount extends SmartAccount {
 			case CallType.BATCH:
 				return this.interface.encodeFunctionData('execute', [execMode, encodeExecutions(executions)])
 			default:
-				throw new NexusError('Unsupported call type')
+				throw new NexusError('unsupported call type')
 		}
 	}
 
