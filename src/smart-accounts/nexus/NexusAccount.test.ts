@@ -8,6 +8,7 @@ import { MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { NexusAccount } from './NexusAccount'
 import type { NexusCreationOptions } from './types'
+import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup()
 logger.info(`Chain ID: ${chainId}`)
@@ -27,7 +28,7 @@ describe('NexusAccount', () => {
 			parseError: true,
 		})
 		erc7579Validator = new ECDSAValidatorModule({
-			address: ADDRESS.ECDSAValidator,
+			address: ADDRESS.K1Validator,
 			client,
 			signer: new Wallet(privateKey),
 		})
@@ -54,10 +55,10 @@ describe('NexusAccount', () => {
 			creationOptions = {
 				bootstrap: 'initNexusWithSingleValidator',
 				salt: hexlify(randomBytes(32)),
-				validatorAddress: ADDRESS.ECDSAValidator,
+				validatorAddress: ADDRESS.K1Validator,
 				validatorInitData: await resolveAddress(signer),
 				registryAddress: ADDRESS.Registry,
-				attesters: [ADDRESS.ECDSAValidator],
+				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS],
 				threshold: 1,
 			}
 		})
@@ -102,10 +103,10 @@ describe('NexusAccount', () => {
 			const creationOptions: NexusCreationOptions = {
 				bootstrap: 'initNexusWithSingleValidator',
 				salt: randomBytes32(),
-				validatorAddress: ADDRESS.ECDSAValidator,
+				validatorAddress: ADDRESS.K1Validator,
 				validatorInitData: signer.address,
 				registryAddress: ADDRESS.Registry,
-				attesters: [ADDRESS.ECDSAValidator],
+				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS],
 				threshold: 1,
 			}
 

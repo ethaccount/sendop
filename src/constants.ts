@@ -2,3 +2,4 @@ export const DUMMY_ECDSA_SIGNATURE =
 	'0xfffffffffffffffffffffffffffffff0000000000000000000000000000000007aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1c'
 
 export const RHINESTONE_ATTESTER_ADDRESS = '0x000000333034E9f539ce08819E12c1b8Cb29084d'
+export const BICONOMY_ATTESTER_ADDRESS = '0xF9ff902Cdde729b47A4cDB55EF16DF3683a04EAB'
