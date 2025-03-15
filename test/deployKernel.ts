@@ -1,5 +1,5 @@
 import ADDRESS from '@/addresses'
-import { K1ValidatorModule, KernelV3Account, PimlicoBundler, sendop } from '@/index'
+import { EOAValidatorModule, KernelV3Account, PimlicoBundler, sendop } from '@/index'
 import { hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
 import { MyPaymaster, setup } from './utils'
 
@@ -32,7 +32,7 @@ const kernel = new KernelV3Account({
 	address: computedAddress,
 	client,
 	bundler,
-	erc7579Validator: new K1ValidatorModule({
+	erc7579Validator: new EOAValidatorModule({
 		address: ADDRESS.K1Validator,
 		client,
 		signer,

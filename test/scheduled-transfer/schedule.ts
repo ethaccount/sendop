@@ -3,7 +3,7 @@ import { RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 import type { SessionStruct } from '@/contract-types/SmartSession'
 import {
 	abiEncode,
-	K1ValidatorModule,
+	EOAValidatorModule,
 	ERC7579_MODULE_TYPE,
 	getEncodedFunctionParams,
 	getPermissionId,
@@ -135,7 +135,7 @@ const kernel = new KernelV3Account({
 	address: computedAddress,
 	client,
 	bundler,
-	erc7579Validator: new K1ValidatorModule({
+	erc7579Validator: new EOAValidatorModule({
 		address: ADDRESS.K1Validator,
 		client,
 		signer,

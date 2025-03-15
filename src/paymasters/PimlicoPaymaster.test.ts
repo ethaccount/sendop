@@ -2,7 +2,7 @@ import ADDRESS from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
 import { KernelV3Account } from '@/smart-accounts'
-import { K1ValidatorModule } from '@/validators'
+import { EOAValidatorModule } from '@/validators'
 import { hexlify, JsonRpcProvider, randomBytes, resolveAddress, Wallet } from 'ethers'
 import { MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -33,7 +33,7 @@ describe.skip('PimlicoPaymaster', () => {
 			client,
 			paymasterAddress: ADDRESS.CharityPaymaster,
 		})
-		erc7579Validator = new K1ValidatorModule({
+		erc7579Validator = new EOAValidatorModule({
 			address: ADDRESS.K1Validator,
 			client,
 			signer,

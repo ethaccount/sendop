@@ -1,6 +1,6 @@
 import { sendop } from '@/core'
 import { KernelV3Account } from '@/smart-accounts'
-import { K1ValidatorModule } from '@/validators/K1ValidatorModule'
+import { EOAValidatorModule } from '@/validators/EOAValidatorModule'
 import { Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import { PimlicoPaymaster, setup } from './utils'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
@@ -30,7 +30,7 @@ const op = await sendop({
 		address: FROM,
 		client: new JsonRpcProvider(CLIENT_URL),
 		bundler: new PimlicoBundler(chainId, BUNDLER_URL),
-		erc7579Validator: new K1ValidatorModule({
+		erc7579Validator: new EOAValidatorModule({
 			address: ADDRESS.K1Validator,
 			client: new JsonRpcProvider(CLIENT_URL),
 			signer: new Wallet(privateKey),

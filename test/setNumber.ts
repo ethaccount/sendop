@@ -2,7 +2,7 @@ import ADDRESS from '@/addresses'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { sendop } from '@/core'
 import { KernelV3Account } from '@/smart-accounts'
-import { K1ValidatorModule } from '@/validators/K1ValidatorModule'
+import { EOAValidatorModule } from '@/validators/EOAValidatorModule'
 import { getAddress, Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
@@ -57,7 +57,7 @@ const op = await sendop({
 		address: argv.address,
 		client,
 		bundler,
-		erc7579Validator: new K1ValidatorModule({
+		erc7579Validator: new EOAValidatorModule({
 			address: ADDRESS.K1Validator,
 			client,
 			signer,

@@ -9,7 +9,7 @@ type ConstructorOptions = {
 	signer: Signer
 }
 
-export class K1ValidatorModule extends ERC7579Validator {
+export class EOAValidatorModule extends ERC7579Validator {
 	readonly #address: string
 	readonly #client: JsonRpcProvider
 	readonly #signer: Signer

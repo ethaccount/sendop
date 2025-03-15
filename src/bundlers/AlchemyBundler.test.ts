@@ -2,7 +2,7 @@ import { getEmptyUserOp, sendop, type Bundler } from '@/core'
 import { KernelV3Account } from '@/smart-accounts'
 import { isSameAddress } from '@/utils'
 import { RpcProvider } from '@/RpcProvider'
-import { K1ValidatorModule } from '@/validators'
+import { EOAValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
 import { MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -78,7 +78,7 @@ describe.skip('AlchemyBundler', () => {
 			address: deployedAddress,
 			client,
 			bundler: new AlchemyBundler(chainId, BUNDLER_URL),
-			erc7579Validator: new K1ValidatorModule({
+			erc7579Validator: new EOAValidatorModule({
 				address: ADDRESS.K1Validator,
 				client,
 				signer,
@@ -134,7 +134,7 @@ describe.skip('AlchemyBundler', () => {
 			address: deployedAddress,
 			client,
 			bundler: new AlchemyBundler(chainId, BUNDLER_URL),
-			erc7579Validator: new K1ValidatorModule({
+			erc7579Validator: new EOAValidatorModule({
 				address: ADDRESS.K1Validator,
 				client,
 				signer,
@@ -190,7 +190,7 @@ describe.skip('AlchemyBundler', () => {
 			address: deployedAddress,
 			client,
 			bundler: alchemyBundler,
-			erc7579Validator: new K1ValidatorModule({
+			erc7579Validator: new EOAValidatorModule({
 				address: ADDRESS.K1Validator,
 				client,
 				signer,
