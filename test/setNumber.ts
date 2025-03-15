@@ -57,7 +57,7 @@ const op = await sendop({
 		address: argv.address,
 		client,
 		bundler,
-		erc7579Validator: new EOAValidatorModule({
+		validator: new EOAValidatorModule({
 			address: ADDRESS.K1Validator,
 			signer,
 		}),

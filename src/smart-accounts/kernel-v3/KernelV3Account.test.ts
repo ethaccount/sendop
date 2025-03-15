@@ -17,7 +17,7 @@ describe('KernelV3Account', () => {
 	let signer: Wallet
 	let client: JsonRpcProvider
 	let bundler: Bundler
-	let erc7579Validator: ERC7579Validator
+	let validator: ERC7579Validator
 	let pmGetter: PaymasterGetter
 	let kernel: KernelV3Account
 
@@ -27,7 +27,7 @@ describe('KernelV3Account', () => {
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 			parseError: true,
 		})
-		erc7579Validator = new EOAValidatorModule({
+		validator = new EOAValidatorModule({
 			address: ADDRESS.K1Validator,
 			signer: new Wallet(privateKey),
 		})
@@ -39,7 +39,7 @@ describe('KernelV3Account', () => {
 		kernel = new KernelV3Account({
 			client,
 			bundler,
-			erc7579Validator,
+			validator,
 			pmGetter,
 		})
 		logger.info(`Signer: ${signer.address}`)
@@ -68,7 +68,7 @@ describe('KernelV3Account', () => {
 				address: deployedAddress,
 				client,
 				bundler,
-				erc7579Validator,
+				validator,
 				pmGetter,
 			})
 
@@ -105,7 +105,7 @@ describe('KernelV3Account', () => {
 				address: computedAddress,
 				client,
 				bundler,
-				erc7579Validator,
+				validator,
 				pmGetter,
 			})
 

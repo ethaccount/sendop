@@ -16,7 +16,7 @@ describe.skip('YourAccount', () => {
 	let signer: Wallet
 	let client: JsonRpcProvider
 	let bundler: Bundler
-	let erc7579Validator: ERC7579Validator
+	let validator: ERC7579Validator
 	let pmGetter: PaymasterGetter
 	let account: YourAccount
 
@@ -26,7 +26,7 @@ describe.skip('YourAccount', () => {
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 			parseError: true,
 		})
-		erc7579Validator = new EOAValidatorModule({
+		validator = new EOAValidatorModule({
 			address: ADDRESS.K1Validator,
 			signer: new Wallet(privateKey),
 		})
@@ -38,7 +38,7 @@ describe.skip('YourAccount', () => {
 		account = new YourAccount({
 			client,
 			bundler,
-			erc7579Validator,
+			validator,
 			pmGetter,
 		})
 		logger.info(`Signer: ${signer.address}`)
@@ -67,7 +67,7 @@ describe.skip('YourAccount', () => {
 				address: deployedAddress,
 				client,
 				bundler,
-				erc7579Validator,
+				validator,
 				pmGetter,
 			})
 
@@ -104,7 +104,7 @@ describe.skip('YourAccount', () => {
 				address: computedAddress,
 				client,
 				bundler,
-				erc7579Validator,
+				validator,
 				pmGetter,
 			})
 

@@ -18,7 +18,7 @@ describe('sendop', () => {
 	let client: JsonRpcProvider
 	let bundler: Bundler
 	let pmGetter: PaymasterGetter
-	let erc7579Validator: ERC7579Validator
+	let validator: ERC7579Validator
 
 	let creationOptions: {
 		salt: string
@@ -34,7 +34,7 @@ describe('sendop', () => {
 			client,
 			paymasterAddress: ADDRESS.CharityPaymaster,
 		})
-		erc7579Validator = new EOAValidatorModule({
+		validator = new EOAValidatorModule({
 			address: ADDRESS.K1Validator,
 			signer,
 		})
@@ -61,7 +61,7 @@ describe('sendop', () => {
 			address: deployedAddress,
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
-			erc7579Validator,
+			validator,
 		})
 
 		// deposit 1 eth to entrypoint for kernel deployment
@@ -101,7 +101,7 @@ describe('sendop', () => {
 			address: deployedAddress,
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
-			erc7579Validator,
+			validator,
 		})
 
 		const op = await sendop({
@@ -132,7 +132,7 @@ describe('sendop', () => {
 			address: deployedAddress,
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
-			erc7579Validator,
+			validator,
 		})
 
 		const op = await sendop({
@@ -193,7 +193,7 @@ describe('sendop', () => {
 			address: deployedAddress,
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
-			erc7579Validator,
+			validator,
 		})
 
 		const number = Math.floor(Math.random() * 10000)

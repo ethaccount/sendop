@@ -32,7 +32,7 @@ const kernel = new KernelV3Account({
 	address: computedAddress,
 	client,
 	bundler,
-	erc7579Validator: new EOAValidatorModule({
+	validator: new EOAValidatorModule({
 		address: ADDRESS.K1Validator,
 		signer,
 	}),

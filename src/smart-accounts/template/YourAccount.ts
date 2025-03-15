@@ -7,7 +7,7 @@ export type YourAccountOptions = {
 	address?: string
 	client: JsonRpcProvider
 	bundler: Bundler
-	erc7579Validator: ERC7579Validator
+	validator: ERC7579Validator
 	pmGetter?: PaymasterGetter
 }
 
@@ -31,8 +31,8 @@ export class YourAccount extends SmartAccount {
 		return this._options.bundler
 	}
 
-	get erc7579Validator(): ERC7579Validator {
-		return this._options.erc7579Validator
+	get validator(): ERC7579Validator {
+		return this._options.validator
 	}
 
 	get pmGetter(): PaymasterGetter | undefined {

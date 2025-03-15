@@ -78,7 +78,7 @@ describe.skip('AlchemyBundler', () => {
 			address: deployedAddress,
 			client,
 			bundler: new AlchemyBundler(chainId, BUNDLER_URL),
-			erc7579Validator: new EOAValidatorModule({
+			validator: new EOAValidatorModule({
 				address: ADDRESS.K1Validator,
 				signer,
 			}),
@@ -133,7 +133,7 @@ describe.skip('AlchemyBundler', () => {
 			address: deployedAddress,
 			client,
 			bundler: new AlchemyBundler(chainId, BUNDLER_URL),
-			erc7579Validator: new EOAValidatorModule({
+			validator: new EOAValidatorModule({
 				address: ADDRESS.K1Validator,
 				signer,
 			}),
@@ -188,7 +188,7 @@ describe.skip('AlchemyBundler', () => {
 			address: deployedAddress,
 			client,
 			bundler: alchemyBundler,
-			erc7579Validator: new EOAValidatorModule({
+			validator: new EOAValidatorModule({
 				address: ADDRESS.K1Validator,
 				signer,
 			}),

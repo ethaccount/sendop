@@ -23,7 +23,7 @@ describe.skip('PimlicoPaymaster', () => {
 	let client: JsonRpcProvider
 	let bundler: Bundler
 	let pmGetter: PaymasterGetter
-	let erc7579Validator: ERC7579Validator
+	let validator: ERC7579Validator
 
 	beforeAll(() => {
 		client = new JsonRpcProvider(CLIENT_URL)
@@ -33,7 +33,7 @@ describe.skip('PimlicoPaymaster', () => {
 			client,
 			paymasterAddress: ADDRESS.CharityPaymaster,
 		})
-		erc7579Validator = new EOAValidatorModule({
+		validator = new EOAValidatorModule({
 			address: ADDRESS.K1Validator,
 			signer,
 		})
@@ -54,7 +54,7 @@ describe.skip('PimlicoPaymaster', () => {
 			address: deployedAddress,
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
-			erc7579Validator,
+			validator,
 		})
 
 		const op = await sendop({

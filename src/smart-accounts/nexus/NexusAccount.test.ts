@@ -17,7 +17,7 @@ describe('NexusAccount', () => {
 	let signer: Wallet
 	let client: JsonRpcProvider
 	let bundler: Bundler
-	let erc7579Validator: ERC7579Validator
+	let validator: ERC7579Validator
 	let pmGetter: PaymasterGetter
 	let account: NexusAccount
 
@@ -27,7 +27,7 @@ describe('NexusAccount', () => {
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 			parseError: true,
 		})
-		erc7579Validator = new EOAValidatorModule({
+		validator = new EOAValidatorModule({
 			address: ADDRESS.K1Validator,
 			signer: new Wallet(privateKey),
 		})
@@ -39,7 +39,7 @@ describe('NexusAccount', () => {
 		account = new NexusAccount({
 			client,
 			bundler,
-			erc7579Validator,
+			validator,
 			pmGetter,
 		})
 		logger.info(`Signer: ${signer.address}`)
@@ -72,7 +72,7 @@ describe('NexusAccount', () => {
 				address: deployedAddress,
 				client,
 				bundler,
-				erc7579Validator,
+				validator,
 				pmGetter,
 			})
 
@@ -114,7 +114,7 @@ describe('NexusAccount', () => {
 				address: computedAddress,
 				client,
 				bundler,
-				erc7579Validator,
+				validator,
 				pmGetter,
 			})
 

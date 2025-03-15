@@ -12,7 +12,7 @@ import { KernelValidationMode, KernelValidationType } from './types'
 export type KernelV3AccountOptions = {
 	client: JsonRpcProvider
 	bundler: Bundler
-	erc7579Validator: ERC7579Validator
+	validator: ERC7579Validator
 	address?: string
 	pmGetter?: PaymasterGetter
 	vType?: KernelValidationType
@@ -39,8 +39,8 @@ export class KernelV3Account extends SmartAccount {
 		return this._options.bundler
 	}
 
-	get erc7579Validator(): ERC7579Validator {
-		return this._options.erc7579Validator
+	get validator(): ERC7579Validator {
+		return this._options.validator
 	}
 
 	get pmGetter(): PaymasterGetter | undefined {
@@ -87,7 +87,7 @@ export class KernelV3Account extends SmartAccount {
 
 	/**
 	 * @dev 1byte mode  | 1byte type | 20bytes identifierWithoutType | 2byte nonceKey = 24 bytes nonceKey
-	 * @param options default value is { mode: KernelValidationMode.DEFAULT, type: KernelValidationType.ROOT, identifierWithoutType: this.erc7579Validator.address(), key: zeroBytes(2) }
+	 * @param options default value is { mode: KernelValidationMode.DEFAULT, type: KernelValidationType.ROOT, identifierWithoutType: this.validator.address(), key: zeroBytes(2) }
 	 * @returns hex string
 	 */
 	getNonceKey(options?: {
@@ -99,7 +99,7 @@ export class KernelV3Account extends SmartAccount {
 		const defaultOptions = {
 			mode: KernelValidationMode.DEFAULT,
 			type: this.vType ?? KernelValidationType.ROOT,
-			identifier: this.erc7579Validator.address(),
+			identifier: this.validator.address(),
 			key: zeroBytes(2),
 		}
 		const { mode, type, identifier, key } = { ...defaultOptions, ...options }
@@ -119,11 +119,11 @@ export class KernelV3Account extends SmartAccount {
 	}
 
 	override async getDummySignature(userOp: UserOp) {
-		return this.erc7579Validator.getDummySignature(userOp)
+		return this.validator.getDummySignature(userOp)
 	}
 
 	override async getSignature(userOpHash: Uint8Array, userOp: UserOp) {
-		return this.erc7579Validator.getSignature(userOpHash, userOp)
+		return this.validator.getSignature(userOpHash, userOp)
 	}
 
 	override connect(address: string): KernelV3Account {

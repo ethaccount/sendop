@@ -53,7 +53,7 @@ const nexus = new NexusAccount({
 	address: computedAddress,
 	client,
 	bundler,
-	erc7579Validator: new EOAValidatorModule({
+	validator: new EOAValidatorModule({
 		address: ADDRESS.K1Validator,
 		signer,
 	}),

@@ -27,7 +27,7 @@ export type NexusAccountOptions = {
 	address?: string
 	client: JsonRpcProvider
 	bundler: Bundler
-	erc7579Validator: ERC7579Validator
+	validator: ERC7579Validator
 	pmGetter?: PaymasterGetter
 	config?: {
 		nonce?: {
@@ -65,8 +65,8 @@ export class NexusAccount extends SmartAccount {
 		return this._options.bundler
 	}
 
-	get erc7579Validator(): ERC7579Validator {
-		return this._options.erc7579Validator
+	get validator(): ERC7579Validator {
+		return this._options.validator
 	}
 
 	get pmGetter(): PaymasterGetter | undefined {
@@ -101,13 +101,13 @@ export class NexusAccount extends SmartAccount {
 
 	/**
 	 * @dev [3 bytes empty][1 bytes validation mode][20 bytes validator][8 bytes nonce]
-	 * @param options default value is { mode: KernelValidationMode.DEFAULT, type: KernelValidationType.ROOT, identifierWithoutType: this.erc7579Validator.address(), key: zeroBytes(2) }
+	 * @param options default value is { mode: KernelValidationMode.DEFAULT, type: KernelValidationType.ROOT, identifierWithoutType: this.validator.address(), key: zeroBytes(2) }
 	 * @returns hex string
 	 */
 	getNonceKey(options?: { mode?: NexusValidationMode; validator?: string; key?: string }) {
 		const defaultOptions = {
 			mode: NexusValidationMode.VALIDATION,
-			validator: this.erc7579Validator.address(),
+			validator: this.validator.address(),
 			key: zeroBytes(3),
 		}
 		const { mode, validator, key } = { ...defaultOptions, ...options }
@@ -167,11 +167,11 @@ export class NexusAccount extends SmartAccount {
 	}
 
 	override async getDummySignature(userOp: UserOp) {
-		return this.erc7579Validator.getDummySignature(userOp)
+		return this.validator.getDummySignature(userOp)
 	}
 
 	override async getSignature(userOpHash: Uint8Array, userOp: UserOp) {
-		return this.erc7579Validator.getSignature(userOpHash, userOp)
+		return this.validator.getSignature(userOpHash, userOp)
 	}
 
 	override connect(address: string): NexusAccount {
