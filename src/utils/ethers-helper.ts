@@ -1,6 +1,12 @@
 import { SendopError } from '@/error'
 import type { ParamType } from 'ethers'
-import { AbiCoder, getAddress, hexlify, randomBytes, toBeHex, zeroPadBytes, zeroPadValue } from 'ethers'
+import { AbiCoder, concat, getAddress, hexlify, randomBytes, toBeHex, zeroPadBytes, zeroPadValue } from 'ethers'
+
+export function concatBytesList(bytesList: string[]) {
+	return bytesList.reduce((acc, bytes) => {
+		return concat([acc, bytes])
+	}, '0x')
+}
 
 /**
  * Turn bigint to 32 bytes hex string

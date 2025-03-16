@@ -1,9 +1,9 @@
 import ADDRESS from '@/addresses'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import { KernelV3Account, PimlicoBundler, sendop, SMART_SESSIONS_USE_MODE } from '@/index'
-import { KernelValidationType } from '@/smart-accounts/kernel-v3/types'
+import { concatBytesList, getSmartSessionUseModeSignature, KernelV3Account, PimlicoBundler, sendop } from '@/index'
 import INTERFACES from '@/interfaces'
-import { concat, JsonRpcProvider } from 'ethers'
+import { KernelValidationType } from '@/smart-accounts/kernel-v3/types'
+import { JsonRpcProvider } from 'ethers'
 import fs from 'fs'
 import path from 'path'
 import yargs from 'yargs'
@@ -62,13 +62,13 @@ const kernel = new KernelV3Account({
 			const threshold = 1
 			return getSmartSessionUseModeSignature(
 				permissionId,
-				concatHexString(Array(threshold).fill(DUMMY_ECDSA_SIGNATURE)),
+				concatBytesList(Array(threshold).fill(DUMMY_ECDSA_SIGNATURE)),
 			)
 		},
 		getSignature: async (userOpHash: Uint8Array) => {
 			const threshold = 1
 			const signature = await account1.signMessage(userOpHash)
-			return getSmartSessionUseModeSignature(permissionId, concatHexString(Array(threshold).fill(signature)))
+			return getSmartSessionUseModeSignature(permissionId, concatBytesList(Array(threshold).fill(signature)))
 		},
 	},
 })
@@ -90,13 +90,3 @@ logger.info(`hash: ${op.hash}`)
 
 const receipt = await op.wait()
 logger.info('userOp success:', receipt.success)
-
-function getSmartSessionUseModeSignature(permissionId: string, signature: string) {
-	return concat([SMART_SESSIONS_USE_MODE, permissionId, signature])
-}
-
-function concatHexString(hexStrings: string[]) {
-	return hexStrings.reduce((acc, hexString) => {
-		return concat([acc, hexString])
-	}, '0x')
-}
