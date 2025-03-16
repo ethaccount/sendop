@@ -1,102 +1,85 @@
 import ADDRESS from '@/addresses'
 import { NexusFactory__factory } from '@/contract-types'
-import {
-	CallType,
-	encodeExecution,
-	encodeExecutions,
-	ERC7579_MODULE_TYPE,
-	ExecType,
-	ModeSelector,
-	sendop,
-	type Bundler,
-	type ERC7579Validator,
-	type Execution,
-	type PaymasterGetter,
-	type SendOpResult,
-	type UserOp,
-} from '@/core'
+import { CallType, encodeExecutions, ERC7579_MODULE_TYPE, ExecType, ModeSelector, type Execution } from '@/core'
 import { SendopError } from '@/error'
 import INTERFACES from '@/interfaces'
-import { abiEncode, connectEntryPointV07, isBytes, toBytes32, zeroBytes } from '@/utils'
+import { abiEncode, isBytes, toBytes32, zeroBytes } from '@/utils'
 import type { JsonRpcProvider } from 'ethers'
-import { concat, toBeHex } from 'ethers/utils'
-import { NoAddressAccountError, SmartAccount } from '../SmartAccount'
+import { concat } from 'ethers/utils'
+import { SmartAccount, type SmartAccountOptions } from '../SmartAccount'
 import { NexusValidationMode, type NexusCreationOptions, type NexusInstallModuleConfig } from './types'
 
-export type NexusAccountOptions = {
-	address?: string
-	client: JsonRpcProvider
-	bundler: Bundler
-	validator: ERC7579Validator
-	pmGetter?: PaymasterGetter
-	config?: {
-		nonce?: {
-			mode?: NexusValidationMode // 1 byte
-			validator?: string // 20 bytes
-			key?: string // 3 bytes
-		}
-		execMode?: {
-			callType?: CallType // 1 byte
-			execType?: ExecType // 1 byte
-			unused?: string // 4 bytes
-			modeSelector?: ModeSelector // 4 bytes
-			modePayload?: string // 22 bytes
-		}
+export type NexusAccountOptions = SmartAccountOptions & NexusAccountConfig
+
+export type NexusAccountConfig = {
+	nonce?: {
+		mode?: NexusValidationMode // 1 byte
+		validator?: string // 20 bytes
+		key?: string // 3 bytes
+	}
+	execMode?: {
+		callType?: CallType // 1 byte
+		execType?: ExecType // 1 byte
+		unused?: string // 4 bytes
+		modeSelector?: ModeSelector // 4 bytes
+		modePayload?: string // 22 bytes
 	}
 }
 
 export class NexusAccount extends SmartAccount {
-	private readonly _options: NexusAccountOptions
+	private readonly _nexusConfig: NexusAccountConfig | undefined
+
+	static readonly interface = INTERFACES.Nexus
+	static readonly factoryInterface = INTERFACES.NexusFactory
+	static readonly bootstrapInterface = INTERFACES.NexusBootstrap
+	get interface() {
+		return NexusAccount.interface
+	}
+	get factoryInterface() {
+		return NexusAccount.factoryInterface
+	}
+	get bootstrapInterface() {
+		return NexusAccount.bootstrapInterface
+	}
+
+	static override accountId() {
+		return 'biconomy.nexus.1.0.2'
+	}
 
 	constructor(options: NexusAccountOptions) {
-		super()
-		this._options = options
+		super(options)
+		this._nexusConfig = { ...options }
 	}
 
-	get address(): string | undefined {
-		return this._options.address
+	override connect(address: string): NexusAccount {
+		return new NexusAccount({
+			...this._options,
+			address,
+		})
 	}
 
-	get client(): JsonRpcProvider {
-		return this._options.client
+	/**
+	 * @returns bytes: factory address + factory calldata
+	 */
+	override getInitCode(creationOptions: NexusCreationOptions): string {
+		const factoryCalldata = this.factoryInterface.encodeFunctionData('createAccount', [
+			NexusAccount.getInitializeData(creationOptions),
+			creationOptions.salt,
+		])
+		return concat([ADDRESS.NexusFactory, factoryCalldata])
 	}
 
-	get bundler(): Bundler {
-		return this._options.bundler
-	}
-
-	get validator(): ERC7579Validator {
-		return this._options.validator
-	}
-
-	get pmGetter(): PaymasterGetter | undefined {
-		return this._options.pmGetter
-	}
-
-	override async getSender() {
-		if (!this.address) {
-			throw new NoAddressAccountError()
-		}
-		return this.address
-	}
-
-	override async getNonce() {
-		const nonce = await connectEntryPointV07(this.client).getNonce(
-			this.getSender(),
-			this.getNonceKey(this._options.config?.nonce),
+	static override async getNewAddress(client: JsonRpcProvider, creationOptions: NexusCreationOptions) {
+		const factory = NexusFactory__factory.connect(ADDRESS.NexusFactory, client)
+		const address = await factory.computeAccountAddress(
+			this.getInitializeData(creationOptions),
+			creationOptions.salt,
 		)
-		return toBeHex(nonce)
+		return address
 	}
 
-	async getCustomNonce(options: { mode?: NexusValidationMode; validator?: string; key?: string }) {
-		const nonce = await connectEntryPointV07(this.client).getNonce(
-			this.getSender(),
-			this.getNonceKey({
-				...this._options.config?.nonce,
-				...options,
-			}),
-		)
-		return toBeHex(nonce)
+	override getNonceKey(): string {
+		return this._getNonceKey(this._nexusConfig?.nonce)
 	}
 
 	/**
@@ -104,7 +87,7 @@ export class NexusAccount extends SmartAccount {
 	 * @param options default value is { mode: KernelValidationMode.DEFAULT, type: KernelValidationType.ROOT, identifierWithoutType: this.validator.address(), key: zeroBytes(2) }
 	 * @returns hex string
 	 */
-	getNonceKey(options?: { mode?: NexusValidationMode; validator?: string; key?: string }) {
+	private _getNonceKey(options?: { mode?: NexusValidationMode; validator?: string; key?: string }) {
 		const defaultOptions = {
 			mode: NexusValidationMode.VALIDATION,
 			validator: this.validator.address(),
@@ -133,7 +116,7 @@ export class NexusAccount extends SmartAccount {
 		}
 		let { callType, execType, modeSelector, modePayload, unused } = {
 			...defaultExecutionMode,
-			...this._options.config?.execMode,
+			...this._nexusConfig?.execMode,
 		}
 
 		// If there is only one execution, set callType to SIGNLE
@@ -166,63 +149,8 @@ export class NexusAccount extends SmartAccount {
 		}
 	}
 
-	override async getDummySignature(userOp: UserOp) {
-		return this.validator.getDummySignature(userOp)
-	}
-
-	override async getSignature(userOpHash: Uint8Array, userOp: UserOp) {
-		return this.validator.getSignature(userOpHash, userOp)
-	}
-
-	override connect(address: string): NexusAccount {
-		return new NexusAccount({
-			...this._options,
-			address,
-		})
-	}
-
-	override async deploy(creationOptions: NexusCreationOptions, pmGetter?: PaymasterGetter): Promise<SendOpResult> {
-		const computedAddress = await NexusAccount.getNewAddress(this.client, creationOptions)
-		return await sendop({
-			bundler: this.bundler,
-			executions: [],
-			opGetter: this.connect(computedAddress),
-			pmGetter: pmGetter ?? this.pmGetter,
-			initCode: this.getInitCode(creationOptions),
-		})
-	}
-
-	override async send(executions: Execution[], pmGetter?: PaymasterGetter): Promise<SendOpResult> {
-		return await sendop({
-			bundler: this.bundler,
-			executions,
-			opGetter: this,
-			pmGetter: pmGetter ?? this.pmGetter,
-		})
-	}
-
 	/**
-	 * @returns op.initCode = factory address + factory calldata
-	 */
-	override getInitCode(creationOptions: NexusCreationOptions): string {
-		const factoryCalldata = this.factoryInterface.encodeFunctionData('createAccount', [
-			NexusAccount.getInitializeData(creationOptions),
-			creationOptions.salt,
-		])
-		return concat([ADDRESS.NexusFactory, factoryCalldata])
-	}
-
-	static override async getNewAddress(client: JsonRpcProvider, creationOptions: NexusCreationOptions) {
-		const factory = NexusFactory__factory.connect(ADDRESS.NexusFactory, client)
-		const address = await factory.computeAccountAddress(
-			this.getInitializeData(creationOptions),
-			creationOptions.salt,
-		)
-		return address
-	}
-
-	/**
-	 * @dev initializeAccount's initData = abi.encode(bootstrap address, bootstrap calldata)
+	 * @dev Nexus.initializeAccount's initData = abi.encode(bootstrap address, bootstrap calldata)
 	 */
 	static getInitializeData(creationOptions: NexusCreationOptions): string {
 		let bootstrapCalldata: string
@@ -254,25 +182,6 @@ export class NexusAccount extends SmartAccount {
 				throw new NexusError('Unsupported module type')
 		}
 		return this.interface.encodeFunctionData('installModule', [config.moduleType, config.moduleAddress, initData])
-	}
-
-	static override accountId() {
-		return 'biconomy.nexus.1.0.2'
-	}
-
-	// ================================== interfaces ==================================
-
-	static readonly interface = INTERFACES.Nexus
-	static readonly factoryInterface = INTERFACES.NexusFactory
-	static readonly bootstrapInterface = INTERFACES.NexusBootstrap
-	get interface() {
-		return NexusAccount.interface
-	}
-	get factoryInterface() {
-		return NexusAccount.factoryInterface
-	}
-	get bootstrapInterface() {
-		return NexusAccount.bootstrapInterface
 	}
 }
 
