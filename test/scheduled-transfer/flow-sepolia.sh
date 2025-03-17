@@ -12,11 +12,15 @@ if [ -z "$DEPLOYED_ADDRESS" ]; then
 fi
 
 # Send ETH to the contract
-echo "Sending 0.001 ETH to contract..."
-cast send --account dev --rpc-url $sepolia $DEPLOYED_ADDRESS --value 0.001ether
+echo "Sending 0.01 ETH to contract..."
+cast send --account dev --rpc-url $sepolia $DEPLOYED_ADDRESS --value 0.01ether
 
 # Execute the transfer
 echo "Executing transfer..."
-bun run test/scheduled-transfer/execute.ts -n sepolia
+bun run test/scheduled-transfer/scheduling.ts -n sepolia -a $DEPLOYED_ADDRESS
 
 echo "Flow completed successfully!"
+
+echo "Balance of the account:"
+echo $DEPLOYED_ADDRESS
+cast balance --rpc-url $sepolia $DEPLOYED_ADDRESS

@@ -1,14 +1,12 @@
 import ADDRESS from '@/addresses'
-import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import { concatBytesList, getSmartSessionUseModeSignature, KernelV3Account, PimlicoBundler, sendop } from '@/index'
-import INTERFACES from '@/interfaces'
-import { KernelValidationType } from '@/smart-accounts/kernel-v3/types'
+import { PimlicoBundler } from '@/index'
 import { JsonRpcProvider } from 'ethers'
 import fs from 'fs'
 import path from 'path'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { MyPaymaster, setup } from '../../test/utils'
+import { executeScheduledTransfer } from './executeScheduledTransfer'
 
 const argv = await yargs(hideBin(process.argv))
 	.option('network', {
@@ -23,7 +21,7 @@ const network = argv.network === 'sepolia' ? '11155111' : 'local'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, account1 } = await setup({ chainId: network })
 
-const jobId = 1
+const jobId = 1n
 const permissionId = '0xba06d407c8d9ddaaac3b680421283c1c424cd21e8205173dfef1840705aa9957'
 const kernelAddress = fs.readFileSync(path.join(__dirname, 'deployed-address.txt'), 'utf8')
 logger.info(`Kernel address: ${kernelAddress}`)
@@ -49,44 +47,14 @@ const pmGetter = new MyPaymaster({
 	paymasterAddress: ADDRESS.CharityPaymaster,
 })
 
-const kernel = new KernelV3Account({
-	address: kernelAddress,
+const receipt = await executeScheduledTransfer({
+	accountAddress: kernelAddress,
+	permissionId,
+	jobId: jobId,
 	client,
 	bundler,
-	nonce: {
-		type: KernelValidationType.VALIDATOR,
-	},
-	validator: {
-		address: () => ADDRESS.SmartSession,
-		getDummySignature: () => {
-			const threshold = 1
-			return getSmartSessionUseModeSignature(
-				permissionId,
-				concatBytesList(Array(threshold).fill(DUMMY_ECDSA_SIGNATURE)),
-			)
-		},
-		getSignature: async (userOpHash: Uint8Array) => {
-			const threshold = 1
-			const signature = await account1.signMessage(userOpHash)
-			return getSmartSessionUseModeSignature(permissionId, concatBytesList(Array(threshold).fill(signature)))
-		},
-	},
-})
-
-const op = await sendop({
-	bundler,
-	executions: [
-		{
-			to: ADDRESS.ScheduledTransfers,
-			value: 0n,
-			data: INTERFACES.ScheduledTransfers.encodeFunctionData('executeOrder', [jobId]),
-		},
-	],
-	opGetter: kernel,
 	pmGetter,
+	sessionSigner: account1,
 })
 
-logger.info(`hash: ${op.hash}`)
-
-const receipt = await op.wait()
-logger.info('userOp success:', receipt.success)
+logger.info(`Execution success: ${receipt.success}`)
