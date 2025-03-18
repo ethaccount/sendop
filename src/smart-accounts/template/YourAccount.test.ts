@@ -1,4 +1,4 @@
-import ADDRESS from '@/addresses'
+import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
 import { randomBytes32 } from '@/utils'

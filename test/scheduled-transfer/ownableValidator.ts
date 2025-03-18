@@ -1,4 +1,4 @@
-import ADDRESS from '@/addresses'
+import { ADDRESS } from '@/addresses'
 import { OwnableValidator__factory, SmartSession__factory } from '@/contract-types'
 import { getEmptyUserOp, getUserOpHash, packUserOp } from '@/core'
 import { randomBytes32 } from '@/utils'

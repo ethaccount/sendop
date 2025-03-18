@@ -1,4 +1,4 @@
-const ADDRESS = {
+export const ADDRESS = {
     "EntryPointV7": "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
     "Registry": "0x000000000069E2a187AEFFb852bF3cCdC95151B2",
     "KernelV3Factory": "0xaac5D4240AF87249B3f71BC8E4A2cae074A3E419",
@@ -19,5 +19,3 @@ const ADDRESS = {
     "Counter": "0xB6a6520911fcaD76C23c0654cCbaD42c6D582Ca7",
     "CharityPaymaster": "0xB92bEc664f089021F33B8D6913F45E6A57DA666c"
 };
-
-export default ADDRESS;

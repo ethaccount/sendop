@@ -4,7 +4,7 @@ import { EOAValidatorModule } from '@/validators/EOAValidatorModule'
 import { Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import { PimlicoPaymaster, setup } from './utils'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
-import ADDRESS from '@/addresses'
+import { ADDRESS } from '@/addresses'
 
 // only works for sepolia
 

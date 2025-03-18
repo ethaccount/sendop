@@ -1,4 +1,4 @@
-import ADDRESS from '@/addresses'
+import { ADDRESS } from '@/addresses'
 import { getBytesLength } from '@/utils'
 import { getBytes, toBeHex } from 'ethers'
 import type { Bundler } from './interface'

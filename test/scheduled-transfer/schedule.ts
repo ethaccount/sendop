@@ -1,4 +1,4 @@
-import ADDRESS from '@/addresses'
+import { ADDRESS } from '@/addresses'
 import { RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 import type { SessionStruct } from '@/contract-types/SmartSession'
 import {

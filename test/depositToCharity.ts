@@ -1,7 +1,7 @@
 import { connectEntryPointV07 } from '@/utils/contract-helper'
 import { formatEther, JsonRpcProvider, parseEther, Wallet } from 'ethers'
 import { setup } from './utils/setup'
-import ADDRESS from '@/addresses'
+import { ADDRESS } from '@/addresses'
 
 const { CLIENT_URL, privateKey, chainId, logger } = await setup({ chainId: 'local' })
 

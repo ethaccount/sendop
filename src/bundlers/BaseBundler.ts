@@ -1,4 +1,4 @@
-import ADDRESS from '@/addresses'
+import { ADDRESS } from '@/addresses'
 import type { Bundler, UserOp, UserOpReceipt } from '@/core'
 import { normalizeError, SendopError } from '@/error'
 import { RpcProvider } from '@/RpcProvider'

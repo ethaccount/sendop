@@ -1,4 +1,4 @@
-import ADDRESS from '@/addresses'
+import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/index'
 import { JsonRpcProvider } from 'ethers'
 import fs from 'fs'

@@ -8,7 +8,7 @@ import { MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { AlchemyBundler } from './AlchemyBundler'
 import { PimlicoBundler } from './PimlicoBundler'
-import ADDRESS from '@/addresses'
+import { ADDRESS } from '@/addresses'
 
 const {
 	logger,

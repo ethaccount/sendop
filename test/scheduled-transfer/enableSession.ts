@@ -1,4 +1,4 @@
-import ADDRESS from '@/addresses'
+import { ADDRESS } from '@/addresses'
 import type { SessionStruct } from '@/contract-types/SmartSession'
 import {
 	abiEncode,

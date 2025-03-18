@@ -14,7 +14,7 @@ Object.entries(addresses).forEach(([address, name]) => {
 })
 
 // Create the output string
-const output = `const ADDRESS = ${JSON.stringify(transformedAddresses, null, 4)};\n\nexport default ADDRESS;`
+const output = `export const ADDRESS = ${JSON.stringify(transformedAddresses, null, 4)};`
 
 // Write to a new file
 const outputPath = path.join(__dirname, '../src', 'addresses.ts')

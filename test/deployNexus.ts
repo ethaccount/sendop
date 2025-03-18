@@ -1,4 +1,4 @@
-import ADDRESS from '@/addresses'
+import { ADDRESS } from '@/addresses'
 import {
 	BICONOMY_ATTESTER_ADDRESS,
 	EOAValidatorModule,

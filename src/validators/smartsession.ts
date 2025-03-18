@@ -1,4 +1,4 @@
-import ADDRESS from '@/addresses'
+import { ADDRESS } from '@/addresses'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
 import type { SessionStruct } from '@/contract-types/SmartSession'
 import { ERC7579Validator } from '@/core'

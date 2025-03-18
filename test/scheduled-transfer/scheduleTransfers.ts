@@ -1,4 +1,4 @@
-import ADDRESS from '@/addresses'
+import { ADDRESS } from '@/addresses'
 import { ScheduledTransfers__factory } from '@/contract-types'
 import { JsonRpcProvider } from 'ethers'
 import fs from 'fs'

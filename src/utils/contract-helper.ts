@@ -1,4 +1,4 @@
-import ADDRESS from '@/addresses'
+import { ADDRESS } from '@/addresses'
 import { EntryPointV7__factory, Registry__factory } from '@/contract-types'
 import type { UserOp } from '@/core'
 import { packUserOp } from '@/core'

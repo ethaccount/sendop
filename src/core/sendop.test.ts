@@ -1,4 +1,4 @@
-import ADDRESS from '@/addresses'
+import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { KernelV3Account } from '@/smart-accounts'
 import { connectEntryPointV07 } from '@/utils/contract-helper'
