@@ -33,11 +33,11 @@ export abstract class ERC7579Validator implements SignatureGetter {
 	abstract getDummySignature(userOp: UserOp): Promise<string> | string
 	abstract getSignature(userOpHash: Uint8Array, userOp: UserOp): Promise<string> | string
 
-	static getInitData(args: any): BytesLike {
+	static getInitData(args: any): string {
 		throw new ERC7579ValidatorError('Not implemented')
 	}
 
-	static getDeInitData(args: any): BytesLike {
+	static getDeInitData(args: any): string {
 		throw new ERC7579ValidatorError('Not implemented')
 	}
 }

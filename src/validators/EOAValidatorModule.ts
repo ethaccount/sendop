@@ -28,11 +28,11 @@ export class EOAValidatorModule extends ERC7579Validator {
 		return await this._options.signer.signMessage(userOpHash)
 	}
 
-	static getInitData(address: string): BytesLike {
+	static getInitData(address: string): string {
 		return address
 	}
 
-	static getDeInitData(): BytesLike {
+	static getDeInitData(): string {
 		return '0x'
 	}
 }

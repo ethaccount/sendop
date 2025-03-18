@@ -20,7 +20,7 @@ export class WebAuthnValidatorModule extends ERC7579Validator {
 		this.#signMessage = options.signMessage
 	}
 
-	static getInitData(options: { pubKeyX: bigint; pubKeyY: bigint; authenticatorIdHash: BytesLike }): BytesLike {
+	static getInitData(options: { pubKeyX: bigint; pubKeyY: bigint; authenticatorIdHash: BytesLike }): string {
 		const { pubKeyX, pubKeyY, authenticatorIdHash } = options
 		return abiEncode(
 			['tuple(uint256 pubKeyX, uint256 pubKeyY)', 'bytes32'],
@@ -28,7 +28,7 @@ export class WebAuthnValidatorModule extends ERC7579Validator {
 		)
 	}
 
-	static getDeInitData(): BytesLike {
+	static getDeInitData(): string {
 		return '0x'
 	}
 
