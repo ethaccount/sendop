@@ -1,6 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import { SmartSession__factory } from '@/contract-types'
-import INTERFACES from '@/interfaces'
+import { INTERFACES } from '@/interfaces'
 import { concat, JsonRpcProvider, keccak256 } from 'ethers'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'

@@ -41,11 +41,9 @@ const interfaceEntries = factoryFiles
 // Create the output string
 const output = `${imports}
 
-const INTERFACES = {
+export const INTERFACES = {
 ${interfaceEntries}
 };
-
-export default INTERFACES;
 `
 
 // Write to a new file

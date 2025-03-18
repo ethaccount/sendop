@@ -9,7 +9,7 @@ import {
 	sendop,
 	zeroPadLeft,
 } from '@/index'
-import INTERFACES from '@/interfaces'
+import { INTERFACES } from '@/interfaces'
 import { JsonRpcProvider, toBeHex, Wallet } from 'ethers'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'

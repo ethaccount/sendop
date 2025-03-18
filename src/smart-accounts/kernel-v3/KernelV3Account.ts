@@ -1,7 +1,7 @@
 import { ADDRESS } from '@/addresses'
 import { CallType, encodeExecutions, ERC7579_MODULE_TYPE, ExecType, ModeSelector, type Execution } from '@/core'
 import { SendopError } from '@/error'
-import INTERFACES from '@/interfaces'
+import { INTERFACES } from '@/interfaces'
 import { abiEncode, connectEntryPointV07, isBytes, isBytes32, toBytes32, zeroBytes } from '@/utils'
 import { concat, Contract, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
 import { SmartAccount, type SmartAccountOptions } from '../SmartAccount'

@@ -16,7 +16,7 @@ import {
 	SMART_SESSIONS_ENABLE_MODE,
 	SmartSession__factory,
 } from '@/index'
-import INTERFACES from '@/interfaces'
+import { INTERFACES } from '@/interfaces'
 import { concat, JsonRpcProvider, parseEther, toBeHex, Wallet, ZeroAddress } from 'ethers'
 import fs from 'fs'
 import path from 'path'

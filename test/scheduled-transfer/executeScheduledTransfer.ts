@@ -8,7 +8,7 @@ import {
 	type Bundler,
 	type PaymasterGetter,
 } from '@/index'
-import INTERFACES from '@/interfaces'
+import { INTERFACES } from '@/interfaces'
 import { KernelValidationType } from '@/smart-accounts/kernel-v3/types'
 import type { JsonRpcProvider, Signer } from 'ethers'
 import { logger } from 'script/common'

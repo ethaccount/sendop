@@ -28,7 +28,7 @@ import { KernelV3Factory__factory } from '@/contract-types/factories/KernelV3Fac
 import { SmartSession__factory } from '@/contract-types/factories/SmartSession__factory';
 import { Counter__factory } from '@/contract-types/factories/Counter__factory';
 
-const INTERFACES = {
+export const INTERFACES = {
     ERC20SpendingLimitPolicy: ERC20SpendingLimitPolicy__factory.createInterface(),
     NexusBootstrap: NexusBootstrap__factory.createInterface(),
     CharityPaymaster: CharityPaymaster__factory.createInterface(),
@@ -59,5 +59,3 @@ const INTERFACES = {
     SmartSession: SmartSession__factory.createInterface(),
     Counter: Counter__factory.createInterface()
 };
-
-export default INTERFACES;

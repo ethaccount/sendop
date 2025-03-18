@@ -4,7 +4,7 @@ import { RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 import { Registry__factory, SmartSession__factory } from '@/contract-types/factories'
 import type { SessionStruct } from '@/contract-types/SmartSession'
 import { ERC7579_MODULE_TYPE, sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
-import INTERFACES from '@/interfaces'
+import { INTERFACES } from '@/interfaces'
 import { getScheduledTransferInitData } from '@/modules/scheduledTransfer'
 import { abiEncode, getEncodedFunctionParams, randomBytes32 } from '@/utils/ethers-helper'
 import {
