@@ -19,7 +19,6 @@ describe('NexusAccount', () => {
 	let bundler: Bundler
 	let validator: ERC7579Validator
 	let pmGetter: PaymasterGetter
-	let account: NexusAccount
 
 	beforeAll(() => {
 		signer = new Wallet(privateKey)
@@ -36,16 +35,10 @@ describe('NexusAccount', () => {
 			paymasterAddress: ADDRESS.CharityPaymaster,
 		})
 
-		account = new NexusAccount({
-			client,
-			bundler,
-			validator,
-			pmGetter,
-		})
 		logger.info(`Signer: ${signer.address}`)
 	})
 
-	describe('Deploy and setNumber', () => {
+	describe('Deploy Nexus and setNumber', () => {
 		let account: NexusAccount
 		let creationOptions: NexusCreationOptions
 		let deployedAddress: string
