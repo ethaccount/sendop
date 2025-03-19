@@ -1,6 +1,7 @@
 import { ADDRESS } from '@/addresses'
 import {
 	BICONOMY_ATTESTER_ADDRESS,
+	DEV_ATTESTER_ADDRESS,
 	EOAValidatorModule,
 	PimlicoBundler,
 	RHINESTONE_ATTESTER_ADDRESS,
@@ -28,6 +29,7 @@ logger.info(`Chain ID: ${chainId}`)
 const signer = new Wallet(privateKey)
 const client = new JsonRpcProvider(CLIENT_URL)
 const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
+	parseError: true,
 	debug: true,
 	async onBeforeEstimation(userOp) {
 		// logger.info('onBeforeEstimation', userOp)
@@ -38,10 +40,10 @@ const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 const creationOptions: NexusCreationOptions = {
 	bootstrap: 'initNexusWithSingleValidator',
 	salt: hexlify(randomBytes(32)),
-	validatorAddress: ADDRESS.K1Validator,
+	validatorAddress: ADDRESS.ECDSAValidator,
 	validatorInitData: await signer.getAddress(),
 	registryAddress: ADDRESS.Registry,
-	attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS].sort(),
+	attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS, DEV_ATTESTER_ADDRESS],
 	threshold: 1,
 }
 logger.info(`salt: ${creationOptions.salt}`)
@@ -54,7 +56,7 @@ const nexus = new NexusAccount({
 	client,
 	bundler,
 	validator: new EOAValidatorModule({
-		address: ADDRESS.K1Validator,
+		address: ADDRESS.ECDSAValidator,
 		signer,
 	}),
 })

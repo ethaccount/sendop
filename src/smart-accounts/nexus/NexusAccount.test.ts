@@ -1,6 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
-import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
+import { BICONOMY_ATTESTER_ADDRESS, DEV_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
 import { randomBytes32 } from '@/utils'
 import { EOAValidatorModule } from '@/validators'
@@ -28,7 +28,7 @@ describe('NexusAccount', () => {
 			debug: true,
 		})
 		validator = new EOAValidatorModule({
-			address: ADDRESS.K1Validator,
+			address: ADDRESS.ECDSAValidator,
 			signer: new Wallet(privateKey),
 		})
 		pmGetter = new MyPaymaster({
@@ -48,10 +48,10 @@ describe('NexusAccount', () => {
 			creationOptions = {
 				bootstrap: 'initNexusWithSingleValidator',
 				salt: randomBytes32(),
-				validatorAddress: ADDRESS.K1Validator,
+				validatorAddress: ADDRESS.ECDSAValidator,
 				validatorInitData: await resolveAddress(signer),
 				registryAddress: ADDRESS.Registry,
-				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS].sort(),
+				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS, DEV_ATTESTER_ADDRESS],
 				threshold: 1,
 			}
 		})
@@ -96,10 +96,10 @@ describe('NexusAccount', () => {
 			const creationOptions: NexusCreationOptions = {
 				bootstrap: 'initNexusWithSingleValidator',
 				salt: randomBytes32(),
-				validatorAddress: ADDRESS.K1Validator,
+				validatorAddress: ADDRESS.ECDSAValidator,
 				validatorInitData: signer.address,
 				registryAddress: ADDRESS.Registry,
-				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS].sort(),
+				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS, DEV_ATTESTER_ADDRESS],
 				threshold: 1,
 			}
 
