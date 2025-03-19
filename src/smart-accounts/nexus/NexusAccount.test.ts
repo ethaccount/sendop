@@ -1,14 +1,14 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
+import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
 import { randomBytes32 } from '@/utils'
 import { EOAValidatorModule } from '@/validators'
-import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
+import { Interface, JsonRpcProvider, resolveAddress, toNumber, Wallet } from 'ethers'
 import { MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { NexusAccount } from './NexusAccount'
 import type { NexusCreationOptions } from './types'
-import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup()
 logger.info(`Chain ID: ${chainId}`)
@@ -25,6 +25,7 @@ describe('NexusAccount', () => {
 		client = new JsonRpcProvider(CLIENT_URL)
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 			parseError: true,
+			debug: true,
 		})
 		validator = new EOAValidatorModule({
 			address: ADDRESS.K1Validator,
@@ -46,11 +47,11 @@ describe('NexusAccount', () => {
 		beforeAll(async () => {
 			creationOptions = {
 				bootstrap: 'initNexusWithSingleValidator',
-				salt: hexlify(randomBytes(32)),
+				salt: randomBytes32(),
 				validatorAddress: ADDRESS.K1Validator,
 				validatorInitData: await resolveAddress(signer),
 				registryAddress: ADDRESS.Registry,
-				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS],
+				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS].sort(),
 				threshold: 1,
 			}
 		})
@@ -98,7 +99,7 @@ describe('NexusAccount', () => {
 				validatorAddress: ADDRESS.K1Validator,
 				validatorInitData: signer.address,
 				registryAddress: ADDRESS.Registry,
-				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS],
+				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS].sort(),
 				threshold: 1,
 			}
 

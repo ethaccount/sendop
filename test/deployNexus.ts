@@ -28,7 +28,7 @@ logger.info(`Chain ID: ${chainId}`)
 const signer = new Wallet(privateKey)
 const client = new JsonRpcProvider(CLIENT_URL)
 const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
-	// debugHandleOps: true,
+	debug: true,
 	async onBeforeEstimation(userOp) {
 		// logger.info('onBeforeEstimation', userOp)
 		return userOp
@@ -41,7 +41,7 @@ const creationOptions: NexusCreationOptions = {
 	validatorAddress: ADDRESS.K1Validator,
 	validatorInitData: await signer.getAddress(),
 	registryAddress: ADDRESS.Registry,
-	attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS],
+	attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS].sort(),
 	threshold: 1,
 }
 logger.info(`salt: ${creationOptions.salt}`)

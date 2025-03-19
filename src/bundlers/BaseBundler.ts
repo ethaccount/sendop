@@ -1,8 +1,9 @@
 import { ADDRESS } from '@/addresses'
-import type { Bundler, UserOp, UserOpReceipt } from '@/core'
+import { type Bundler, type UserOp, type UserOpReceipt } from '@/core'
 import { normalizeError, SendopError } from '@/error'
 import { RpcProvider } from '@/RpcProvider'
 import { encodeHandleOpsCalldata, parseContractError, randomAddress } from '@/utils'
+import { toBeHex } from 'ethers'
 
 export type GasValues = {
 	maxFeePerGas: string
@@ -17,7 +18,8 @@ export type BundlerOptions = {
 	onBeforeEstimation?: (userOp: UserOp) => Promise<UserOp>
 	onGetGasValues?: (gasValues: GasValues) => Promise<GasValues>
 	onBeforeSendUserOp?: (userOp: UserOp) => Promise<UserOp>
-	debugHandleOps?: boolean
+	debugSend?: boolean
+	debug?: boolean
 	parseError?: boolean
 }
 
@@ -29,7 +31,8 @@ export abstract class BaseBundler implements Bundler {
 	protected onGetGasValues?: (gasValues: GasValues) => Promise<GasValues>
 	protected onBeforeEstimation?: (userOp: UserOp) => Promise<UserOp>
 	protected onBeforeSendUserOp?: (userOp: UserOp) => Promise<UserOp>
-	protected debugHandleOps?: boolean
+	protected debugSend?: boolean
+	protected debug?: boolean
 	protected parseError: boolean = false
 
 	constructor(chainId: string, url: string, options?: BundlerOptions) {
@@ -40,12 +43,17 @@ export abstract class BaseBundler implements Bundler {
 		this.onBeforeEstimation = options?.onBeforeEstimation
 		this.onGetGasValues = options?.onGetGasValues
 		this.onBeforeSendUserOp = options?.onBeforeSendUserOp
-		this.debugHandleOps = options?.debugHandleOps ?? false
+		this.debugSend = options?.debugSend ?? false
+		this.debug = options?.debug ?? false
 		this.parseError = options?.parseError ?? false
 
-		if (this.debugHandleOps) {
-			console.warn('debugHandleOps is enabled. It will skip gas estimation.')
+		if (this.debugSend) {
+			console.warn('debugSend is enabled. It will skip gas estimation.')
 			this.skipGasEstimation = true
+		}
+
+		if (this.debug) {
+			console.warn('debug is enabled.')
 		}
 	}
 
@@ -56,9 +64,11 @@ export abstract class BaseBundler implements Bundler {
 			userOp = await this.onBeforeSendUserOp(userOp)
 		}
 
-		if (this.debugHandleOps) {
+		if (this.debugSend) {
 			console.log('handleOpsCalldata:')
 			console.log(encodeHandleOpsCalldata([userOp], randomAddress()))
+			console.log('userOp:')
+			console.log(JSON.stringify(userOp, null, 2))
 		}
 
 		return await this.rpcProvider.send({
@@ -89,6 +99,20 @@ export abstract class BaseBundler implements Bundler {
 			})
 		} catch (error: unknown) {
 			const err = normalizeError(error)
+
+			if (this.debug) {
+				userOp.preVerificationGas = toBeHex(BigInt(99_999))
+				userOp.callGasLimit = toBeHex(BigInt(999_999))
+				userOp.verificationGasLimit = toBeHex(BigInt(999_999))
+				userOp.maxFeePerGas = toBeHex(BigInt(999_999))
+				userOp.maxPriorityFeePerGas = toBeHex(BigInt(999_999))
+
+				console.log('handleOpsCalldata:')
+				console.log(encodeHandleOpsCalldata([userOp], randomAddress()))
+				console.log('userOp:')
+				console.log(JSON.stringify(userOp, null, 2))
+			}
+
 			if (this.parseError) {
 				const hexDataMatch = err.message.match(/(0x[a-fA-F0-9]+)(?![0-9a-fA-F])/)
 				const hasHexData = hexDataMatch?.[1]
@@ -98,10 +122,11 @@ export abstract class BaseBundler implements Bundler {
 					if (parsedError) {
 						// replace hex data with parsed error
 						const newMessage = err.message.replace(hasHexData, parsedError)
-						throw new BaseBundlerError(newMessage, { cause: err })
+						throw new BaseBundlerError(newMessage)
 					}
 				}
 			}
+
 			throw err
 		}
 

@@ -38,7 +38,7 @@ const signer = new Wallet(privateKey)
 const client = new JsonRpcProvider(CLIENT_URL)
 const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 	parseError: true,
-	// debugHandleOps: true,
+	// debugSend: true,
 	// async onBeforeSendUserOp(userOp) {
 	// 	logger.info('userOp', userOp)
 	// 	logger.info('callData', userOp.callData)

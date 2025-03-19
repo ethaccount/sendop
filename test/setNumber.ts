@@ -32,8 +32,8 @@ const signer = new Wallet(privateKey)
 const client = new JsonRpcProvider(CLIENT_URL)
 const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 	parseError: true,
-	debugHandleOps: true,
-	// debugHandleOps: true,
+	debugSend: true,
+	// debugSend: true,
 	async onBeforeEstimation(userOp) {
 		// logger.info('onBeforeEstimation', userOp)
 		return userOp
