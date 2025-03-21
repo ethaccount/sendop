@@ -1,4 +1,4 @@
-import { RpcProvider } from '@/utils'
+import { RpcProvider } from '@/RpcProvider'
 import { formatUnits, JsonRpcProvider } from 'ethers'
 import { setup } from './utils'
 

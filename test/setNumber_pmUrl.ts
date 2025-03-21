@@ -1,10 +1,10 @@
 import { sendop } from '@/core'
-import { MyAccount } from '@/smart_accounts/my_account'
-import { ECDSAValidator } from '@/validators/ecdsa_validator'
+import { KernelV3Account } from '@/smart-accounts'
+import { EOAValidatorModule } from '@/validators/EOAValidatorModule'
 import { Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
-import { COUNTER_ADDRESS, PimlicoPaymaster, setup } from './utils'
+import { PimlicoPaymaster, setup } from './utils'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
-import { ECDSA_VALIDATOR_ADDRESS } from '@/address'
+import { ADDRESS } from '@/addresses'
 
 // only works for sepolia
 
@@ -21,17 +21,17 @@ const op = await sendop({
 	bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 	executions: [
 		{
-			to: COUNTER_ADDRESS,
+			to: ADDRESS.Counter,
 			data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
-			value: '0x0',
+			value: 0n,
 		},
 	],
-	opGetter: new MyAccount(FROM, {
+	opGetter: new KernelV3Account({
+		address: FROM,
 		client: new JsonRpcProvider(CLIENT_URL),
 		bundler: new PimlicoBundler(chainId, BUNDLER_URL),
-		erc7579Validator: new ECDSAValidator({
-			address: ECDSA_VALIDATOR_ADDRESS,
-			client: new JsonRpcProvider(CLIENT_URL),
+		validator: new EOAValidatorModule({
+			address: ADDRESS.K1Validator,
 			signer: new Wallet(privateKey),
 		}),
 	}),

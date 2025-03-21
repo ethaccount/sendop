@@ -1,53 +1,87 @@
-import { ENTRY_POINT_V07 } from '@/core'
 import { SendopError } from '@/error'
-import type { ContractRunner, ParamType } from 'ethers'
-import { AbiCoder, Contract, getAddress, Interface, zeroPadBytes, zeroPadValue } from 'ethers'
+import type { ParamType } from 'ethers'
+import { AbiCoder, concat, getAddress, hexlify, randomBytes, toBeHex, zeroPadBytes, zeroPadValue } from 'ethers'
 
-export const ERC7579Interface = new Interface([
-	'function installModule(uint256 moduleType, address module, bytes calldata initData)',
-	'function uninstallModule(uint256 moduleType, address module, bytes calldata deInitData)',
-])
-
-export const EntryPointInterface = new Interface([
-	'function getUserOpHash(tuple(address sender, uint256 nonce, bytes initCode, bytes callData, bytes32 accountGasLimits, uint256 preVerificationGas, bytes32 gasFees, bytes paymasterAndData, bytes signature) userOp) external view returns (bytes32)',
-	'function getNonce(address sender, uint192 key) external view returns (uint256 nonce)',
-	'function handleOps(tuple(address sender, uint256 nonce, bytes initCode, bytes callData, bytes32 accountGasLimits, uint256 preVerificationGas, bytes32 gasFees, bytes paymasterAndData, bytes signature)[] ops, address payable beneficiary) external',
-])
-
-export function getEntryPointContract(runner: ContractRunner) {
-	return new Contract(
-		ENTRY_POINT_V07,
-		[
-			'function getUserOpHash(tuple(address sender, uint256 nonce, bytes initCode, bytes callData, bytes32 accountGasLimits, uint256 preVerificationGas, bytes32 gasFees, bytes paymasterAndData, bytes signature) userOp) external view returns (bytes32)',
-			'function getNonce(address sender, uint192 key) external view returns (uint256 nonce)',
-			'function handleOps(tuple(address sender, uint256 nonce, bytes initCode, bytes callData, bytes32 accountGasLimits, uint256 preVerificationGas, bytes32 gasFees, bytes paymasterAndData, bytes signature)[] ops, address payable beneficiary) external',
-			'function depositTo(address account)',
-			'function balanceOf(address account) public view returns (uint256)',
-		],
-		runner,
-	)
+export function concatBytesList(bytesList: string[]) {
+	return bytesList.reduce((acc, bytes) => {
+		return concat([acc, bytes])
+	}, '0x')
 }
 
-export function is32BytesHexString(data: string) {
-	return data.startsWith('0x') && data.length === 66
+/**
+ * Turn bigint to 32 bytes hex string
+ * @param value bigint
+ * @returns hex string
+ */
+export function toBytes32(value: bigint): string {
+	return zeroPadValue(toBeHex(value), 32)
 }
 
-export function padLeft(data: string, length: number = 32) {
+/**
+ * @param length bytes length
+ * @returns hex string
+ */
+export function zeroBytes(length?: number) {
+	if (length === undefined) {
+		return '0x'
+	}
+	return '0x' + '00'.repeat(length)
+}
+
+/**
+ * Remove the function selector from the calldata
+ * @param callData hex string
+ * @returns hex string
+ */
+export function getEncodedFunctionParams(callData: string) {
+	return '0x' + callData.slice(10)
+}
+
+export function randomAddress() {
+	return hexlify(randomBytes(20))
+}
+
+export function randomBytes32() {
+	return hexlify(randomBytes(32))
+}
+
+export function getBytesLength(data: string) {
+	if (!isBytes(data)) {
+		return 0
+	}
+	return (data.length - 2) / 2
+}
+
+export function isBytes(data: string, bytesLength?: number) {
+	if (bytesLength && data.length !== bytesLength * 2 + 2) {
+		return false
+	}
 	if (!data.startsWith('0x')) {
-		throw new EthersHelperError('data must start with 0x in padLeft')
+		return false
+	}
+	if (data.length > 2 && !/^0x[0-9a-fA-F]+$/.test(data)) {
+		return false
 	}
 	if (data.length % 2 !== 0) {
-		data = data.slice(0, 2) + '0' + data.slice(2)
+		return false
+	}
+	return true
+}
+
+export function isBytes32(data: string) {
+	return isBytes(data, 32)
+}
+
+export function zeroPadLeft(data: string, length: number = 32) {
+	if (!isBytes(data)) {
+		throw new InvalidHexStringError()
 	}
 	return zeroPadValue(data, length)
 }
 
-export function padRight(data: string, length: number = 32) {
-	if (!data.startsWith('0x')) {
-		throw new EthersHelperError('data must start with 0x in padRight')
-	}
-	if (data.length % 2 !== 0) {
-		data = data.slice(0, 2) + '0' + data.slice(2)
+export function zeroPadRight(data: string, length: number = 32) {
+	if (!isBytes(data)) {
+		throw new InvalidHexStringError()
 	}
 	return zeroPadBytes(data, length)
 }
@@ -60,9 +94,9 @@ export function isSameAddress(address1: string, address2: string) {
 	return getAddress(address1) === getAddress(address2)
 }
 
-export class EthersHelperError extends SendopError {
-	constructor(message: string, cause?: Error) {
-		super(message, cause)
-		this.name = 'EthersHelperError'
+export class InvalidHexStringError extends SendopError {
+	constructor(message?: string, cause?: Error) {
+		super(message ?? 'Invalid hex string', cause)
+		this.name = 'InvalidHexStringError'
 	}
 }

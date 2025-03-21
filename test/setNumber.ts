@@ -1,45 +1,70 @@
-import { ECDSA_VALIDATOR_ADDRESS } from '@/address'
+import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { sendop } from '@/core'
-import { Kernel } from '@/smart_accounts'
-import { ECDSAValidator } from '@/validators/ecdsa_validator'
+import { KernelV3Account } from '@/smart-accounts'
+import { EOAValidatorModule } from '@/validators/EOAValidatorModule'
 import { getAddress, Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
-import { CHARITY_PAYMASTER_ADDRESS, COUNTER_ADDRESS, MyPaymaster, setup } from './utils'
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
+import { MyPaymaster, setup } from './utils'
+import { NexusAccount } from '@/smart-accounts/nexus/NexusAccount'
 
-const { logger, chainId, CLIENT_URL, PIMLICO_BUNDLER_URL, privateKey } = await setup({ chainId: '11155111' })
+const argv = await yargs(hideBin(process.argv))
+	.option('network', {
+		alias: 'n',
+		choices: ['local', 'sepolia'] as const,
+		description: 'Network (local or sepolia)',
+		demandOption: true,
+	})
+	// address
+	.option('address', {
+		alias: 'a',
+		type: 'string',
+		description: 'Address',
+		demandOption: true,
+	})
+	.help().argv
+const network = argv.network === 'sepolia' ? '11155111' : 'local'
+const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup({ chainId: network })
 logger.info(`Chain ID: ${chainId}`)
 
-const FROM = '0x69F062dA4F6e200e235F66e151E2733E5ed306b9' // kernel on sepolia
+const signer = new Wallet(privateKey)
+const client = new JsonRpcProvider(CLIENT_URL)
+const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
+	parseError: true,
+	debugSend: true,
+	// debugSend: true,
+	async onBeforeEstimation(userOp) {
+		// logger.info('onBeforeEstimation', userOp)
+		return userOp
+	},
+})
 
 const number = Math.floor(Math.random() * 10000)
 logger.info(`Setting number to ${number}`)
-
-const client = new JsonRpcProvider(CLIENT_URL)
-const bundler = new PimlicoBundler(chainId, PIMLICO_BUNDLER_URL)
-const signer = new Wallet(privateKey)
 
 logger.info('Sending op...')
 const op = await sendop({
 	bundler,
 	executions: [
 		{
-			to: COUNTER_ADDRESS,
+			to: ADDRESS.Counter,
 			data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
-			value: '0x0',
+			value: 0n,
 		},
 	],
-	opGetter: new Kernel(FROM, {
+	opGetter: new NexusAccount({
+		address: argv.address,
 		client,
 		bundler,
-		erc7579Validator: new ECDSAValidator({
-			address: ECDSA_VALIDATOR_ADDRESS,
-			client,
+		validator: new EOAValidatorModule({
+			address: ADDRESS.K1Validator,
 			signer,
 		}),
 	}),
 	pmGetter: new MyPaymaster({
 		client,
-		paymasterAddress: CHARITY_PAYMASTER_ADDRESS,
+		paymasterAddress: ADDRESS.CharityPaymaster,
 	}),
 })
 
@@ -49,7 +74,7 @@ const receipt = await op.wait()
 const duration = (Date.now() - startTime) / 1000 // Convert to seconds
 logger.info(`Receipt received after ${duration.toFixed(2)} seconds`)
 
-const log = receipt.logs.find(log => getAddress(log.address) === getAddress(COUNTER_ADDRESS))
+const log = receipt.logs.find(log => getAddress(log.address) === getAddress(ADDRESS.Counter))
 if (log && toNumber(log.data) === number) {
 	logger.info(`Number ${number} set successfully`)
 } else {

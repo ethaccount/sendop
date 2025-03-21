@@ -1,8 +1,7 @@
+import { ADDRESS } from '@/addresses'
 import type { GetPaymasterDataResult, GetPaymasterStubDataResult, PaymasterGetter, UserOp } from '@/core'
+import { RpcProvider } from '@/RpcProvider'
 import { Contract, JsonRpcProvider, toBeHex } from 'ethers'
-import { CHARITY_PAYMASTER_ADDRESS } from './test_address'
-import { ENTRY_POINT_V07 } from '@/core'
-import { RpcProvider } from '@/utils'
 
 export class MyPaymaster implements PaymasterGetter {
 	#client: JsonRpcProvider
@@ -20,7 +19,7 @@ export class MyPaymaster implements PaymasterGetter {
 	}
 
 	async getPaymasterStubData(userOp: UserOp): Promise<GetPaymasterStubDataResult> {
-		if (this.#paymasterAddress === CHARITY_PAYMASTER_ADDRESS) {
+		if (this.#paymasterAddress === ADDRESS.CharityPaymaster) {
 			return {
 				sponsor: {
 					name: 'My Wallet',
@@ -66,7 +65,7 @@ export class PimlicoPaymaster implements PaymasterGetter {
 			method: 'pm_getPaymasterStubData',
 			params: [
 				userOp,
-				ENTRY_POINT_V07,
+				ADDRESS.EntryPointV7,
 				toBeHex(this.chainId),
 				{
 					sponsorshipPolicyId: 'sp_superb_timeslip',
@@ -80,7 +79,7 @@ export class PimlicoPaymaster implements PaymasterGetter {
 			method: 'pm_getPaymasterData',
 			params: [
 				userOp,
-				ENTRY_POINT_V07,
+				ADDRESS.EntryPointV7,
 				toBeHex(this.chainId),
 				{
 					sponsorshipPolicyId: 'sp_superb_timeslip',

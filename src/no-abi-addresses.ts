@@ -1,0 +1,7 @@
+const NO_ABI_ADDRESS = {
+	OwnableValidator: '0x2483DA3A338895199E5e538530213157e931Bf06',
+	ScheduledTransfers: '0xA8E374779aeE60413c974b484d6509c7E4DDb6bA',
+	ScheduledOrders: '0x40dc90D670C89F322fa8b9f685770296428DCb6b'
+}
+
+export default NO_ABI_ADDRESS

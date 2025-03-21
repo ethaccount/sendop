@@ -1,10 +1,10 @@
-import { ECDSA_VALIDATOR_ADDRESS } from '@/address'
+import { ADDRESS } from '@/addresses'
 import { AlchemyBundler } from '@/bundlers/AlchemyBundler'
 import { sendop } from '@/core'
-import { Kernel } from '@/smart_accounts'
-import { ECDSAValidator } from '@/validators/ecdsa_validator'
+import { KernelV3Account } from '@/smart-accounts'
+import { EOAValidatorModule } from '@/validators/EOAValidatorModule'
 import { getAddress, Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
-import { CHARITY_PAYMASTER_ADDRESS, COUNTER_ADDRESS, MyPaymaster, setup } from './utils'
+import { MyPaymaster, setup } from './utils'
 
 const { logger, chainId, CLIENT_URL, ALCHEMY_BUNDLER_URL, privateKey } = await setup({ chainId: '11155111' })
 logger.info(`Chain ID: ${chainId}`)
@@ -23,23 +23,23 @@ const op = await sendop({
 	bundler,
 	executions: [
 		{
-			to: COUNTER_ADDRESS,
+			to: ADDRESS.Counter,
 			data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
-			value: '0x0',
+			value: 0n,
 		},
 	],
-	opGetter: new Kernel(FROM, {
+	opGetter: new KernelV3Account({
+		address: FROM,
 		client,
 		bundler,
-		erc7579Validator: new ECDSAValidator({
-			address: ECDSA_VALIDATOR_ADDRESS,
-			client,
+		validator: new EOAValidatorModule({
+			address: ADDRESS.K1Validator,
 			signer,
 		}),
 	}),
 	pmGetter: new MyPaymaster({
 		client,
-		paymasterAddress: CHARITY_PAYMASTER_ADDRESS,
+		paymasterAddress: ADDRESS.CharityPaymaster,
 	}),
 })
 
@@ -49,7 +49,7 @@ const receipt = await op.wait()
 const duration = (Date.now() - startTime) / 1000 // Convert to seconds
 logger.info(`Receipt received after ${duration.toFixed(2)} seconds`)
 
-const log = receipt.logs.find(log => getAddress(log.address) === getAddress(COUNTER_ADDRESS))
+const log = receipt.logs.find(log => getAddress(log.address) === getAddress(ADDRESS.Counter))
 if (log && toNumber(log.data) === number) {
 	logger.info(`Number ${number} set successfully`)
 } else {

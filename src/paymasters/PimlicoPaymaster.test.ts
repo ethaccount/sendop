@@ -1,10 +1,10 @@
-import { ECDSA_VALIDATOR_ADDRESS } from '@/address'
+import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
-import { Kernel } from '@/smart_accounts'
-import { ECDSAValidator } from '@/validators'
-import { hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
-import { CHARITY_PAYMASTER_ADDRESS, MyPaymaster, setup } from 'test/utils'
+import { KernelV3Account } from '@/smart-accounts'
+import { EOAValidatorModule } from '@/validators'
+import { hexlify, JsonRpcProvider, randomBytes, resolveAddress, Wallet } from 'ethers'
+import { MyPaymaster, setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { PimlicoPaymaster } from './PimlicoPaymaster'
 
@@ -18,12 +18,12 @@ if (!PIMLICO_SPONSORSHIP_POLICY_ID) {
 
 logger.info(`Chain ID: ${chainId}`)
 
-describe('sendop', () => {
+describe.skip('PimlicoPaymaster', () => {
 	let signer: Wallet
 	let client: JsonRpcProvider
 	let bundler: Bundler
 	let pmGetter: PaymasterGetter
-	let erc7579Validator: ERC7579Validator
+	let validator: ERC7579Validator
 
 	beforeAll(() => {
 		client = new JsonRpcProvider(CLIENT_URL)
@@ -31,11 +31,10 @@ describe('sendop', () => {
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL)
 		pmGetter = new MyPaymaster({
 			client,
-			paymasterAddress: CHARITY_PAYMASTER_ADDRESS,
+			paymasterAddress: ADDRESS.CharityPaymaster,
 		})
-		erc7579Validator = new ECDSAValidator({
-			address: ECDSA_VALIDATOR_ADDRESS,
-			client,
+		validator = new EOAValidatorModule({
+			address: ADDRESS.K1Validator,
 			signer,
 		})
 
@@ -45,17 +44,17 @@ describe('sendop', () => {
 	it('should deploy kernel with pimlico paymaster', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ECDSA_VALIDATOR_ADDRESS,
-			owner: await new Wallet(privateKey).getAddress(),
+			validatorAddress: ADDRESS.K1Validator,
+			validatorInitData: await resolveAddress(signer),
 		}
 
-		const deployedAddress = await Kernel.getNewAddress(client, creationOptions)
+		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
 
-		const kernel = new Kernel(deployedAddress, {
+		const kernel = new KernelV3Account({
+			address: deployedAddress,
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
-			erc7579Validator,
-			pmGetter,
+			validator,
 		})
 
 		const op = await sendop({

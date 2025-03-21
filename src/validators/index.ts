@@ -1,2 +1,3 @@
-export * from './ecdsa_validator'
-export * from './webauthn_validator'
+export * from './EOAValidatorModule'
+export * from './WebAuthnValidatorModule'
+export * from './smartsession'

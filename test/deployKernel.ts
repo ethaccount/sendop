@@ -1,9 +1,9 @@
-import { ECDSA_VALIDATOR_ADDRESS } from '@/address'
-import { ECDSAValidator, Kernel, PimlicoBundler, sendop } from '@/index'
+import { ADDRESS } from '@/addresses'
+import { EOAValidatorModule, KernelV3Account, PimlicoBundler, sendop } from '@/index'
 import { hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
-import { CHARITY_PAYMASTER_ADDRESS, MyPaymaster, setup } from './utils'
+import { MyPaymaster, setup } from './utils'
 
-const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup({ chainId: '11155111' })
+const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup({ chainId: 'local' })
 
 logger.info(`Chain ID: ${chainId}`)
 
@@ -12,35 +12,44 @@ const client = new JsonRpcProvider(CLIENT_URL)
 
 const creationOptions = {
 	salt: hexlify(randomBytes(32)), // random salt
-	validatorAddress: ECDSA_VALIDATOR_ADDRESS,
-	owner: await signer.getAddress(),
+	validatorAddress: ADDRESS.K1Validator,
+	validatorInitData: await signer.getAddress(),
 }
 
-logger.info(`Salt: ${creationOptions.salt}`)
+logger.info(`salt: ${creationOptions.salt}`)
 
-const deployedAddress = await Kernel.getNewAddress(client, creationOptions)
+const computedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
+logger.info('computedAddress:', computedAddress)
 
-const kernel = new Kernel(deployedAddress, {
+const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
+	async onBeforeEstimation(userOp) {
+		// logger.info('onBeforeEstimation', userOp)
+		return userOp
+	},
+})
+
+const kernel = new KernelV3Account({
+	address: computedAddress,
 	client,
-	bundler: new PimlicoBundler(chainId, BUNDLER_URL),
-	erc7579Validator: new ECDSAValidator({
-		address: ECDSA_VALIDATOR_ADDRESS,
-		client,
+	bundler,
+	validator: new EOAValidatorModule({
+		address: ADDRESS.K1Validator,
 		signer,
 	}),
 })
 
 const op = await sendop({
-	bundler: new PimlicoBundler(chainId, BUNDLER_URL),
+	bundler,
 	executions: [],
 	opGetter: kernel,
 	initCode: kernel.getInitCode(creationOptions),
 	pmGetter: new MyPaymaster({
 		client,
-		paymasterAddress: CHARITY_PAYMASTER_ADDRESS,
+		paymasterAddress: ADDRESS.CharityPaymaster,
 	}),
 })
 
 logger.info(`hash: ${op.hash}`)
+
 await op.wait()
-logger.info('deployed address: ', deployedAddress)
+logger.info('deployed address:', computedAddress)

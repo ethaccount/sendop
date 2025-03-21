@@ -1,5 +1,5 @@
 import type { GetPaymasterDataResult, GetPaymasterStubDataResult, PaymasterGetter, UserOp } from '@/core'
-import { ENTRY_POINT_V07 } from '@/core'
+import { ADDRESS } from '@/addresses'
 import { RpcProvider } from '@/RpcProvider'
 import { toBeHex } from 'ethers'
 
@@ -19,7 +19,7 @@ export class PimlicoPaymaster implements PaymasterGetter {
 			method: 'pm_getPaymasterStubData',
 			params: [
 				userOp,
-				ENTRY_POINT_V07,
+				ADDRESS.EntryPointV7,
 				toBeHex(this.chainId),
 				{
 					sponsorshipPolicyId: this.sponsorshipPolicyId,
@@ -33,7 +33,7 @@ export class PimlicoPaymaster implements PaymasterGetter {
 			method: 'pm_getPaymasterData',
 			params: [
 				userOp,
-				ENTRY_POINT_V07,
+				ADDRESS.EntryPointV7,
 				toBeHex(this.chainId),
 				{
 					sponsorshipPolicyId: this.sponsorshipPolicyId,

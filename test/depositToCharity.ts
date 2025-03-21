@@ -1,17 +1,17 @@
+import { connectEntryPointV07 } from '@/utils/contract-helper'
 import { formatEther, JsonRpcProvider, parseEther, Wallet } from 'ethers'
-import { CHARITY_PAYMASTER_ADDRESS } from './utils/test_address'
 import { setup } from './utils/setup'
-import { getEntryPointContract } from '@/utils'
+import { ADDRESS } from '@/addresses'
 
-const { CLIENT_URL, privateKey, chainId, logger } = await setup()
+const { CLIENT_URL, privateKey, chainId, logger } = await setup({ chainId: 'local' })
 
 logger.info(`Chain ID: ${chainId}`)
 
 const provider = new JsonRpcProvider(CLIENT_URL)
 const signer = new Wallet(privateKey, provider)
-const entryPoint = getEntryPointContract(signer)
+const entryPoint = connectEntryPointV07(signer)
 
-const balance = await entryPoint.balanceOf(CHARITY_PAYMASTER_ADDRESS)
+const balance = await entryPoint.balanceOf(ADDRESS.CharityPaymaster)
 logger.info(`Balance: ${formatEther(balance)}`)
 
 // prompt confirmation
@@ -21,7 +21,7 @@ if (confirmed !== 'y') {
 	process.exit()
 }
 
-const tx = await entryPoint.depositTo(CHARITY_PAYMASTER_ADDRESS, { value: parseEther('0.5') })
+const tx = await entryPoint.depositTo(ADDRESS.CharityPaymaster, { value: parseEther('1') })
 const receipt = await tx.wait()
 
-console.log(receipt.status)
+console.log('receipt status', receipt?.status)
