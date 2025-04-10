@@ -1,4 +1,3 @@
-import { ADDRESS } from '@/addresses'
 import { getBytesLength } from '@/utils'
 import { getBytes, toBeHex } from 'ethers'
 import type { Bundler } from './interface'
@@ -33,7 +32,7 @@ export async function send(bundler: Bundler, userOp: UserOp): Promise<SendOpResu
 }
 
 export async function buildop(options: SendopOptions): Promise<BuildopResult> {
-	const { bundler, executions, opGetter, pmGetter, initCode, nonce } = options
+	const { bundler, executions, opGetter, pmGetter, initCode, nonce, entryPointVersion = 'v0.7' } = options
 
 	const userOp = getEmptyUserOp()
 	userOp.sender = await opGetter.getSender()
@@ -82,7 +81,7 @@ export async function buildop(options: SendopOptions): Promise<BuildopResult> {
 		userOp.paymasterData = pmData.paymasterData ?? '0x'
 	}
 
-	const userOpHash = getUserOpHash(packUserOp(userOp), ADDRESS.EntryPointV07, bundler.chainId)
+	const userOpHash = getUserOpHash(packUserOp(userOp), entryPointVersion, bundler.chainId)
 
 	return {
 		userOp,

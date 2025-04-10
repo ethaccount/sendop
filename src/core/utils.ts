@@ -1,7 +1,8 @@
-import { abiEncode, isBytes } from '@/utils'
-import type { Execution, PackedUserOp, UserOp } from './types'
-import { concat, zeroPadValue, toBeHex, keccak256, AbiCoder, isAddress } from 'ethers'
+import { ADDRESS } from '@/addresses'
 import { SendopError } from '@/error'
+import { abiEncode, isBytes, type EntryPointVersion } from '@/utils'
+import { AbiCoder, concat, isAddress, keccak256, toBeHex, zeroPadValue } from 'ethers'
+import type { Execution, PackedUserOp, UserOp } from './types'
 
 export function getEmptyUserOp(): UserOp {
 	return {
@@ -51,34 +52,39 @@ export function packUserOp(userOp: UserOp): PackedUserOp {
 	}
 }
 
-export function getUserOpHash(op: PackedUserOp, entryPointAddress: string, chainId: string): string {
-	const hashedInitCode = keccak256(op.initCode)
-	const hashedCallData = keccak256(op.callData)
-	const hashedPaymasterAndData = keccak256(op.paymasterAndData)
-	const abiCoder = new AbiCoder()
-	const encoded = abiCoder.encode(
-		['bytes32', 'address', 'uint256'],
-		[
-			keccak256(
-				abiCoder.encode(
-					['address', 'uint256', 'bytes32', 'bytes32', 'bytes32', 'uint256', 'bytes32', 'bytes32'],
-					[
-						op.sender,
-						op.nonce,
-						hashedInitCode,
-						hashedCallData,
-						op.accountGasLimits,
-						op.preVerificationGas,
-						op.gasFees,
-						hashedPaymasterAndData,
-					],
-				),
-			),
-			entryPointAddress,
-			BigInt(chainId),
-		],
-	)
-	return keccak256(encoded)
+export function getUserOpHash(op: PackedUserOp, entryPointVersion: EntryPointVersion, chainId: string): string {
+	switch (entryPointVersion) {
+		case 'v0.7':
+			const hashedInitCode = keccak256(op.initCode)
+			const hashedCallData = keccak256(op.callData)
+			const hashedPaymasterAndData = keccak256(op.paymasterAndData)
+			const abiCoder = new AbiCoder()
+			const encoded = abiCoder.encode(
+				['bytes32', 'address', 'uint256'],
+				[
+					keccak256(
+						abiCoder.encode(
+							['address', 'uint256', 'bytes32', 'bytes32', 'bytes32', 'uint256', 'bytes32', 'bytes32'],
+							[
+								op.sender,
+								op.nonce,
+								hashedInitCode,
+								hashedCallData,
+								op.accountGasLimits,
+								op.preVerificationGas,
+								op.gasFees,
+								hashedPaymasterAndData,
+							],
+						),
+					),
+					ADDRESS.EntryPointV07,
+					BigInt(chainId),
+				],
+			)
+			return keccak256(encoded)
+		case 'v0.8':
+			throw new SendopError('v0.8 is not supported yet')
+	}
 }
 
 export function encodeExecution(execution: Execution) {
