@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 import { Contract, Interface, type ContractRunner } from "ethers";
-import type { EntryPointV7, EntryPointV7Interface } from "../EntryPointV7";
+import type { EntryPointV07, EntryPointV07Interface } from "../EntryPointV07";
 
 const _abi = [
   {
@@ -1002,15 +1002,15 @@ const _abi = [
   },
 ] as const;
 
-export class EntryPointV7__factory {
+export class EntryPointV07__factory {
   static readonly abi = _abi;
-  static createInterface(): EntryPointV7Interface {
-    return new Interface(_abi) as EntryPointV7Interface;
+  static createInterface(): EntryPointV07Interface {
+    return new Interface(_abi) as EntryPointV07Interface;
   }
   static connect(
     address: string,
     runner?: ContractRunner | null
-  ): EntryPointV7 {
-    return new Contract(address, _abi, runner) as unknown as EntryPointV7;
+  ): EntryPointV07 {
+    return new Contract(address, _abi, runner) as unknown as EntryPointV07;
   }
 }

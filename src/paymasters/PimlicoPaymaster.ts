@@ -19,7 +19,7 @@ export class PimlicoPaymaster implements PaymasterGetter {
 			method: 'pm_getPaymasterStubData',
 			params: [
 				userOp,
-				ADDRESS.EntryPointV7,
+				ADDRESS.EntryPointV07,
 				toBeHex(this.chainId),
 				{
 					sponsorshipPolicyId: this.sponsorshipPolicyId,
@@ -33,7 +33,7 @@ export class PimlicoPaymaster implements PaymasterGetter {
 			method: 'pm_getPaymasterData',
 			params: [
 				userOp,
-				ADDRESS.EntryPointV7,
+				ADDRESS.EntryPointV07,
 				toBeHex(this.chainId),
 				{
 					sponsorshipPolicyId: this.sponsorshipPolicyId,

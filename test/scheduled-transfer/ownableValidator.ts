@@ -43,7 +43,7 @@ for (const event of events) {
 // const userOp = getEmptyUserOp()
 // userOp.nonce = randomBytes32()
 // userOp.sender = kernelAddress
-// const userOpHash = getUserOpHash(packUserOp(userOp), ADDRESS.EntryPointV7, chainId)
+// const userOpHash = getUserOpHash(packUserOp(userOp), ADDRESS.EntryPointV07, chainId)
 // userOp.signature = await account1.signMessage(getBytes(userOpHash))
 // const validateUserOp = await ownableValidator.validateUserOp(packUserOp(userOp), userOpHash)
 // logger.info('validateUserOp:', validateUserOp)
@@ -52,7 +52,7 @@ for (const event of events) {
 const userOp = getEmptyUserOp()
 userOp.nonce = randomBytes32()
 userOp.sender = kernelAddress
-const userOpHash = getUserOpHash(packUserOp(userOp), ADDRESS.EntryPointV7, chainId)
+const userOpHash = getUserOpHash(packUserOp(userOp), ADDRESS.EntryPointV07, chainId)
 const signature = await account1.signMessage(getBytes(userOpHash))
 const smartsession = SmartSession__factory.connect(ADDRESS.SmartSession, client)
 const session = await smartsession.getSessionValidatorAndConfig(kernelAddress, permissionId)

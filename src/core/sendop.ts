@@ -82,7 +82,7 @@ export async function buildop(options: SendopOptions): Promise<BuildopResult> {
 		userOp.paymasterData = pmData.paymasterData ?? '0x'
 	}
 
-	const userOpHash = getUserOpHash(packUserOp(userOp), ADDRESS.EntryPointV7, bundler.chainId)
+	const userOpHash = getUserOpHash(packUserOp(userOp), ADDRESS.EntryPointV07, bundler.chainId)
 
 	return {
 		userOp,

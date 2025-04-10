@@ -19,6 +19,12 @@ bun test -t 'test case' # test specific test case
 bun run build
 ```
 
+#### Flow to update addresses.json
+
+```
+
+```
+
 ### Usage (v0.3.0)
 
 For more details, please refer to the *.test.ts files or the test folder.

@@ -101,7 +101,7 @@ describe.skip('AlchemyBundler', () => {
 		// Send request for gas estimation
 		const gasValues = await rpcProvider.send({
 			method: 'eth_estimateUserOperationGas',
-			params: [userOp, ADDRESS.EntryPointV7],
+			params: [userOp, ADDRESS.EntryPointV07],
 		})
 
 		logger.info(`Gas values: ${JSON.stringify(gasValues)}`)

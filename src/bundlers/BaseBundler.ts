@@ -73,7 +73,7 @@ export abstract class BaseBundler implements Bundler {
 
 		return await this.rpcProvider.send({
 			method: 'eth_sendUserOperation',
-			params: [userOp, ADDRESS.EntryPointV7],
+			params: [userOp, ADDRESS.EntryPointV07],
 		})
 	}
 
@@ -95,7 +95,7 @@ export abstract class BaseBundler implements Bundler {
 		try {
 			estimateGas = await this.rpcProvider.send({
 				method: 'eth_estimateUserOperationGas',
-				params: [userOp, ADDRESS.EntryPointV7],
+				params: [userOp, ADDRESS.EntryPointV07],
 			})
 		} catch (error: unknown) {
 			const err = normalizeError(error)

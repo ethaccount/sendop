@@ -160,7 +160,7 @@ export declare namespace EntryPoint {
   };
 }
 
-export interface EntryPointV7Interface extends Interface {
+export interface EntryPointV07Interface extends Interface {
   getFunction(
     nameOrSignature:
       | "addStake"
@@ -566,11 +566,11 @@ export namespace WithdrawnEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export interface EntryPointV7 extends BaseContract {
-  connect(runner?: ContractRunner | null): EntryPointV7;
+export interface EntryPointV07 extends BaseContract {
+  connect(runner?: ContractRunner | null): EntryPointV07;
   waitForDeployment(): Promise<this>;
 
-  interface: EntryPointV7Interface;
+  interface: EntryPointV07Interface;
 
   queryFilter<TCEvent extends TypedContractEvent>(
     event: TCEvent,

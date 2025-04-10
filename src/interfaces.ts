@@ -1,7 +1,6 @@
 import { ERC20SpendingLimitPolicy__factory } from '@/contract-types/factories/ERC20SpendingLimitPolicy__factory';
 import { NexusBootstrap__factory } from '@/contract-types/factories/NexusBootstrap__factory';
 import { CharityPaymaster__factory } from '@/contract-types/factories/CharityPaymaster__factory';
-import { EntryPointV7__factory } from '@/contract-types/factories/EntryPointV7__factory';
 import { SudoPolicy__factory } from '@/contract-types/factories/SudoPolicy__factory';
 import { Nexus__factory } from '@/contract-types/factories/Nexus__factory';
 import { ECDSAValidator__factory } from '@/contract-types/factories/ECDSAValidator__factory';
@@ -23,16 +22,17 @@ import { IERC7579AccountEvents__factory } from '@/contract-types/factories/manua
 import { IERC7579AccountView__factory } from '@/contract-types/factories/manual/IERC7579Account.sol/IERC7579AccountView__factory';
 import { KernelV3__factory } from '@/contract-types/factories/KernelV3__factory';
 import { UniActionPolicy__factory } from '@/contract-types/factories/UniActionPolicy__factory';
+import { EntryPointV08__factory } from '@/contract-types/factories/EntryPointV08__factory';
 import { NexusFactory__factory } from '@/contract-types/factories/NexusFactory__factory';
 import { KernelV3Factory__factory } from '@/contract-types/factories/KernelV3Factory__factory';
 import { SmartSession__factory } from '@/contract-types/factories/SmartSession__factory';
 import { Counter__factory } from '@/contract-types/factories/Counter__factory';
+import { EntryPointV07__factory } from '@/contract-types/factories/EntryPointV07__factory';
 
 export const INTERFACES = {
     ERC20SpendingLimitPolicy: ERC20SpendingLimitPolicy__factory.createInterface(),
     NexusBootstrap: NexusBootstrap__factory.createInterface(),
     CharityPaymaster: CharityPaymaster__factory.createInterface(),
-    EntryPointV7: EntryPointV7__factory.createInterface(),
     SudoPolicy: SudoPolicy__factory.createInterface(),
     Nexus: Nexus__factory.createInterface(),
     ECDSAValidator: ECDSAValidator__factory.createInterface(),
@@ -54,8 +54,10 @@ export const INTERFACES = {
     IERC7579AccountView: IERC7579AccountView__factory.createInterface(),
     KernelV3: KernelV3__factory.createInterface(),
     UniActionPolicy: UniActionPolicy__factory.createInterface(),
+    EntryPointV08: EntryPointV08__factory.createInterface(),
     NexusFactory: NexusFactory__factory.createInterface(),
     KernelV3Factory: KernelV3Factory__factory.createInterface(),
     SmartSession: SmartSession__factory.createInterface(),
-    Counter: Counter__factory.createInterface()
+    Counter: Counter__factory.createInterface(),
+    EntryPointV07: EntryPointV07__factory.createInterface()
 };
