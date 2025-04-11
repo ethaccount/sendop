@@ -65,21 +65,26 @@ export abstract class BaseBundler implements Bundler {
 	abstract getGasValues(userOp: UserOp): Promise<GasValues>
 
 	async sendUserOperation(userOp: UserOp): Promise<string> {
-		if (this.onBeforeSendUserOp) {
-			userOp = await this.onBeforeSendUserOp(userOp)
-		}
+		try {
+			if (this.onBeforeSendUserOp) {
+				userOp = await this.onBeforeSendUserOp(userOp)
+			}
 
-		if (this.debugSend) {
-			console.log('handleOpsCalldata:')
-			console.log(encodeHandleOpsCalldata([userOp], randomAddress()))
-			console.log('userOp:')
-			console.log(JSON.stringify(userOp, null, 2))
-		}
+			if (this.debugSend) {
+				console.log('handleOpsCalldata:')
+				console.log(encodeHandleOpsCalldata([userOp], randomAddress()))
+				console.log('userOp:')
+				console.log(JSON.stringify(userOp, null, 2))
+			}
 
-		return await this.rpcProvider.send({
-			method: 'eth_sendUserOperation',
-			params: [userOp, this.entryPointAddress],
-		})
+			return await this.rpcProvider.send({
+				method: 'eth_sendUserOperation',
+				params: [userOp, this.entryPointAddress],
+			})
+		} catch (error: unknown) {
+			const err = normalizeError(error)
+			throw new BaseBundlerError('Failed to send user operation', { cause: err })
+		}
 	}
 
 	async getUserOperationReceipt(hash: string): Promise<UserOpReceipt> {
@@ -132,7 +137,7 @@ export abstract class BaseBundler implements Bundler {
 				}
 			}
 
-			throw err
+			throw new BaseBundlerError('Failed to estimate gas', { cause: err })
 		}
 
 		this.validateGasEstimation(estimateGas)
