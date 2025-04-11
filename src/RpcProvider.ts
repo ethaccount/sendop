@@ -21,7 +21,6 @@ export class RpcProvider {
 	}
 
 	async send(request: RpcRequest) {
-		// console.log('Sending request:', request)
 		let response
 		try {
 			response = await fetch(this.url, {
@@ -42,16 +41,22 @@ export class RpcProvider {
 		}
 
 		const data = await response.json()
-		// console.log('data', data)
+
 		if (data.error) {
-			// Note that data.error.data is specific to Alchemy
-			const errMsg = data.error.code
-				? `${request.method} (${data.error.code}): ${data.error.message}${
-						data.error.data ? ` - ${JSON.stringify(data.error.data)}` : ''
-				  }`
-				: `${request.method}: ${data.error.message}${
-						data.error.data ? ` - ${JSON.stringify(data.error.data)}` : ''
-				  }`
+			let errMsg = ''
+			if (typeof data.error === 'string') {
+				// Skandha might return a string error message in data.error
+				errMsg = data.error
+			} else {
+				// Note that data.error.data is specific to Alchemy
+				errMsg = data.error.code
+					? `${request.method} (${data.error.code}): ${data.error.message}${
+							data.error.data ? ` - ${JSON.stringify(data.error.data)}` : ''
+					  }`
+					: `${request.method}: ${data.error.message}${
+							data.error.data ? ` - ${JSON.stringify(data.error.data)}` : ''
+					  }`
+			}
 			throw new JsonRpcError(errMsg)
 		}
 
