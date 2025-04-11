@@ -1,11 +1,13 @@
 import { ADDRESS } from '@/addresses'
-import { SkandhaBundler } from '@/bundlers'
+import { PimlicoBundler } from '@/bundlers'
+import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
 import { sendop, type Execution } from '@/core'
+import { PublicPaymaster } from '@/paymasters'
 import { connectEntryPointV08 } from '@/utils'
-import { getAddress, Interface, JsonRpcProvider, toBeHex, toNumber } from 'ethers'
+import { getAddress, Interface, JsonRpcProvider, toBeHex, toNumber, Wallet } from 'ethers'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { MyPaymaster, setup } from '../utils'
+import { setup } from '../utils'
 
 const argv = await yargs(hideBin(process.argv))
 	.option('network', {
@@ -22,15 +24,18 @@ const argv = await yargs(hideBin(process.argv))
 	})
 	.help().argv
 
+const PUBLIC_PAYMASTER_ADDRESS = '0xcb04730b8aA92B8fC0d1482A0a7BD3420104556D'
+
 const network = argv.network === 'sepolia' ? '11155111' : 'local'
-const { logger, chainId, CLIENT_URL, account0 } = await setup({ chainId: network })
+const { logger, chainId, CLIENT_URL, account0, BUNDLER_URL } = await setup({ chainId: network })
 logger.info(`Chain ID: ${chainId}`)
 
-const signer = account0
+const signer = new Wallet(process.env.PRIVATE_KEY as string)
 const client = new JsonRpcProvider(CLIENT_URL)
-const bundler = new SkandhaBundler(chainId, 'http://localhost:14337/rpc', {
+const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 	entryPointVersion: 'v0.8',
 	parseError: true,
+	debug: true,
 	async onBeforeEstimation(userOp) {
 		return userOp
 	},
@@ -70,16 +75,13 @@ const op = await sendop({
 			throw new Error('Not supported')
 		},
 		getDummySignature: () => {
-			return 'DUMMY_ECDSA_SIGNATURE'
+			return DUMMY_ECDSA_SIGNATURE
 		},
-		getSignature: (userOpHash: Uint8Array) => {
-			return signer.signMessage(userOpHash)
+		getSignature: async (userOpHash: Uint8Array) => {
+			return await signer.signMessage(userOpHash)
 		},
 	},
-	pmGetter: new MyPaymaster({
-		client,
-		paymasterAddress: ADDRESS.CharityPaymaster,
-	}),
+	pmGetter: new PublicPaymaster(PUBLIC_PAYMASTER_ADDRESS),
 })
 
 const startTime = Date.now()
