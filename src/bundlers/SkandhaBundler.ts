@@ -12,6 +12,8 @@ export class SkandhaBundler extends BaseBundler {
 		// Get all gas values from estimateUserOperationGas
 		const estimateGas = await this.estimateUserOperationGas(userOp)
 
+		console.log('estimateGas', estimateGas)
+
 		let gasValues: GasValues = {
 			maxFeePerGas: toBeHex(estimateGas.maxFeePerGas),
 			maxPriorityFeePerGas: toBeHex(estimateGas.maxPriorityFeePerGas),
