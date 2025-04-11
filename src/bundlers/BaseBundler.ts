@@ -70,7 +70,7 @@ export abstract class BaseBundler implements Bundler {
 				userOp = await this.onBeforeSendUserOp(userOp)
 			}
 
-			if (this.debugSend) {
+			if (this.debug || this.debugSend) {
 				console.log('handleOpsCalldata:')
 				console.log(encodeHandleOpsCalldata([userOp], randomAddress()))
 				console.log('userOp:')
