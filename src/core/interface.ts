@@ -1,9 +1,9 @@
 import { SendopError } from '@/error'
-import type { BytesLike } from 'ethers'
 import type { Execution, GetPaymasterDataResult, GetPaymasterStubDataResult, UserOp, UserOpReceipt } from './types'
 
 export interface Bundler {
 	chainId: string
+	entryPointAddress: string
 	getGasValues(userOp: UserOp): Promise<{
 		maxFeePerGas: string
 		maxPriorityFeePerGas: string

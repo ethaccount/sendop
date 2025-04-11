@@ -1,4 +1,3 @@
-import type { EntryPointVersion } from '@/utils'
 import type { TransactionReceipt } from 'ethers'
 import type { Bundler, OperationGetter, PaymasterGetter } from './interface'
 
@@ -63,7 +62,6 @@ export type SendopOptions = {
 	pmGetter?: PaymasterGetter
 	initCode?: string // userOp.factory ++ userOp.factoryData
 	nonce?: bigint
-	entryPointVersion?: EntryPointVersion // defaults to v0.7
 }
 
 export type SendOpResult = {

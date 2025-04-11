@@ -43,7 +43,7 @@ export function parseContractError(revert: string): string {
 			const decodedError = iface.parseError(revert)
 			if (decodedError) {
 				const errorArgs = decodedError.args.length > 0 ? `(${decodedError.args.join(', ')})` : ''
-				return `${name}.${decodedError.name}${errorArgs} (The contract name might be incorrect and is for reference only)`
+				return `${name}.${decodedError.name}${errorArgs} (Note: The prefix "${name}" may not correspond to the actual contract that triggered the revert.)`
 			}
 		} catch {
 			// Continue to next interface if parsing fails

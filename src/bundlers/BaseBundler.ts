@@ -4,6 +4,7 @@ import { normalizeError, SendopError } from '@/error'
 import { RpcProvider } from '@/RpcProvider'
 import { encodeHandleOpsCalldata, parseContractError, randomAddress } from '@/utils'
 import { toBeHex } from 'ethers'
+import { type EntryPointVersion } from '@/utils/contract-helper'
 
 export type GasValues = {
 	maxFeePerGas: string
@@ -21,12 +22,15 @@ export type BundlerOptions = {
 	debugSend?: boolean
 	debug?: boolean
 	parseError?: boolean
+	entryPointVersion?: EntryPointVersion
 }
 
 export abstract class BaseBundler implements Bundler {
 	public chainId: string
 	public url: string
 	public rpcProvider: RpcProvider
+	public entryPointAddress: string
+
 	protected skipGasEstimation: boolean
 	protected onGetGasValues?: (gasValues: GasValues) => Promise<GasValues>
 	protected onBeforeEstimation?: (userOp: UserOp) => Promise<UserOp>
@@ -46,6 +50,7 @@ export abstract class BaseBundler implements Bundler {
 		this.debugSend = options?.debugSend ?? false
 		this.debug = options?.debug ?? false
 		this.parseError = options?.parseError ?? false
+		this.entryPointAddress = options?.entryPointVersion === 'v0.8' ? ADDRESS.EntryPointV08 : ADDRESS.EntryPointV07
 
 		if (this.debugSend) {
 			console.warn('debugSend is enabled. It will skip gas estimation.')
@@ -73,7 +78,7 @@ export abstract class BaseBundler implements Bundler {
 
 		return await this.rpcProvider.send({
 			method: 'eth_sendUserOperation',
-			params: [userOp, ADDRESS.EntryPointV07],
+			params: [userOp, this.entryPointAddress],
 		})
 	}
 
@@ -95,7 +100,7 @@ export abstract class BaseBundler implements Bundler {
 		try {
 			estimateGas = await this.rpcProvider.send({
 				method: 'eth_estimateUserOperationGas',
-				params: [userOp, ADDRESS.EntryPointV07],
+				params: [userOp, this.entryPointAddress],
 			})
 		} catch (error: unknown) {
 			const err = normalizeError(error)
