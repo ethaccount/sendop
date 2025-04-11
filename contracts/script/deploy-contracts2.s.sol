@@ -3,7 +3,7 @@ pragma solidity ^0.8.28;
 
 import {Script, console} from "forge-std/Script.sol";
 import {CharityPaymaster} from "../src/CharityPaymaster.sol";
-import {IEntryPoint} from "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
+import {IEntryPoint} from "aa-0.7/contracts/interfaces/IEntryPoint.sol";
 import {Counter} from "../src/Counter.sol";
 
 /*

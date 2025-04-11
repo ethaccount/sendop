@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import {IValidator} from "../../interfaces/IERC7579Module.sol";
 import {MODULE_TYPE_VALIDATOR} from "../../types/Constants.sol";
-import {PackedUserOperation} from "@account-abstraction/contracts/interfaces/PackedUserOperation.sol";
+import {PackedUserOperation} from "aa-0.7/contracts/interfaces/PackedUserOperation.sol";
 import {
     SIG_VALIDATION_FAILED_UINT,
     SIG_VALIDATION_SUCCESS_UINT,

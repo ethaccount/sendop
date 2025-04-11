@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.23;
 
-import "@account-abstraction/contracts/interfaces/IPaymaster.sol";
-import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
+import "aa-0.7/contracts/interfaces/IPaymaster.sol";
+import "aa-0.7/contracts/interfaces/IEntryPoint.sol";
 
 /*
     deposit
