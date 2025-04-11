@@ -19,7 +19,7 @@ export interface OperationGetter extends AccountGetter, SignatureGetter {}
 
 export interface AccountGetter {
 	getSender(): Promise<string> | string
-	getNonce(): Promise<string> | string
+	getNonce(): Promise<string> | string // hex string
 	getCallData(executions: Execution[]): Promise<string> | string
 }
 
