@@ -11,8 +11,28 @@ import {
 	type TypedDataDomain,
 	type TypedDataField,
 } from 'ethers'
-import type { Execution, PackedUserOp, UserOp } from './types'
+import type { Execution, FormattedUserOp, PackedUserOp, UserOp } from './types'
 import { TypedDataEncoder } from 'ethers'
+
+export function formatUserOpToHex(userOp: UserOp): FormattedUserOp {
+	return {
+		sender: userOp.sender,
+		nonce: userOp.nonce,
+		factory: userOp.factory,
+		factoryData: userOp.factoryData,
+		callData: userOp.callData,
+		callGasLimit: toBeHex(userOp.callGasLimit),
+		verificationGasLimit: toBeHex(userOp.verificationGasLimit),
+		preVerificationGas: toBeHex(userOp.preVerificationGas),
+		maxFeePerGas: toBeHex(userOp.maxFeePerGas),
+		maxPriorityFeePerGas: toBeHex(userOp.maxPriorityFeePerGas),
+		paymaster: userOp.paymaster,
+		paymasterVerificationGasLimit: toBeHex(userOp.paymasterVerificationGasLimit),
+		paymasterPostOpGasLimit: toBeHex(userOp.paymasterPostOpGasLimit),
+		paymasterData: userOp.paymasterData,
+		signature: userOp.signature,
+	}
+}
 
 export function getEmptyUserOp(): UserOp {
 	return {
@@ -21,14 +41,14 @@ export function getEmptyUserOp(): UserOp {
 		factory: null,
 		factoryData: '0x',
 		callData: '0x',
-		callGasLimit: '0x0',
-		verificationGasLimit: '0x0',
-		preVerificationGas: '0x0',
-		maxFeePerGas: '0x0',
-		maxPriorityFeePerGas: '0x0',
+		callGasLimit: 0,
+		verificationGasLimit: 0,
+		preVerificationGas: 0,
+		maxFeePerGas: 0,
+		maxPriorityFeePerGas: 0,
 		paymaster: null,
-		paymasterVerificationGasLimit: '0x0',
-		paymasterPostOpGasLimit: '0x0',
+		paymasterVerificationGasLimit: 0,
+		paymasterPostOpGasLimit: 0,
 		paymasterData: '0x',
 		signature: '0x',
 	}

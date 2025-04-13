@@ -27,15 +27,15 @@ export class AlchemyBundler extends BaseBundler {
 
 		const maxFeePerGas = (BigInt(block.baseFeePerGas) * 150n) / 100n + BigInt(maxPriorityFeePerGas)
 
-		userOp.maxFeePerGas = toBeHex(maxFeePerGas)
+		userOp.maxFeePerGas = maxFeePerGas
 
 		// Send eth_estimateUserOperationGas
 		const estimateGas = await this.estimateUserOperationGas(userOp)
 
 		let gasValues: GasValues = {
-			maxFeePerGas: toBeHex(maxFeePerGas),
-			maxPriorityFeePerGas: toBeHex(maxPriorityFeePerGas),
-			preVerificationGas: toBeHex(estimateGas.preVerificationGas),
+			maxFeePerGas: maxFeePerGas,
+			maxPriorityFeePerGas: maxPriorityFeePerGas,
+			preVerificationGas: estimateGas.preVerificationGas,
 			verificationGasLimit: estimateGas.verificationGasLimit,
 			callGasLimit: estimateGas.callGasLimit,
 		}

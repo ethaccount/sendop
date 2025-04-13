@@ -1,4 +1,5 @@
 import { SendopError } from '@/error'
+import type { TypedDataDomain, TypedDataField } from 'ethers'
 import type {
 	Execution,
 	GetPaymasterDataResult,
@@ -7,19 +8,16 @@ import type {
 	UserOp,
 	UserOpReceipt,
 } from './types'
-import type { TypedDataDomain } from 'ethers'
-import type { TypedDataField } from 'ethers'
-import type { EntryPointVersion } from '@/utils'
 
 export interface Bundler {
 	chainId: string
 	entryPointAddress: string
 	getGasValues(userOp: UserOp): Promise<{
-		maxFeePerGas: string
-		maxPriorityFeePerGas: string
-		preVerificationGas: string
-		verificationGasLimit: string
-		callGasLimit: string
+		maxFeePerGas: bigint
+		maxPriorityFeePerGas: bigint
+		preVerificationGas: bigint
+		verificationGasLimit: bigint
+		callGasLimit: bigint
 	}>
 	sendUserOperation(userOp: UserOp): Promise<string>
 	getUserOperationReceipt(hash: string): Promise<UserOpReceipt>

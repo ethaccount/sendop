@@ -7,14 +7,35 @@ export type UserOp = {
 	factory: string | null
 	factoryData: string | '0x'
 	callData: string
-	callGasLimit: string | '0x0'
-	verificationGasLimit: string | '0x0'
-	preVerificationGas: string | '0x0'
-	maxFeePerGas: string | '0x0'
-	maxPriorityFeePerGas: string | '0x0'
+	callGasLimit: bigint | number
+	verificationGasLimit: bigint | number
+	preVerificationGas: bigint | number
+	maxFeePerGas: bigint | number
+	maxPriorityFeePerGas: bigint | number
 	paymaster: string | null
-	paymasterVerificationGasLimit: string | '0x0'
-	paymasterPostOpGasLimit: string | '0x0'
+	paymasterVerificationGasLimit: bigint | number
+	paymasterPostOpGasLimit: bigint | number
+	paymasterData: string | '0x'
+	signature: string | '0x'
+}
+
+/**
+ * @dev Only formatted in BaseBundler
+ */
+export type FormattedUserOp = {
+	sender: string
+	nonce: string
+	factory: string | null
+	factoryData: string | '0x'
+	callData: string
+	callGasLimit: string
+	verificationGasLimit: string
+	preVerificationGas: string
+	maxFeePerGas: string
+	maxPriorityFeePerGas: string
+	paymaster: string | null
+	paymasterVerificationGasLimit: string
+	paymasterPostOpGasLimit: string
 	paymasterData: string | '0x'
 	signature: string | '0x'
 }
@@ -84,8 +105,8 @@ export type GetPaymasterStubDataResult = {
 	sponsor?: { name: string; icon?: string } // Sponsor info
 	paymaster?: string // Paymaster address (entrypoint v0.7)
 	paymasterData?: string // Paymaster data (entrypoint v0.7)
-	paymasterVerificationGasLimit?: string // Paymaster validation gas (entrypoint v0.7)
-	paymasterPostOpGasLimit?: string // Paymaster post-op gas (entrypoint v0.7)
+	paymasterVerificationGasLimit?: bigint // Paymaster validation gas (entrypoint v0.7)
+	paymasterPostOpGasLimit?: bigint // Paymaster post-op gas (entrypoint v0.7)
 	isFinal?: boolean // Indicates that the caller does not need to call pm_getPaymasterData
 }
 

@@ -95,8 +95,8 @@ describe.skip('AlchemyBundler', () => {
 		userOp.nonce = await kernel.getNonce()
 		userOp.callData = await kernel.getCallData([])
 		userOp.signature = await kernel.getDummySignature(userOp)
-		userOp.maxFeePerGas = gasPrice
-		userOp.maxPriorityFeePerGas = maxPriorityFeePerGas
+		userOp.maxFeePerGas = BigInt(gasPrice)
+		userOp.maxPriorityFeePerGas = BigInt(maxPriorityFeePerGas)
 
 		// Send request for gas estimation
 		const gasValues = await rpcProvider.send({

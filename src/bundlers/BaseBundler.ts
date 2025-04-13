@@ -1,17 +1,16 @@
 import { ADDRESS } from '@/addresses'
-import { type Bundler, type UserOp, type UserOpReceipt } from '@/core'
+import { formatUserOpToHex, type Bundler, type UserOp, type UserOpReceipt } from '@/core'
 import { normalizeError, SendopError } from '@/error'
 import { RpcProvider } from '@/RpcProvider'
 import { encodeHandleOpsCalldata, parseContractError, randomAddress } from '@/utils'
-import { toBeHex } from 'ethers'
 import { type EntryPointVersion } from '@/utils/contract-helper'
 
 export type GasValues = {
-	maxFeePerGas: string
-	maxPriorityFeePerGas: string
-	preVerificationGas: string
-	verificationGasLimit: string
-	callGasLimit: string
+	maxFeePerGas: bigint
+	maxPriorityFeePerGas: bigint
+	preVerificationGas: bigint
+	verificationGasLimit: bigint
+	callGasLimit: bigint
 }
 
 export type BundlerOptions = {
@@ -70,16 +69,18 @@ export abstract class BaseBundler implements Bundler {
 				userOp = await this.onBeforeSendUserOp(userOp)
 			}
 
+			const formattedUserOp = formatUserOpToHex(userOp)
+
 			if (this.debug || this.debugSend) {
 				console.log('handleOpsCalldata:')
 				console.log(encodeHandleOpsCalldata([userOp], randomAddress()))
 				console.log('userOp:')
-				console.log(JSON.stringify(userOp, null, 2))
+				console.log(JSON.stringify(formattedUserOp, null, 2))
 			}
 
 			return await this.rpcProvider.send({
 				method: 'eth_sendUserOperation',
-				params: [userOp, this.entryPointAddress],
+				params: [formattedUserOp, this.entryPointAddress],
 			})
 		} catch (error: unknown) {
 			const err = normalizeError(error)
@@ -100,27 +101,29 @@ export abstract class BaseBundler implements Bundler {
 			userOp = await this.onBeforeEstimation(userOp)
 		}
 
+		const formattedUserOp = formatUserOpToHex(userOp)
+
 		let estimateGas
 
 		try {
 			estimateGas = await this.rpcProvider.send({
 				method: 'eth_estimateUserOperationGas',
-				params: [userOp, this.entryPointAddress],
+				params: [formattedUserOp, this.entryPointAddress],
 			})
 		} catch (error: unknown) {
 			const err = normalizeError(error)
 
 			if (this.debug) {
-				userOp.preVerificationGas = toBeHex(BigInt(99_999))
-				userOp.callGasLimit = toBeHex(BigInt(999_999))
-				userOp.verificationGasLimit = toBeHex(BigInt(999_999))
-				userOp.maxFeePerGas = toBeHex(BigInt(999_999))
-				userOp.maxPriorityFeePerGas = toBeHex(BigInt(999_999))
+				userOp.preVerificationGas = 99_999
+				userOp.callGasLimit = 999_999
+				userOp.verificationGasLimit = 999_999
+				userOp.maxFeePerGas = 999_999
+				userOp.maxPriorityFeePerGas = 999_999
 
 				console.log('handleOpsCalldata:')
 				console.log(encodeHandleOpsCalldata([userOp], randomAddress()))
 				console.log('userOp:')
-				console.log(JSON.stringify(userOp, null, 2))
+				console.log(JSON.stringify(formatUserOpToHex(userOp), null, 2))
 			}
 
 			if (this.parseError) {
@@ -146,9 +149,9 @@ export abstract class BaseBundler implements Bundler {
 
 	protected getDefaultGasEstimation() {
 		return {
-			preVerificationGas: '0xf423f', // 999_999
-			verificationGasLimit: '0xf423f',
-			callGasLimit: '0xf423f',
+			preVerificationGas: 999_999,
+			verificationGasLimit: 999_999,
+			callGasLimit: 999_999,
 		}
 	}
 

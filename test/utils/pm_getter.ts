@@ -26,8 +26,8 @@ export class MyPaymaster implements PaymasterGetter {
 				},
 				paymaster: this.#paymasterAddress,
 				paymasterData: '0x',
-				paymasterVerificationGasLimit: toBeHex(999_999n),
-				paymasterPostOpGasLimit: toBeHex(999_999n),
+				paymasterVerificationGasLimit: 999_999n,
+				paymasterPostOpGasLimit: 999_999n,
 				isFinal: true,
 			}
 		}
@@ -44,8 +44,8 @@ export class MyPaymaster implements PaymasterGetter {
 			},
 			paymaster: this.#paymasterAddress,
 			paymasterData: '0x',
-			paymasterVerificationGasLimit: toBeHex(999_999n),
-			paymasterPostOpGasLimit: toBeHex(999_999n),
+			paymasterVerificationGasLimit: 999_999n,
+			paymasterPostOpGasLimit: 999_999n,
 			isFinal: true,
 		}
 	}

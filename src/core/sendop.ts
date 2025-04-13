@@ -94,8 +94,8 @@ export async function buildop(options: SendopOptions): Promise<BuildopResult> {
 		const pmStubData = await pmGetter.getPaymasterStubData(userOp)
 		userOp.paymaster = pmStubData.paymaster ?? null
 		userOp.paymasterData = pmStubData.paymasterData ?? '0x'
-		userOp.paymasterVerificationGasLimit = pmStubData.paymasterVerificationGasLimit ?? '0x0'
-		userOp.paymasterPostOpGasLimit = pmStubData.paymasterPostOpGasLimit ?? '0x0'
+		userOp.paymasterVerificationGasLimit = pmStubData.paymasterVerificationGasLimit ?? 0
+		userOp.paymasterPostOpGasLimit = pmStubData.paymasterPostOpGasLimit ?? 0
 		pmIsFinal = pmStubData.isFinal ?? false
 	}
 

@@ -1,6 +1,5 @@
 import type { UserOp } from '@/core'
 import { SendopError } from '@/error'
-import { toBeHex } from 'ethers'
 import { BaseBundler, type BundlerOptions, type GasValues } from './BaseBundler'
 
 export class SkandhaBundler extends BaseBundler {
@@ -12,14 +11,15 @@ export class SkandhaBundler extends BaseBundler {
 		// Get all gas values from estimateUserOperationGas
 		const estimateGas = await this.estimateUserOperationGas(userOp)
 
+		// TODO: better way to handle the response
 		console.log('estimateGas', estimateGas)
 
 		let gasValues: GasValues = {
-			maxFeePerGas: toBeHex(estimateGas.maxFeePerGas),
-			maxPriorityFeePerGas: toBeHex(estimateGas.maxPriorityFeePerGas),
-			preVerificationGas: toBeHex(estimateGas.preVerificationGas),
-			verificationGasLimit: estimateGas.verificationGasLimit,
-			callGasLimit: estimateGas.callGasLimit,
+			maxFeePerGas: BigInt(estimateGas.maxFeePerGas),
+			maxPriorityFeePerGas: BigInt(estimateGas.maxPriorityFeePerGas),
+			preVerificationGas: BigInt(estimateGas.preVerificationGas),
+			verificationGasLimit: BigInt(estimateGas.verificationGasLimit),
+			callGasLimit: BigInt(estimateGas.callGasLimit),
 		}
 
 		if (this.onGetGasValues) {
