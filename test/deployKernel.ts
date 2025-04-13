@@ -22,6 +22,7 @@ const computedAddress = await KernelV3Account.getNewAddress(client, creationOpti
 logger.info('computedAddress:', computedAddress)
 
 const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
+	debug: true,
 	async onBeforeEstimation(userOp) {
 		// logger.info('onBeforeEstimation', userOp)
 		return userOp

@@ -80,8 +80,8 @@ export async function buildop(options: SendopOptions): Promise<BuildopResult> {
 		}
 
 		return {
-			factory: dataSlice(initCode, 0, 40),
-			factoryData: dataSlice(initCode, 40),
+			factory: dataSlice(initCode, 0, 20),
+			factoryData: dataSlice(initCode, 20),
 		}
 	}
 
