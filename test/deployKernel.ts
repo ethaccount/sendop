@@ -3,7 +3,7 @@ import { EOAValidatorModule, KernelV3Account, PimlicoBundler, sendop } from '@/i
 import { hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
 import { MyPaymaster, setup } from './utils'
 
-const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup({ chainId: 'local' })
+const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup({ chainId: 1337n })
 
 logger.info(`Chain ID: ${chainId}`)
 

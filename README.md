@@ -37,7 +37,7 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY as string
 const CLIENT_URL = process.env.sepolia as string
 const BUNDLER_URL = process.env.sepolia as string
 
-const chainId = '11155111'
+const chainId = 11155111n
 
 const client = new JsonRpcProvider(CLIENT_URL)
 const signer = new Wallet(PRIVATE_KEY, client)

@@ -2,7 +2,7 @@ import { RpcProvider } from '@/RpcProvider'
 import { formatUnits, JsonRpcProvider } from 'ethers'
 import { setup } from './utils'
 
-const { logger, chainId, CLIENT_URL, ALCHEMY_BUNDLER_URL, PIMLICO_BUNDLER_URL } = await setup({ chainId: '11155111' })
+const { logger, chainId, CLIENT_URL, ALCHEMY_BUNDLER_URL, PIMLICO_BUNDLER_URL } = await setup({ chainId: 11155111n })
 logger.info(`Chain ID: ${chainId}`)
 
 const client = new JsonRpcProvider(CLIENT_URL)

@@ -25,7 +25,7 @@ export type BundlerOptions = {
 }
 
 export abstract class BaseBundler implements Bundler {
-	public chainId: string
+	public chainId: bigint
 	public url: string
 	public rpcProvider: RpcProvider
 	public entryPointAddress: string
@@ -38,8 +38,8 @@ export abstract class BaseBundler implements Bundler {
 	protected debug?: boolean
 	protected parseError: boolean = false
 
-	constructor(chainId: string, url: string, options?: BundlerOptions) {
-		this.chainId = chainId
+	constructor(chainId: bigint, url: string, options?: BundlerOptions) {
+		this.chainId = typeof chainId === 'string' ? BigInt(chainId) : chainId
 		this.url = url
 		this.rpcProvider = new RpcProvider(url)
 		this.skipGasEstimation = options?.skipGasEstimation ?? false

@@ -6,7 +6,7 @@ import { EOAValidatorModule } from '@/validators/EOAValidatorModule'
 import { getAddress, Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import { MyPaymaster, setup } from './utils'
 
-const { logger, chainId, CLIENT_URL, ALCHEMY_BUNDLER_URL, privateKey } = await setup({ chainId: '11155111' })
+const { logger, chainId, CLIENT_URL, ALCHEMY_BUNDLER_URL, privateKey } = await setup({ chainId: 11155111n })
 logger.info(`Chain ID: ${chainId}`)
 
 const FROM = '0x69F062dA4F6e200e235F66e151E2733E5ed306b9' // kernel on sepolia

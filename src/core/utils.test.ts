@@ -23,7 +23,7 @@ describe('core utils', () => {
 			userOp.paymasterData = '0x9abc'
 
 			const packedOp = packUserOp(userOp)
-			const chainId = '11155111'
+			const chainId = 11155111n
 			const provider = new JsonRpcProvider('https://ethereum-sepolia-rpc.publicnode.com')
 			const entryPoint = connectEntryPointV08(provider)
 			const expected = await entryPoint.getUserOpHash(packedOp)

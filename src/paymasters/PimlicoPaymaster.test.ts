@@ -9,7 +9,7 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { PimlicoPaymaster } from './PimlicoPaymaster'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, PIMLICO_SPONSORSHIP_POLICY_ID } = await setup({
-	chainId: '11155111',
+	chainId: 11155111n,
 })
 
 if (!PIMLICO_SPONSORSHIP_POLICY_ID) {

@@ -10,7 +10,7 @@ import type {
 } from './types'
 
 export interface Bundler {
-	chainId: string
+	chainId: bigint
 	entryPointAddress: string
 	getGasValues(userOp: UserOp): Promise<{
 		maxFeePerGas: bigint

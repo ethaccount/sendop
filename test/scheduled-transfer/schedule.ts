@@ -40,9 +40,12 @@ const argv = await yargs(hideBin(process.argv))
 	})
 	.help().argv
 
-const network = argv.network === 'sepolia' ? '11155111' : 'local'
-
-const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, account1 } = await setup({ chainId: network })
+const CHAIN_IDS = {
+	local: 1337n,
+	sepolia: 11155111n,
+} as const
+const chainId = CHAIN_IDS[argv.network]
+const { logger, CLIENT_URL, BUNDLER_URL, privateKey, account1 } = await setup({ chainId })
 
 logger.info(`Chain ID: ${chainId}`)
 
@@ -116,7 +119,7 @@ const smartSessionInitData = concat([SMART_SESSIONS_ENABLE_MODE, encodedSessions
 const executeInterval = 10
 const numOfExecutions = 3
 const startDate =
-	network === 'local'
+	chainId === 1337n
 		? 1 // Use a smaller fixed timestamp for local testing
 		: Math.floor(Date.now() / 1000)
 const recipient = account1.address

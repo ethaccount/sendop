@@ -17,9 +17,12 @@ const argv = await yargs(hideBin(process.argv))
 	})
 	.help().argv
 
-const network = argv.network === 'sepolia' ? '11155111' : 'local'
-
-const { logger, chainId, CLIENT_URL, BUNDLER_URL, account1 } = await setup({ chainId: network })
+const CHAIN_IDS = {
+	local: 1337n,
+	sepolia: 11155111n,
+} as const
+const chainId = CHAIN_IDS[argv.network]
+const { logger, CLIENT_URL, BUNDLER_URL, account1 } = await setup({ chainId })
 
 const jobId = 1n
 const permissionId = '0xba06d407c8d9ddaaac3b680421283c1c424cd21e8205173dfef1840705aa9957'

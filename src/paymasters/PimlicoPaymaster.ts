@@ -4,11 +4,11 @@ import { RpcProvider } from '@/RpcProvider'
 import { toBeHex } from 'ethers'
 
 export class PimlicoPaymaster implements PaymasterGetter {
-	chainId: string
+	chainId: bigint
 	paymaster: RpcProvider
 	sponsorshipPolicyId: string
 
-	constructor(options: { chainId: string; url: string; sponsorshipPolicyId: string }) {
+	constructor(options: { chainId: bigint; url: string; sponsorshipPolicyId: string }) {
 		this.chainId = options.chainId
 		this.paymaster = new RpcProvider(options.url)
 		this.sponsorshipPolicyId = options.sponsorshipPolicyId

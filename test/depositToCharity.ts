@@ -3,7 +3,7 @@ import { formatEther, JsonRpcProvider, parseEther, Wallet } from 'ethers'
 import { setup } from './utils/setup'
 import { ADDRESS } from '@/addresses'
 
-const { CLIENT_URL, privateKey, chainId, logger } = await setup({ chainId: 'local' })
+const { CLIENT_URL, privateKey, chainId, logger } = await setup({ chainId: 1337n })
 
 logger.info(`Chain ID: ${chainId}`)
 

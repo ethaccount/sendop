@@ -52,10 +52,10 @@ export class MyPaymaster implements PaymasterGetter {
 }
 
 export class PimlicoPaymaster implements PaymasterGetter {
-	chainId: string
+	chainId: bigint
 	paymaster: RpcProvider
 
-	constructor(options: { chainId: string; url: string }) {
+	constructor(options: { chainId: bigint; url: string }) {
 		this.chainId = options.chainId
 		this.paymaster = new RpcProvider(options.url)
 	}

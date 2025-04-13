@@ -27,8 +27,12 @@ const argv = await yargs(hideBin(process.argv))
 
 const PUBLIC_PAYMASTER_ADDRESS = '0xcb04730b8aA92B8fC0d1482A0a7BD3420104556D'
 
-const network = argv.network === 'sepolia' ? '11155111' : 'local'
-const { logger, chainId, CLIENT_URL, BUNDLER_URL } = await setup({ chainId: network })
+const CHAIN_IDS = {
+	local: 1337n,
+	sepolia: 11155111n,
+} as const
+const chainId = CHAIN_IDS[argv.network]
+const { logger, CLIENT_URL, BUNDLER_URL } = await setup({ chainId })
 logger.info(`Chain ID: ${chainId}`)
 
 const signer = new Wallet(process.env.PRIVATE_KEY as string)

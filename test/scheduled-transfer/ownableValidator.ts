@@ -8,7 +8,7 @@ import { setup } from '../utils'
 const kernelAddress = '0x1e1657CE5DDB70654707355f2c6fDA43Daf066De'
 const permissionId = '0xba06d407c8d9ddaaac3b680421283c1c424cd21e8205173dfef1840705aa9957'
 
-const { logger, chainId, CLIENT_URL, account1 } = await setup({ chainId: 'local' })
+const { logger, chainId, CLIENT_URL, account1 } = await setup({ chainId: 1337n })
 
 logger.info(`Chain ID: ${chainId}`)
 logger.info(`Kernel address: ${kernelAddress}`)

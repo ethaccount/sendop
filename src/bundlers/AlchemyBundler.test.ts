@@ -18,7 +18,7 @@ const {
 	CLIENT_URL,
 	BUNDLER_URL: PIMLICO_BUNDLER_URL,
 } = await setup({
-	chainId: '11155111',
+	chainId: 11155111n,
 })
 
 logger.info(`Chain ID: ${chainId}`)

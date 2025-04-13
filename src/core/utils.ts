@@ -1,18 +1,18 @@
 import { ADDRESS } from '@/addresses'
 import { SendopError, UnsupportedEntryPointError } from '@/error'
-import { abiEncode, isBytes, type EntryPointVersion } from '@/utils'
+import { abiEncode, isBytes } from '@/utils'
 import {
 	AbiCoder,
 	concat,
 	isAddress,
 	keccak256,
 	toBeHex,
+	TypedDataEncoder,
 	zeroPadValue,
 	type TypedDataDomain,
 	type TypedDataField,
 } from 'ethers'
 import type { Execution, FormattedUserOp, PackedUserOp, UserOp } from './types'
-import { TypedDataEncoder } from 'ethers'
 
 export function formatUserOpToHex(userOp: UserOp): FormattedUserOp {
 	return {
@@ -82,7 +82,7 @@ export function packUserOp(userOp: UserOp): PackedUserOp {
 	}
 }
 
-export function getUserOpHash(op: PackedUserOp, entryPointAddress: string, chainId: string): string {
+export function getUserOpHash(op: PackedUserOp, entryPointAddress: string, chainId: bigint): string {
 	switch (entryPointAddress) {
 		case ADDRESS.EntryPointV07:
 			return getUserOpHashV07(op, chainId)
@@ -93,7 +93,7 @@ export function getUserOpHash(op: PackedUserOp, entryPointAddress: string, chain
 	}
 }
 
-export function getUserOpHashV07(op: PackedUserOp, chainId: string): string {
+export function getUserOpHashV07(op: PackedUserOp, chainId: bigint): string {
 	const hashedInitCode = keccak256(op.initCode)
 	const hashedCallData = keccak256(op.callData)
 	const hashedPaymasterAndData = keccak256(op.paymasterAndData)
@@ -117,25 +117,25 @@ export function getUserOpHashV07(op: PackedUserOp, chainId: string): string {
 				),
 			),
 			ADDRESS.EntryPointV07,
-			BigInt(chainId),
+			chainId,
 		],
 	)
 	return keccak256(encoded)
 }
 
-export function getUserOpHashV08(op: PackedUserOp, chainId: string): string {
+export function getUserOpHashV08(op: PackedUserOp, chainId: bigint): string {
 	const { domain, types } = getV08DomainAndTypes(chainId)
 	return TypedDataEncoder.hash(domain, types, op)
 }
 
-export function getV08DomainAndTypes(chainId: string): {
+export function getV08DomainAndTypes(chainId: bigint): {
 	domain: TypedDataDomain
 	types: Record<string, Array<TypedDataField>>
 } {
 	const domain: TypedDataDomain = {
 		name: 'ERC4337',
 		version: '1',
-		chainId,
+		chainId: chainId.toString(),
 		verifyingContract: ADDRESS.EntryPointV08,
 	}
 

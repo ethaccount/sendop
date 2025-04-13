@@ -20,7 +20,7 @@ type PimlicoGasPrice = {
 }
 
 export class PimlicoBundler extends BaseBundler {
-	constructor(chainId: string, url: string, options?: BundlerOptions) {
+	constructor(chainId: bigint, url: string, options?: BundlerOptions) {
 		super(chainId, url, options)
 	}
 

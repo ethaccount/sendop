@@ -4,7 +4,7 @@ import { toBeHex } from 'ethers'
 import { BaseBundler, type BundlerOptions, type GasValues } from './BaseBundler'
 
 export class AlchemyBundler extends BaseBundler {
-	constructor(chainId: string, url: string, options?: BundlerOptions) {
+	constructor(chainId: bigint, url: string, options?: BundlerOptions) {
 		super(chainId, url, options)
 	}
 
