@@ -17,7 +17,7 @@ import { TypedDataEncoder } from 'ethers'
 export function formatUserOpToHex(userOp: UserOp): FormattedUserOp {
 	return {
 		sender: userOp.sender,
-		nonce: userOp.nonce,
+		nonce: toBeHex(userOp.nonce),
 		factory: userOp.factory,
 		factoryData: userOp.factoryData,
 		callData: userOp.callData,
@@ -37,7 +37,7 @@ export function formatUserOpToHex(userOp: UserOp): FormattedUserOp {
 export function getEmptyUserOp(): UserOp {
 	return {
 		sender: '',
-		nonce: '0x0',
+		nonce: 0n,
 		factory: null,
 		factoryData: '0x',
 		callData: '0x',
@@ -57,7 +57,7 @@ export function getEmptyUserOp(): UserOp {
 export function packUserOp(userOp: UserOp): PackedUserOp {
 	return {
 		sender: userOp.sender,
-		nonce: userOp.nonce,
+		nonce: toBeHex(userOp.nonce),
 		initCode: userOp.factory && userOp.factoryData ? concat([userOp.factory, userOp.factoryData]) : '0x',
 		callData: userOp.callData,
 		accountGasLimits: concat([

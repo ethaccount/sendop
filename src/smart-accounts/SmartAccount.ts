@@ -42,9 +42,8 @@ export abstract class SmartAccount implements OperationGetter {
 		return this.address
 	}
 
-	async getNonce(): Promise<string> {
-		const nonce = await connectEntryPointV07(this.client).getNonce(await this.getSender(), this.getNonceKey())
-		return toBeHex(nonce)
+	async getNonce(): Promise<bigint> {
+		return await connectEntryPointV07(this.client).getNonce(await this.getSender(), this.getNonceKey())
 	}
 
 	async send(executions: Execution[], pmGetter?: PaymasterGetter): Promise<SendOpResult> {

@@ -43,9 +43,8 @@ export class Simple7702Account extends SmartAccount {
 		return 0n
 	}
 
-	override async getNonce(): Promise<string> {
-		const nonce = await connectEntryPointV08(this.client).getNonce(await this.getSender(), this.getNonceKey())
-		return toBeHex(nonce)
+	override async getNonce(): Promise<bigint> {
+		return await connectEntryPointV08(this.client).getNonce(await this.getSender(), this.getNonceKey())
 	}
 
 	getCallData(executions: Execution[]) {

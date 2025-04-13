@@ -50,7 +50,7 @@ for (const event of events) {
 
 // validateSignatureWithData (data == config of smartsession.getSessionValidatorAndConfig)
 const userOp = getEmptyUserOp()
-userOp.nonce = randomBytes32()
+userOp.nonce = BigInt(randomBytes32())
 userOp.sender = kernelAddress
 const userOpHash = getUserOpHash(packUserOp(userOp), 'v0.7', chainId)
 const signature = await account1.signMessage(getBytes(userOpHash))

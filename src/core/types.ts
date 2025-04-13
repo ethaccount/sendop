@@ -3,7 +3,7 @@ import type { Bundler, OperationGetter, PaymasterGetter } from './interface'
 
 export type UserOp = {
 	sender: string
-	nonce: string
+	nonce: bigint
 	factory: string | null
 	factoryData: string | '0x'
 	callData: string

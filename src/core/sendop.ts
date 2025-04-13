@@ -85,7 +85,7 @@ export async function buildop(options: SendopOptions): Promise<BuildopResult> {
 		}
 	}
 
-	userOp.nonce = nonce ? toBeHex(nonce) : await opGetter.getNonce()
+	userOp.nonce = nonce ?? (await opGetter.getNonce())
 	userOp.callData = await opGetter.getCallData(executions)
 
 	// if pm, get pmStubData

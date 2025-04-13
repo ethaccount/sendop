@@ -80,11 +80,10 @@ export class KernelV3Account extends ModularSmartAccount {
 	}
 
 	override async getNonce() {
-		const nonce = await connectEntryPointV07(this.client).getNonce(
+		return await connectEntryPointV07(this.client).getNonce(
 			this.getSender(),
 			this.getNonceKey(this._kernelConfig?.nonce),
 		)
-		return toBeHex(nonce)
 	}
 
 	async getCustomNonce(options: {
