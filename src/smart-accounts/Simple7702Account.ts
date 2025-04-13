@@ -1,10 +1,9 @@
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
 import { type Execution, type PaymasterGetter, type SendOpResult, type SignatureData, type UserOp } from '@/core'
-import { SendopError, UnsupportedEntryPointError } from '@/error'
+import { SendopError } from '@/error'
 import { connectEntryPointV08 } from '@/utils'
 import type { Signer } from 'ethers'
 import { Interface } from 'ethers/abi'
-import { toBeHex } from 'ethers/utils'
 import { SmartAccount, type SmartAccountOptions } from './SmartAccount'
 
 export type Simple7702AccountOptions = SmartAccountOptions & {

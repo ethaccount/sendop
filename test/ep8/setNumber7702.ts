@@ -1,14 +1,12 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
-import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import { sendop, type Execution, type SignatureData } from '@/core'
+import { sendop } from '@/core'
 import { PublicPaymaster } from '@/paymasters'
-import { connectEntryPointV08, zeroPadRight } from '@/utils'
-import { getAddress, Interface, JsonRpcProvider, toBeHex, toNumber, Wallet } from 'ethers'
+import { Simple7702Account } from '@/smart-accounts/Simple7702Account'
+import { getAddress, Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { setup } from '../utils'
-import { Simple7702Account } from '@/smart-accounts/Simple7702Account'
 
 const argv = await yargs(hideBin(process.argv))
 	.option('network', {

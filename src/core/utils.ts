@@ -1,9 +1,10 @@
 import { ADDRESS } from '@/addresses'
 import { SendopError, UnsupportedEntryPointError } from '@/error'
-import { abiEncode, isBytes } from '@/utils'
+import { abiEncode, getBytesLength, isBytes } from '@/utils'
 import {
 	AbiCoder,
 	concat,
+	dataSlice,
 	isAddress,
 	keccak256,
 	toBeHex,
@@ -13,6 +14,7 @@ import {
 	type TypedDataField,
 } from 'ethers'
 import type { Execution, FormattedUserOp, PackedUserOp, UserOp } from './types'
+import type { JsonRpcProvider } from 'ethers'
 
 export function formatUserOpToHex(userOp: UserOp): FormattedUserOp {
 	return {
@@ -181,4 +183,12 @@ export function assertExecutions(executions: Execution[]) {
 	for (const execution of executions) {
 		assertExecution(execution)
 	}
+}
+
+export async function isEip7702(client: JsonRpcProvider, address: string) {
+	const code = await client.getCode(address)
+	if (code.startsWith('0xef0100') && isAddress(dataSlice(code, 3, 23)) && getBytesLength(code) === 23) {
+		return true
+	}
+	return false
 }
