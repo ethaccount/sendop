@@ -1,8 +1,9 @@
 import { ADDRESS } from '@/addresses'
 import { SendopError } from '@/error'
 import { abiEncode, isBytes, type EntryPointVersion } from '@/utils'
-import { AbiCoder, concat, isAddress, keccak256, toBeHex, zeroPadValue } from 'ethers'
+import { AbiCoder, concat, isAddress, keccak256, toBeHex, zeroPadValue, type TypedDataDomain } from 'ethers'
 import type { Execution, PackedUserOp, UserOp } from './types'
+import { TypedDataEncoder } from 'ethers'
 
 export function getEmptyUserOp(): UserOp {
 	return {
@@ -53,6 +54,17 @@ export function packUserOp(userOp: UserOp): PackedUserOp {
 }
 
 export function getUserOpHash(op: PackedUserOp, entryPointAddress: string, chainId: string): string {
+	switch (entryPointAddress) {
+		case ADDRESS.EntryPointV07:
+			return getUserOpHashV07(op, chainId)
+		case ADDRESS.EntryPointV08:
+			return getUserOpHashV08(op, chainId)
+		default:
+			throw new SendopError(`Unsupported entry point address (${entryPointAddress})`)
+	}
+}
+
+export function getUserOpHashV07(op: PackedUserOp, chainId: string): string {
 	const hashedInitCode = keccak256(op.initCode)
 	const hashedCallData = keccak256(op.callData)
 	const hashedPaymasterAndData = keccak256(op.paymasterAndData)
@@ -75,11 +87,35 @@ export function getUserOpHash(op: PackedUserOp, entryPointAddress: string, chain
 					],
 				),
 			),
-			entryPointAddress,
+			ADDRESS.EntryPointV07,
 			BigInt(chainId),
 		],
 	)
 	return keccak256(encoded)
+}
+
+export function getUserOpHashV08(op: PackedUserOp, chainId: string): string {
+	const domain: TypedDataDomain = {
+		name: 'ERC4337',
+		version: '1',
+		chainId,
+		verifyingContract: ADDRESS.EntryPointV08,
+	}
+
+	const types = {
+		PackedUserOperation: [
+			{ name: 'sender', type: 'address' },
+			{ name: 'nonce', type: 'uint256' },
+			{ name: 'initCode', type: 'bytes' },
+			{ name: 'callData', type: 'bytes' },
+			{ name: 'accountGasLimits', type: 'bytes32' },
+			{ name: 'preVerificationGas', type: 'uint256' },
+			{ name: 'gasFees', type: 'bytes32' },
+			{ name: 'paymasterAndData', type: 'bytes' },
+		],
+	}
+
+	return TypedDataEncoder.hash(domain, types, op)
 }
 
 export function encodeExecution(execution: Execution) {
