@@ -22,3 +22,10 @@ export function normalizeError(unknownError: unknown): Error {
 
 	return err
 }
+
+export class UnsupportedEntryPointError extends SendopError {
+	constructor(address: string, cause?: Error) {
+		super(`Unsupported entry point address (${address})`, { cause })
+		this.name = 'UnsupportedEntryPointError'
+	}
+}

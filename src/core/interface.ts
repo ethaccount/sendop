@@ -1,5 +1,15 @@
 import { SendopError } from '@/error'
-import type { Execution, GetPaymasterDataResult, GetPaymasterStubDataResult, UserOp, UserOpReceipt } from './types'
+import type {
+	Execution,
+	GetPaymasterDataResult,
+	GetPaymasterStubDataResult,
+	PackedUserOp,
+	UserOp,
+	UserOpReceipt,
+} from './types'
+import type { TypedDataDomain } from 'ethers'
+import type { TypedDataField } from 'ethers'
+import type { EntryPointVersion } from '@/utils'
 
 export interface Bundler {
 	chainId: string
@@ -25,13 +35,30 @@ export interface AccountGetter {
 
 export interface SignatureGetter {
 	getDummySignature(userOp: UserOp): Promise<string> | string
-	getSignature(userOpHash: Uint8Array, userOp: UserOp): Promise<string> | string
+	getSignature(signatureData: SignatureData): Promise<string> | string
+}
+
+export type SignatureData = SignatureDataV07 | SignatureDataV08
+
+export interface SignatureDataV07 {
+	entryPointVersion: 'v0.7'
+	hash: Uint8Array
+	userOp: UserOp
+}
+
+export interface SignatureDataV08 {
+	entryPointVersion: 'v0.8'
+	hash: Uint8Array
+	userOp: UserOp
+	domain: TypedDataDomain
+	types: Record<string, Array<TypedDataField>>
+	values: PackedUserOp
 }
 
 export abstract class ERC7579Validator implements SignatureGetter {
 	abstract address(): string
 	abstract getDummySignature(userOp: UserOp): Promise<string> | string
-	abstract getSignature(userOpHash: Uint8Array, userOp: UserOp): Promise<string> | string
+	abstract getSignature(signatureData: SignatureData): Promise<string> | string
 
 	static getInitData(args: any): string {
 		throw new ERC7579ValidatorError('Not implemented')

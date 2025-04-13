@@ -3,12 +3,12 @@ import { CallType, encodeExecutions, ERC7579_MODULE_TYPE, ExecType, ModeSelector
 import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
 import { abiEncode, connectEntryPointV07, isBytes, isBytes32, toBytes32, zeroBytes } from '@/utils'
-import { concat, Contract, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
-import { SmartAccount, type SmartAccountOptions } from '../SmartAccount'
+import { concat, Contract, hexlify, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
+import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
 import type { KernelCreationOptions, KernelInstallModuleConfig, SimpleKernelInstallModuleConfig } from './types'
 import { KernelValidationMode, KernelValidationType } from './types'
 
-export type KernelV3AccountOptions = SmartAccountOptions & KernelV3AccountConfig
+export type KernelV3AccountOptions = ModularSmartAccountOptions & KernelV3AccountConfig
 
 export type KernelV3AccountConfig = {
 	nonce?: {
@@ -26,7 +26,7 @@ export type KernelV3AccountConfig = {
 	}
 }
 
-export class KernelV3Account extends SmartAccount {
+export class KernelV3Account extends ModularSmartAccount {
 	private readonly _kernelConfig: KernelV3AccountConfig | undefined
 
 	static override accountId() {
@@ -113,7 +113,7 @@ export class KernelV3Account extends SmartAccount {
 		type?: KernelValidationType
 		identifier?: string
 		key?: string
-	}): string {
+	}): bigint {
 		const defaultOptions = {
 			mode: KernelValidationMode.DEFAULT,
 			type: KernelValidationType.ROOT,
@@ -121,7 +121,7 @@ export class KernelV3Account extends SmartAccount {
 			key: zeroBytes(2),
 		}
 		const { mode, type, identifier, key } = { ...defaultOptions, ...options }
-		return concat([mode, type, identifier, key])
+		return BigInt(hexlify(concat([mode, type, identifier, key])))
 	}
 
 	override getCallData(executions: Execution[]): Promise<string> | string {

@@ -1,11 +1,11 @@
-import type { Bundler, ERC7579Validator, Execution, PaymasterGetter, SendOpResult, UserOp } from '@/core'
+import type { Execution, PaymasterGetter, SendOpResult } from '@/core'
 import type { JsonRpcProvider } from 'ethers'
-import { SmartAccount, type SmartAccountOptions } from '../SmartAccount'
+import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
 import type { YourCreationOptions } from './types'
 
-export type YourAccountOptions = SmartAccountOptions
+export type YourAccountOptions = ModularSmartAccountOptions
 
-export class YourAccount extends SmartAccount {
+export class YourAccount extends ModularSmartAccount {
 	static override accountId() {
 		return ''
 	}
@@ -14,7 +14,7 @@ export class YourAccount extends SmartAccount {
 		super(options)
 	}
 
-	override connect(address: string): SmartAccount {
+	override connect(address: string): ModularSmartAccount {
 		return this as any
 	}
 
@@ -22,9 +22,10 @@ export class YourAccount extends SmartAccount {
 		return ''
 	}
 
-	getNonceKey() {
-		return ''
+	override getNonceKey(): bigint {
+		return 0n
 	}
+
 	override getCallData(executions: Execution[]): Promise<string> | string {
 		return ''
 	}

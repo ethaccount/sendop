@@ -7,6 +7,7 @@ import {
 	sendop,
 	type Bundler,
 	type PaymasterGetter,
+	type SignatureData,
 } from '@/index'
 import { INTERFACES } from '@/interfaces'
 import { KernelValidationType } from '@/smart-accounts/kernel-v3/types'
@@ -46,10 +47,19 @@ export async function executeScheduledTransfer({
 					concatBytesList(Array(threshold).fill(DUMMY_ECDSA_SIGNATURE)),
 				)
 			},
-			getSignature: async (userOpHash: Uint8Array) => {
-				const threshold = 1
-				const signature = await sessionSigner.signMessage(userOpHash)
-				return getSmartSessionUseModeSignature(permissionId, concatBytesList(Array(threshold).fill(signature)))
+			getSignature: async (signatureData: SignatureData) => {
+				switch (signatureData.entryPointVersion) {
+					case 'v0.7':
+						const threshold = 1
+						const signature = await sessionSigner.signMessage(signatureData.hash)
+						return getSmartSessionUseModeSignature(
+							permissionId,
+							concatBytesList(Array(threshold).fill(signature)),
+						)
+
+					case 'v0.8':
+						throw new Error('SmartSession validator does not support v0.8')
+				}
 			},
 		},
 	})

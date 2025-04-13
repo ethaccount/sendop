@@ -1,0 +1,86 @@
+import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
+import { type Execution, type PaymasterGetter, type SendOpResult, type SignatureData, type UserOp } from '@/core'
+import { SendopError, UnsupportedEntryPointError } from '@/error'
+import { connectEntryPointV08 } from '@/utils'
+import type { Signer } from 'ethers'
+import { Interface } from 'ethers/abi'
+import { toBeHex } from 'ethers/utils'
+import { SmartAccount, type SmartAccountOptions } from './SmartAccount'
+
+export type Simple7702AccountOptions = SmartAccountOptions & {
+	signer: Signer
+}
+
+export class Simple7702Account extends SmartAccount {
+	public readonly signer: Signer
+
+	static override accountId() {
+		return 'infinitism.simple7702.0.8.0'
+	}
+
+	constructor(options: Simple7702AccountOptions) {
+		super(options)
+		this.signer = options.signer
+	}
+
+	override connect(address: string): Simple7702Account {
+		return new Simple7702Account({
+			...this._options,
+			signer: this.signer,
+			address,
+		})
+	}
+
+	override deploy(creationOptions: any, pmGetter?: PaymasterGetter): Promise<SendOpResult> {
+		throw new Simple7702Error('Not supported')
+	}
+
+	override getInitCode(): string {
+		throw new Simple7702Error('Not supported')
+	}
+
+	override getNonceKey(): bigint {
+		return 0n
+	}
+
+	override async getNonce(): Promise<string> {
+		const nonce = await connectEntryPointV08(this.client).getNonce(await this.getSender(), this.getNonceKey())
+		return toBeHex(nonce)
+	}
+
+	getCallData(executions: Execution[]) {
+		if (!executions.length) {
+			return '0x'
+		}
+
+		if (executions.length === 1) {
+			const execution = executions[0]
+			return new Interface([
+				'function execute(address target, uint256 value, bytes calldata data)',
+			]).encodeFunctionData('execute', [execution.to, execution.value, execution.data])
+		}
+
+		// TODO: function executeBatch(Call[] calldata calls)
+		throw new Error('Not supported')
+	}
+
+	async getDummySignature(userOp: UserOp) {
+		return DUMMY_ECDSA_SIGNATURE
+	}
+
+	async getSignature(signatureData: SignatureData) {
+		switch (signatureData.entryPointVersion) {
+			case 'v0.8':
+				return await this.signer.signTypedData(signatureData.domain, signatureData.types, signatureData.values)
+			default:
+				throw new Simple7702Error('Unsupported entry point version')
+		}
+	}
+}
+
+export class Simple7702Error extends SendopError {
+	constructor(message: string, cause?: Error) {
+		super(message, cause)
+		this.name = 'Simple7702Error'
+	}
+}

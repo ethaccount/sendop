@@ -1,13 +1,14 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import { sendop, type Execution } from '@/core'
+import { sendop, type Execution, type SignatureData } from '@/core'
 import { PublicPaymaster } from '@/paymasters'
-import { connectEntryPointV08 } from '@/utils'
+import { connectEntryPointV08, zeroPadRight } from '@/utils'
 import { getAddress, Interface, JsonRpcProvider, toBeHex, toNumber, Wallet } from 'ethers'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { setup } from '../utils'
+import { Simple7702Account } from '@/smart-accounts/Simple7702Account'
 
 const argv = await yargs(hideBin(process.argv))
 	.option('network', {
@@ -27,7 +28,7 @@ const argv = await yargs(hideBin(process.argv))
 const PUBLIC_PAYMASTER_ADDRESS = '0xcb04730b8aA92B8fC0d1482A0a7BD3420104556D'
 
 const network = argv.network === 'sepolia' ? '11155111' : 'local'
-const { logger, chainId, CLIENT_URL, account0, BUNDLER_URL } = await setup({ chainId: network })
+const { logger, chainId, CLIENT_URL, BUNDLER_URL } = await setup({ chainId: network })
 logger.info(`Chain ID: ${chainId}`)
 
 const signer = new Wallet(process.env.PRIVATE_KEY as string)
@@ -54,33 +55,14 @@ const op = await sendop({
 			value: 0n,
 		},
 	],
-	opGetter: {
-		getSender: () => argv.address,
-		getNonce: async () => {
-			return toBeHex(await connectEntryPointV08(client).getNonce(argv.address, 0))
-		},
-		getCallData: (executions: Execution[]) => {
-			if (!executions.length) {
-				return '0x'
-			}
-
-			if (executions.length === 1) {
-				const execution = executions[0]
-				return new Interface([
-					'function execute(address target, uint256 value, bytes calldata data)',
-				]).encodeFunctionData('execute', [execution.to, execution.value, execution.data])
-			}
-
-			// TODO: function executeBatch(Call[] calldata calls)
-			throw new Error('Not supported')
-		},
-		getDummySignature: () => {
-			return DUMMY_ECDSA_SIGNATURE
-		},
-		getSignature: async (userOpHash: Uint8Array) => {
-			return await signer.signMessage(userOpHash)
-		},
-	},
+	// TODO: what's the situation to use 7702 initCode?
+	// initCode: zeroPadRight('0x7702', 20),
+	opGetter: new Simple7702Account({
+		address: argv.address,
+		client,
+		bundler,
+		signer,
+	}),
 	pmGetter: new PublicPaymaster(PUBLIC_PAYMASTER_ADDRESS),
 })
 
@@ -95,5 +77,6 @@ if (log && toNumber(log.data) === number) {
 	logger.info(`Number ${number} set successfully`)
 } else {
 	logger.error(`Number ${number} not set`)
-	logger.info(receipt)
 }
+
+logger.info(receipt)

@@ -1,5 +1,6 @@
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import { ERC7579Validator, type UserOp } from '@/core'
+import { ERC7579Validator, type SignatureData, type UserOp } from '@/core'
+import { UnsupportedEntryPointError } from '@/error'
 import type { BytesLike } from 'ethers'
 import { type Signer } from 'ethers'
 
@@ -24,8 +25,17 @@ export class EOAValidatorModule extends ERC7579Validator {
 		return DUMMY_ECDSA_SIGNATURE
 	}
 
-	async getSignature(userOpHash: Uint8Array, userOp: UserOp) {
-		return await this._options.signer.signMessage(userOpHash)
+	async getSignature(signatureData: SignatureData) {
+		switch (signatureData.entryPointVersion) {
+			case 'v0.7':
+				return await this._options.signer.signMessage(signatureData.hash)
+			case 'v0.8':
+				return await this._options.signer.signTypedData(
+					signatureData.domain,
+					signatureData.types,
+					signatureData.values,
+				)
+		}
 	}
 
 	static getInitData(address: string): string {

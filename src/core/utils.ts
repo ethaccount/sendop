@@ -1,7 +1,16 @@
 import { ADDRESS } from '@/addresses'
-import { SendopError } from '@/error'
+import { SendopError, UnsupportedEntryPointError } from '@/error'
 import { abiEncode, isBytes, type EntryPointVersion } from '@/utils'
-import { AbiCoder, concat, isAddress, keccak256, toBeHex, zeroPadValue, type TypedDataDomain } from 'ethers'
+import {
+	AbiCoder,
+	concat,
+	isAddress,
+	keccak256,
+	toBeHex,
+	zeroPadValue,
+	type TypedDataDomain,
+	type TypedDataField,
+} from 'ethers'
 import type { Execution, PackedUserOp, UserOp } from './types'
 import { TypedDataEncoder } from 'ethers'
 
@@ -60,7 +69,7 @@ export function getUserOpHash(op: PackedUserOp, entryPointAddress: string, chain
 		case ADDRESS.EntryPointV08:
 			return getUserOpHashV08(op, chainId)
 		default:
-			throw new SendopError(`Unsupported entry point address (${entryPointAddress})`)
+			throw new UnsupportedEntryPointError(entryPointAddress)
 	}
 }
 
@@ -95,6 +104,14 @@ export function getUserOpHashV07(op: PackedUserOp, chainId: string): string {
 }
 
 export function getUserOpHashV08(op: PackedUserOp, chainId: string): string {
+	const { domain, types } = getV08DomainAndTypes(chainId)
+	return TypedDataEncoder.hash(domain, types, op)
+}
+
+export function getV08DomainAndTypes(chainId: string): {
+	domain: TypedDataDomain
+	types: Record<string, Array<TypedDataField>>
+} {
 	const domain: TypedDataDomain = {
 		name: 'ERC4337',
 		version: '1',
@@ -115,7 +132,7 @@ export function getUserOpHashV08(op: PackedUserOp, chainId: string): string {
 		],
 	}
 
-	return TypedDataEncoder.hash(domain, types, op)
+	return { domain, types }
 }
 
 export function encodeExecution(execution: Execution) {

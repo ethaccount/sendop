@@ -5,11 +5,11 @@ import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
 import { abiEncode, isBytes, toBytes32, zeroBytes } from '@/utils'
 import type { JsonRpcProvider } from 'ethers'
-import { concat } from 'ethers/utils'
-import { SmartAccount, type SmartAccountOptions } from '../SmartAccount'
+import { concat, hexlify } from 'ethers/utils'
+import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
 import { NexusValidationMode, type NexusCreationOptions, type NexusInstallModuleConfig } from './types'
 
-export type NexusAccountOptions = SmartAccountOptions & NexusAccountConfig
+export type NexusAccountOptions = ModularSmartAccountOptions & NexusAccountConfig
 
 export type NexusAccountConfig = {
 	nonce?: {
@@ -26,7 +26,7 @@ export type NexusAccountConfig = {
 	}
 }
 
-export class NexusAccount extends SmartAccount {
+export class NexusAccount extends ModularSmartAccount {
 	private readonly _nexusConfig: NexusAccountConfig | undefined
 
 	static readonly interface = INTERFACES.Nexus
@@ -78,8 +78,8 @@ export class NexusAccount extends SmartAccount {
 		return address
 	}
 
-	override getNonceKey(): string {
-		return this._getNonceKey(this._nexusConfig?.nonce)
+	override getNonceKey(): bigint {
+		return BigInt(hexlify(this._getNonceKey(this._nexusConfig?.nonce)))
 	}
 
 	/**

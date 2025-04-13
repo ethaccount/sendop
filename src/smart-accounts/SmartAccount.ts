@@ -1,12 +1,4 @@
-import type {
-	Bundler,
-	ERC7579Validator,
-	Execution,
-	OperationGetter,
-	PaymasterGetter,
-	SendOpResult,
-	UserOp,
-} from '@/core'
+import type { Bundler, Execution, OperationGetter, PaymasterGetter, SendOpResult, SignatureData, UserOp } from '@/core'
 import { sendop } from '@/core'
 import { SendopError } from '@/error'
 import { connectEntryPointV07 } from '@/utils'
@@ -16,7 +8,6 @@ export type SmartAccountOptions = {
 	address?: string
 	client: JsonRpcProvider
 	bundler: Bundler
-	validator: ERC7579Validator
 	pmGetter?: PaymasterGetter
 }
 
@@ -40,10 +31,6 @@ export abstract class SmartAccount implements OperationGetter {
 		return this._options.bundler
 	}
 
-	get validator(): ERC7579Validator {
-		return this._options.validator
-	}
-
 	get pmGetter(): PaymasterGetter | undefined {
 		return this._options.pmGetter
 	}
@@ -58,14 +45,6 @@ export abstract class SmartAccount implements OperationGetter {
 	async getNonce(): Promise<string> {
 		const nonce = await connectEntryPointV07(this.client).getNonce(await this.getSender(), this.getNonceKey())
 		return toBeHex(nonce)
-	}
-
-	async getDummySignature(userOp: UserOp): Promise<string> {
-		return this.validator.getDummySignature(userOp)
-	}
-
-	async getSignature(userOpHash: Uint8Array, userOp: UserOp): Promise<string> {
-		return this.validator.getSignature(userOpHash, userOp)
 	}
 
 	async send(executions: Execution[], pmGetter?: PaymasterGetter): Promise<SendOpResult> {
@@ -92,11 +71,12 @@ export abstract class SmartAccount implements OperationGetter {
 	}
 
 	// Abstract methods that need to be implemented by specific accounts
-	abstract getNonceKey(): string
+	abstract getNonceKey(): bigint
 	abstract getCallData(executions: Execution[]): Promise<string> | string
 	abstract connect(address: string): SmartAccount
 	abstract getInitCode(creationOptions: any): string
-	abstract encodeInstallModule(config: any): string
+	abstract getDummySignature(userOp: UserOp): Promise<string> | string
+	abstract getSignature(signatureData: SignatureData): Promise<string> | string
 
 	// Static methods
 	static accountId(): string {
