@@ -2,13 +2,13 @@ import type { BundlerOptions } from '@/bundlers/BaseBundler'
 import { JsonRpcProvider, Wallet } from 'ethers'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { AlchemyBundler, PimlicoBundler, type Bundler } from '../../src'
+import { AlchemyBundler, PimlicoBundler, SkandhaBundler, type Bundler } from '../../src'
 import { getBundlerUrl, logger } from '../utils'
 
 interface YargsOptions {
 	'rpc-url': string
 	'private-key': string
-	bundler: 'pimlico' | 'alchemy'
+	bundler: 'pimlico' | 'alchemy' | 'skandha'
 }
 
 interface SetupResult {
@@ -16,7 +16,7 @@ interface SetupResult {
 	client: JsonRpcProvider
 	chainId: bigint
 	signer: Wallet
-	bundler: Bundler | undefined
+	bundler: Bundler
 }
 
 type OptionAlias = 'r' | 'p' | 'b'
@@ -54,7 +54,7 @@ export async function setupCLI(
 			option: 'bundler',
 			type: 'string',
 			description: 'Bundler',
-			choices: ['pimlico', 'alchemy'] as const,
+			choices: ['pimlico', 'alchemy', 'skandha'] as const,
 			demandOption: false,
 			default: 'pimlico',
 		},
@@ -81,20 +81,25 @@ export async function setupCLI(
 	logger.info(`chainId: ${chainId}`)
 	logger.info(`signer: ${signer.address}`)
 
-	let bundler: Bundler | undefined
-	if (optionAliases.includes('b')) {
-		switch (argv.bundler) {
-			case 'pimlico':
-				bundler = new PimlicoBundler(chainId, getBundlerUrl(chainId, 'pimlico'), options?.bundlerOptions)
-				break
-			case 'alchemy':
-				bundler = new AlchemyBundler(chainId, getBundlerUrl(chainId, 'alchemy'), options?.bundlerOptions)
-				break
-			default:
-				throw new Error(`Invalid bundler: ${argv.bundler}`)
-		}
+	let bundler: Bundler
 
-		logger.info(`bundler: ${argv.bundler}`)
+	switch (argv.bundler) {
+		case 'pimlico':
+			bundler = new PimlicoBundler(chainId, getBundlerUrl(chainId, 'pimlico'), options?.bundlerOptions)
+			break
+		case 'alchemy':
+			bundler = new AlchemyBundler(chainId, getBundlerUrl(chainId, 'alchemy'), options?.bundlerOptions)
+			break
+		case 'skandha':
+			bundler = new SkandhaBundler(chainId, getBundlerUrl(chainId, 'skandha'), options?.bundlerOptions)
+			break
+		default:
+			bundler = new PimlicoBundler(chainId, getBundlerUrl(chainId, 'pimlico'), options?.bundlerOptions)
+			break
+	}
+
+	if (optionAliases.includes('b')) {
+		logger.info(`bundler: ${argv.bundler}, url: ${getBundlerUrl(chainId, argv.bundler)}`)
 	}
 
 	return {

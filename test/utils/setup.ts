@@ -33,6 +33,7 @@ export function getEnv() {
 	const PRIVATE_KEY = process.env.PRIVATE_KEY
 	const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY
 	const PIMLICO_API_KEY = process.env.PIMLICO_API_KEY
+	const ETHERSPOT_API_KEY = process.env.ETHERSPOT_API_KEY
 	const SALT = process.env.SALT || '0x0000000000000000000000000000000000000000000000000000000000000001'
 	const CHAIN_ID = process.env.CHAIN_ID ? BigInt(process.env.CHAIN_ID) : 1337n
 	const PIMLICO_SPONSORSHIP_POLICY_ID = process.env.PIMLICO_SPONSORSHIP_POLICY_ID
@@ -41,27 +42,34 @@ export function getEnv() {
 		PRIVATE_KEY,
 		ALCHEMY_API_KEY,
 		PIMLICO_API_KEY,
+		ETHERSPOT_API_KEY,
 		SALT,
 		CHAIN_ID,
 		PIMLICO_SPONSORSHIP_POLICY_ID,
 	}
 }
 
-export function getBundlerUrl(chainId: bigint, source: 'pimlico' | 'alchemy' = 'pimlico') {
-	const { PIMLICO_API_KEY, ALCHEMY_API_KEY } = getEnv()
+export function getBundlerUrl(chainId: bigint, source: 'pimlico' | 'alchemy' | 'skandha' = 'pimlico') {
+	const { PIMLICO_API_KEY, ALCHEMY_API_KEY, ETHERSPOT_API_KEY } = getEnv()
 	switch (chainId) {
 		case 1337n:
 			return 'http://localhost:4337'
 		case 11155111n:
 			switch (source) {
-				case 'pimlico':
-					return `https://api.pimlico.io/v2/${chainId}/rpc?apikey=${PIMLICO_API_KEY}`
 				case 'alchemy':
 					return `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
 			}
-		default:
-			throw new Error('getBundlerUrl: Invalid chainId')
 	}
+
+	switch (source) {
+		case 'pimlico':
+			return `https://api.pimlico.io/v2/${chainId}/rpc?apikey=${PIMLICO_API_KEY}`
+		case 'skandha':
+			// 	TODO: v2 only for ep7 and v3 only for ep8 (WTF)
+			return `https://rpc.etherspot.io/v2/${chainId}/?api-key=${ETHERSPOT_API_KEY}`
+	}
+
+	throw new Error(`Failed to get bundler url for chainId: ${chainId} and source: ${source}`)
 }
 
 export async function setup(options?: { chainId?: bigint }) {
