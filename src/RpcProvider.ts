@@ -60,9 +60,18 @@ export class RpcProvider {
 			throw new JsonRpcError(errMsg)
 		}
 
+		// Skandha might return a message in data.message
+		if (data.message) {
+			throw new JsonRpcError(data.message)
+		}
+
 		if (!response.ok) {
 			const errorText = await response.text()
 			throw new HttpError(`status: ${response.status}, message: ${errorText}`)
+		}
+
+		if (!data.result) {
+			throw new JsonRpcError('No result from RPC')
 		}
 
 		return data.result
