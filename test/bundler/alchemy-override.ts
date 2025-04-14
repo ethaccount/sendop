@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { EOAValidatorModule, KernelV3Account, RpcProvider, sendop } from '@/index'
+import { EOAValidatorModule, KernelV3Account, sendop } from '@/index'
 import { Interface } from 'ethers'
 import { MyPaymaster, logger, setupCLI } from '../utils'
 
@@ -7,19 +7,10 @@ const { signer, bundler, client } = await setupCLI(['r', 'p', 'b'], {
 	bundlerOptions: {
 		debug: true,
 		async onAfterEstimation(gasValues) {
-			const rpcProvider = new RpcProvider(bundler.url)
-
-			const [block, maxPriorityFeePerGas] = await Promise.all([
-				rpcProvider.send({ method: 'eth_getBlockByNumber', params: ['latest', true] }),
-				rpcProvider.send({ method: 'rundler_maxPriorityFeePerGas' }),
-			])
-
-			const newMaxPriorityFeePerGas = (BigInt(maxPriorityFeePerGas) * 200n) / 100n
-
 			return {
 				...gasValues,
-				maxPriorityFeePerGas: newMaxPriorityFeePerGas,
-				maxFeePerGas: (BigInt(block.baseFeePerGas) * 200n) / 100n + newMaxPriorityFeePerGas,
+				maxPriorityFeePerGas: (gasValues.maxPriorityFeePerGas * 110n) / 100n,
+				maxFeePerGas: (gasValues.maxFeePerGas * 110n) / 100n,
 			}
 		},
 	},

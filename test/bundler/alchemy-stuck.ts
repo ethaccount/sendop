@@ -8,15 +8,11 @@ const { signer, bundler, client } = await setupCLI(['r', 'p', 'b'], {
 		debug: true,
 		async onAfterEstimation(gasValues) {
 			const rpcProvider = new RpcProvider(bundler.url)
-
-			const [block, maxPriorityFeePerGas] = await Promise.all([
-				rpcProvider.send({ method: 'eth_getBlockByNumber', params: ['latest', true] }),
-				rpcProvider.send({ method: 'rundler_maxPriorityFeePerGas' }),
-			])
+			const block = await rpcProvider.send({ method: 'eth_getBlockByNumber', params: ['latest', true] })
 
 			return {
 				...gasValues,
-				maxFeePerGas: (BigInt(block.baseFeePerGas) * 100n) / 100n + BigInt(maxPriorityFeePerGas),
+				maxFeePerGas: (BigInt(block.baseFeePerGas) * 100n) / 100n + gasValues.maxPriorityFeePerGas,
 			}
 		},
 	},
