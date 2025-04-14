@@ -1,5 +1,4 @@
 import type { GetPaymasterStubDataResult, PaymasterGetter, UserOp } from '@/core'
-import { toBeHex } from 'ethers'
 
 export class PublicPaymaster implements PaymasterGetter {
 	public address: string
@@ -12,8 +11,8 @@ export class PublicPaymaster implements PaymasterGetter {
 		return {
 			paymaster: this.address,
 			paymasterData: '0x',
-			paymasterVerificationGasLimit: 999_999n,
-			paymasterPostOpGasLimit: 999_999n,
+			paymasterVerificationGasLimit: 8000n,
+			paymasterPostOpGasLimit: 0n,
 			isFinal: true,
 		}
 	}

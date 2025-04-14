@@ -3,7 +3,7 @@ import { Wallet } from 'ethers'
 
 import 'dotenv/config'
 
-const logger = createConsola({
+export const logger = createConsola({
 	level: 4,
 })
 
@@ -47,6 +47,23 @@ export function getEnv() {
 	}
 }
 
+export function getBundlerUrl(chainId: bigint, source: 'pimlico' | 'alchemy' = 'pimlico') {
+	const { PIMLICO_API_KEY, ALCHEMY_API_KEY } = getEnv()
+	switch (chainId) {
+		case 1337n:
+			return 'http://localhost:4337'
+		case 11155111n:
+			switch (source) {
+				case 'pimlico':
+					return `https://api.pimlico.io/v2/${chainId}/rpc?apikey=${PIMLICO_API_KEY}`
+				case 'alchemy':
+					return `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
+			}
+		default:
+			throw new Error('getBundlerUrl: Invalid chainId')
+	}
+}
+
 export async function setup(options?: { chainId?: bigint }) {
 	const { PRIVATE_KEY, ALCHEMY_API_KEY, PIMLICO_API_KEY, SALT, CHAIN_ID, PIMLICO_SPONSORSHIP_POLICY_ID } = getEnv()
 
@@ -62,22 +79,6 @@ export async function setup(options?: { chainId?: bigint }) {
 			return 'https://rpc.mekong.ethpandaops.io'
 		}
 		throw new Error('Invalid chainId')
-	}
-
-	const getBundlerUrl = (chainId: bigint, source: 'pimlico' | 'alchemy' = 'pimlico') => {
-		switch (chainId) {
-			case 1337n:
-				return 'http://localhost:4337'
-			case 11155111n:
-				switch (source) {
-					case 'pimlico':
-						return `https://api.pimlico.io/v2/${chainId}/rpc?apikey=${PIMLICO_API_KEY}`
-					case 'alchemy':
-						return `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
-				}
-			default:
-				throw new Error('getBundlerUrl: Invalid chainId')
-		}
 	}
 
 	// Priority: setup({chainId}) > .env CHAIN_ID > 1337n
