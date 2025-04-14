@@ -114,11 +114,11 @@ export abstract class BaseBundler implements Bundler {
 			const err = normalizeError(error)
 
 			if (this.debug) {
-				userOp.preVerificationGas = 99_999
-				userOp.callGasLimit = 999_999
-				userOp.verificationGasLimit = 999_999
-				userOp.maxFeePerGas = 999_999
-				userOp.maxPriorityFeePerGas = 999_999
+				userOp.preVerificationGas = 99_999n
+				userOp.callGasLimit = 999_999n
+				userOp.verificationGasLimit = 999_999n
+				userOp.maxFeePerGas = 999_999n
+				userOp.maxPriorityFeePerGas = 999_999n
 
 				console.log('handleOpsCalldata:')
 				console.log(encodeHandleOpsCalldata([userOp], randomAddress()))

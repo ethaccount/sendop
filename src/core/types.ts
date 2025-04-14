@@ -7,14 +7,14 @@ export type UserOp = {
 	factory: string | null
 	factoryData: string | '0x'
 	callData: string
-	callGasLimit: bigint | number
-	verificationGasLimit: bigint | number
-	preVerificationGas: bigint | number
-	maxFeePerGas: bigint | number
-	maxPriorityFeePerGas: bigint | number
+	callGasLimit: bigint
+	verificationGasLimit: bigint
+	preVerificationGas: bigint
+	maxFeePerGas: bigint
+	maxPriorityFeePerGas: bigint
 	paymaster: string | null
-	paymasterVerificationGasLimit: bigint | number
-	paymasterPostOpGasLimit: bigint | number
+	paymasterVerificationGasLimit: bigint
+	paymasterPostOpGasLimit: bigint
 	paymasterData: string | '0x'
 	signature: string | '0x'
 }
