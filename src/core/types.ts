@@ -101,16 +101,22 @@ export type Execution = {
 	value: bigint
 }
 
+/**
+ * @dev https://eips.ethereum.org/EIPS/eip-7677
+ */
 export type GetPaymasterStubDataResult = {
 	sponsor?: { name: string; icon?: string } // Sponsor info
-	paymaster?: string // Paymaster address (entrypoint v0.7)
-	paymasterData?: string // Paymaster data (entrypoint v0.7)
-	paymasterVerificationGasLimit?: bigint // Paymaster validation gas (entrypoint v0.7)
-	paymasterPostOpGasLimit?: bigint // Paymaster post-op gas (entrypoint v0.7)
-	isFinal?: boolean // Indicates that the caller does not need to call pm_getPaymasterData
+	paymaster?: string
+	paymasterData?: string | '0x'
+	paymasterVerificationGasLimit?: bigint
+	paymasterPostOpGasLimit?: bigint
+	isFinal?: boolean // Indicates whether the caller needs to call pm_getPaymasterData
 }
 
+/**
+ * @dev https://eips.ethereum.org/EIPS/eip-7677
+ */
 export type GetPaymasterDataResult = {
-	paymaster?: string // Paymaster address (entrypoint v0.7)
-	paymasterData?: string // Paymaster data (entrypoint v0.7)
+	paymaster?: string
+	paymasterData?: string | '0x'
 }

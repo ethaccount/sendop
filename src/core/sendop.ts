@@ -10,6 +10,7 @@ export async function sendop(options: SendopOptions): Promise<SendOpResult> {
 	const { bundler, opGetter } = options
 	const { userOp, userOpHash } = await buildop(options)
 
+	// Sign UserOp before sending
 	switch (bundler.entryPointAddress) {
 		case ADDRESS.EntryPointV07:
 			userOp.signature = await opGetter.getSignature({
@@ -59,8 +60,8 @@ export async function buildop(options: SendopOptions): Promise<BuildopResult> {
 	const { bundler, executions, opGetter, pmGetter, initCode, nonce } = options
 
 	const userOp = getEmptyUserOp()
-	userOp.sender = await opGetter.getSender()
 
+	// Parse initCode in options
 	if (initCode && initCode !== '0x') {
 		const { factory, factoryData } = parseInitCode(initCode, bundler.entryPointAddress)
 		userOp.factory = factory
@@ -85,12 +86,15 @@ export async function buildop(options: SendopOptions): Promise<BuildopResult> {
 		}
 	}
 
+	// Create UserOp
+	userOp.sender = await opGetter.getSender()
 	userOp.nonce = nonce ?? (await opGetter.getNonce())
 	userOp.callData = await opGetter.getCallData(executions)
 
-	// if pm, get pmStubData
+	// Paymaster Gas Estimation
 	let pmIsFinal = false
 	if (pmGetter) {
+		// If pmGetter is provided, get paymaster stub values. See ERC-7677: https://eips.ethereum.org/EIPS/eip-7677
 		const pmStubData = await pmGetter.getPaymasterStubData(userOp)
 		userOp.paymaster = pmStubData.paymaster ?? null
 		userOp.paymasterData = pmStubData.paymasterData ?? '0x'
@@ -99,11 +103,10 @@ export async function buildop(options: SendopOptions): Promise<BuildopResult> {
 		pmIsFinal = pmStubData.isFinal ?? false
 	}
 
+	// Dummy Signature
 	userOp.signature = await opGetter.getDummySignature(userOp)
 
-	// esitmate userOp
-	// Note: user operation max fee per gas must be larger than 0 during gas estimation
-
+	// Gas Estimation
 	const gasValues = await bundler.getGasValues(userOp)
 	userOp.maxFeePerGas = gasValues.maxFeePerGas
 	userOp.maxPriorityFeePerGas = gasValues.maxPriorityFeePerGas
@@ -111,8 +114,9 @@ export async function buildop(options: SendopOptions): Promise<BuildopResult> {
 	userOp.verificationGasLimit = gasValues.verificationGasLimit
 	userOp.callGasLimit = gasValues.callGasLimit
 
-	// if pm && !isFinal, get pmData
+	// Get Paymaster Data
 	if (pmGetter && pmGetter.getPaymasterData && !pmIsFinal) {
+		// If pmGetter is provided and pmIsFinal is false, retrieve the paymaster data, usually for signing purposes.
 		const pmData = await pmGetter.getPaymasterData(userOp)
 		userOp.paymaster = pmData.paymaster ?? null
 		userOp.paymasterData = pmData.paymasterData ?? '0x'

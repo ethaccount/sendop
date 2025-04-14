@@ -34,6 +34,8 @@ export class PimlicoBundler extends BaseBundler {
 			throw new PimlicoBundlerError('Invalid gas price response from rpcProvider')
 		}
 
+		// Ensure userOp.maxFeePerGas is greater than 0 before gas estimation
+		// TODO: check if this is correct
 		userOp.maxFeePerGas = BigInt(curGasPrice.standard.maxFeePerGas)
 
 		// Send eth_estimateUserOperationGas

@@ -75,7 +75,7 @@ export class ERC7579ValidatorError extends SendopError {
 }
 
 /**
- * refer to ERC-7677
+ * @dev https://eips.ethereum.org/EIPS/eip-7677
  */
 export interface PaymasterGetter {
 	getPaymasterStubData(userOp: UserOp): Promise<GetPaymasterStubDataResult> | GetPaymasterStubDataResult
