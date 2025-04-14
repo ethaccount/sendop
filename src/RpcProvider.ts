@@ -70,10 +70,7 @@ export class RpcProvider {
 			throw new HttpError(`status: ${response.status}, message: ${errorText}`)
 		}
 
-		if (!data.result) {
-			throw new JsonRpcError('No result from RPC')
-		}
-
+		// data.result might be undefined
 		return data.result
 	}
 
