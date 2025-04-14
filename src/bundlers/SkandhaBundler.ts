@@ -22,8 +22,8 @@ export class SkandhaBundler extends BaseBundler {
 			callGasLimit: BigInt(estimateGas.callGasLimit),
 		}
 
-		if (this.onGetGasValues) {
-			gasValues = await this.onGetGasValues(gasValues)
+		if (this.onAfterEstimation) {
+			gasValues = await this.onAfterEstimation(gasValues)
 		}
 
 		return gasValues

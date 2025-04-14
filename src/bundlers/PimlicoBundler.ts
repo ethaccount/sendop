@@ -44,13 +44,13 @@ export class PimlicoBundler extends BaseBundler {
 		let gasValues: GasValues = {
 			maxFeePerGas: BigInt(curGasPrice.standard.maxFeePerGas),
 			maxPriorityFeePerGas: BigInt(curGasPrice.standard.maxPriorityFeePerGas),
-			preVerificationGas: estimateGas.preVerificationGas,
-			verificationGasLimit: estimateGas.verificationGasLimit,
-			callGasLimit: estimateGas.callGasLimit,
+			preVerificationGas: BigInt(estimateGas.preVerificationGas),
+			verificationGasLimit: BigInt(estimateGas.verificationGasLimit),
+			callGasLimit: BigInt(estimateGas.callGasLimit),
 		}
 
-		if (this.onGetGasValues) {
-			gasValues = await this.onGetGasValues(gasValues)
+		if (this.onAfterEstimation) {
+			gasValues = await this.onAfterEstimation(gasValues)
 		}
 
 		return gasValues

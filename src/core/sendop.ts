@@ -3,19 +3,23 @@ import { UnsupportedEntryPointError } from '@/error'
 import { getBytesLength, zeroPadRight } from '@/utils'
 import { dataSlice, getBytes } from 'ethers'
 import type { Bundler } from './interface'
-import type { BuildopResult, SendopOptions, SendOpResult, UserOp, UserOpReceipt } from './types'
-import { getEmptyUserOp, getUserOpHash, getUserOpHashV08, getV08DomainAndTypes, packUserOp } from './utils'
+import type { SendopOptions, SendOpResult, UserOp, UserOpReceipt } from './types'
+import { getEmptyUserOp, getUserOpHashV07, getUserOpHashV08, getV08DomainAndTypes, packUserOp } from './utils'
 
 export async function sendop(options: SendopOptions): Promise<SendOpResult> {
-	const { bundler, opGetter } = options
-	const { userOp, userOpHash } = await buildop(options)
+	const { bundler, opGetter, onBeforeSignUserOp } = options
+	let userOp = await buildop(options)
+
+	if (onBeforeSignUserOp) {
+		userOp = await onBeforeSignUserOp(userOp)
+	}
 
 	// Sign UserOp before sending
 	switch (bundler.entryPointAddress) {
 		case ADDRESS.EntryPointV07:
 			userOp.signature = await opGetter.getSignature({
 				entryPointVersion: 'v0.7',
-				hash: getBytes(userOpHash),
+				hash: getBytes(getUserOpHashV07(packUserOp(userOp), bundler.chainId)),
 				userOp,
 			})
 			break
@@ -56,7 +60,7 @@ export async function send(bundler: Bundler, userOp: UserOp): Promise<SendOpResu
 	}
 }
 
-export async function buildop(options: SendopOptions): Promise<BuildopResult> {
+export async function buildop(options: SendopOptions): Promise<UserOp> {
 	const { bundler, executions, opGetter, pmGetter, initCode, nonce } = options
 
 	const userOp = getEmptyUserOp()
@@ -122,10 +126,5 @@ export async function buildop(options: SendopOptions): Promise<BuildopResult> {
 		userOp.paymasterData = pmData.paymasterData ?? '0x'
 	}
 
-	const userOpHash = getUserOpHash(packUserOp(userOp), bundler.entryPointAddress, bundler.chainId)
-
-	return {
-		userOp,
-		userOpHash,
-	}
+	return userOp
 }

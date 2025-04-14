@@ -10,6 +10,7 @@ import type {
 } from './types'
 
 export interface Bundler {
+	url: string
 	chainId: bigint
 	entryPointAddress: string
 	getGasValues(userOp: UserOp): Promise<{

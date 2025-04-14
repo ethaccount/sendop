@@ -16,7 +16,7 @@ export type GasValues = {
 export type BundlerOptions = {
 	skipGasEstimation?: boolean
 	onBeforeEstimation?: (userOp: UserOp) => Promise<UserOp>
-	onGetGasValues?: (gasValues: GasValues) => Promise<GasValues>
+	onAfterEstimation?: (gasValues: GasValues) => Promise<GasValues>
 	onBeforeSendUserOp?: (userOp: UserOp) => Promise<UserOp>
 	debugSend?: boolean
 	debug?: boolean
@@ -31,7 +31,7 @@ export abstract class BaseBundler implements Bundler {
 	public entryPointAddress: string
 
 	protected skipGasEstimation: boolean
-	protected onGetGasValues?: (gasValues: GasValues) => Promise<GasValues>
+	protected onAfterEstimation?: (gasValues: GasValues) => Promise<GasValues>
 	protected onBeforeEstimation?: (userOp: UserOp) => Promise<UserOp>
 	protected onBeforeSendUserOp?: (userOp: UserOp) => Promise<UserOp>
 	protected debugSend?: boolean
@@ -44,7 +44,7 @@ export abstract class BaseBundler implements Bundler {
 		this.rpcProvider = new RpcProvider(url)
 		this.skipGasEstimation = options?.skipGasEstimation ?? false
 		this.onBeforeEstimation = options?.onBeforeEstimation
-		this.onGetGasValues = options?.onGetGasValues
+		this.onAfterEstimation = options?.onAfterEstimation
 		this.onBeforeSendUserOp = options?.onBeforeSendUserOp
 		this.debugSend = options?.debugSend ?? false
 		this.debug = options?.debug ?? false
