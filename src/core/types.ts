@@ -1,4 +1,3 @@
-import type { TransactionReceipt } from 'ethers'
 import type { Bundler, OperationGetter, PaymasterGetter } from './interface'
 
 export type UserOp = {
@@ -73,7 +72,21 @@ export type UserOpReceipt = {
 	actualGasCost: string
 	success: boolean
 	logs: UserOpLog[]
-	receipt: TransactionReceipt
+	receipt: {
+		transactionHash: string
+		transactionIndex: string
+		from: string
+		to: string
+		status: string
+		logsBloom: string
+		blockHash: string
+		blockNumber: string
+		contractAddress: null | string
+		gasUsed: string
+		cumulativeGasUsed: string
+		effectiveGasPrice: string
+		logs: UserOpLog[]
+	}
 }
 
 export type SendopOptions = {
