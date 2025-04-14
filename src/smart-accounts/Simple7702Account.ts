@@ -14,7 +14,7 @@ export class Simple7702Account extends SmartAccount {
 	public readonly signer: Signer
 
 	static override accountId() {
-		return 'infinitism.simple7702.0.8.0'
+		return 'infinitism.Simple7702Account.0.8.0'
 	}
 
 	constructor(options: Simple7702AccountOptions) {

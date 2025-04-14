@@ -1,7 +1,7 @@
 import { ADDRESS } from '@/addresses'
 import { UnsupportedEntryPointError } from '@/error'
 import { getBytesLength, zeroPadRight } from '@/utils'
-import { dataSlice, getBytes, hexlify, toBeHex } from 'ethers'
+import { dataSlice, getBytes } from 'ethers'
 import type { Bundler } from './interface'
 import type { BuildopResult, SendopOptions, SendOpResult, UserOp, UserOpReceipt } from './types'
 import { getEmptyUserOp, getUserOpHash, getUserOpHashV08, getV08DomainAndTypes, packUserOp } from './utils'
