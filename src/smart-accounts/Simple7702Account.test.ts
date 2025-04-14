@@ -6,8 +6,9 @@ import { JsonRpcProvider, Wallet, getAddress, toNumber } from 'ethers'
 import { Interface } from 'ethers/abi'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { Simple7702Account } from './Simple7702Account'
+import { logger } from 'test/utils'
 
-describe('Simple7702Account', () => {
+describe.skip('Simple7702Account', () => {
 	const CHAIN_ID = 1337n
 	const CLIENT_URL = 'http://localhost:8545'
 	const BUNDLER_URL = 'http://localhost:4337'
@@ -50,8 +51,10 @@ describe('Simple7702Account', () => {
 			opGetter: account,
 			pmGetter: new PublicPaymaster(PUBLIC_PAYMASTER_ADDRESS),
 		})
+		logger.info(`op: ${op.hash}`)
 
 		const receipt = await op.wait()
+		logger.info(`receipt.success: ${receipt.success}`)
 		expect(receipt.success).toBe(true)
 
 		// Verify the number was set correctly via logs

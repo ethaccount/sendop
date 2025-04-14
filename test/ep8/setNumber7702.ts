@@ -1,46 +1,23 @@
 import { ADDRESS } from '@/addresses'
-import { PimlicoBundler } from '@/bundlers'
 import { sendop } from '@/core'
 import { PublicPaymaster } from '@/paymasters'
 import { Simple7702Account } from '@/smart-accounts/Simple7702Account'
-import { getAddress, Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
-import yargs from 'yargs'
-import { hideBin } from 'yargs/helpers'
-import { setup } from '../utils'
+import { getAddress, Interface, toNumber } from 'ethers'
+import { logger } from 'test/utils'
+import { setupCLI } from 'test/utils/cli'
 
-const argv = await yargs(hideBin(process.argv))
-	.option('network', {
-		alias: 'n',
-		choices: ['local', 'sepolia'] as const,
-		description: 'Network (local or sepolia)',
-		demandOption: true,
-	})
-	.option('address', {
-		alias: 'a',
-		type: 'string',
-		description: 'Address',
-		demandOption: true,
-	})
-	.help().argv
+// bun run test/ep8/setNumber7702.ts -r $sepolia -p $DEV_7702_PK
 
 const PUBLIC_PAYMASTER_ADDRESS = '0xcb04730b8aA92B8fC0d1482A0a7BD3420104556D'
 
-const CHAIN_IDS = {
-	local: 1337n,
-	sepolia: 11155111n,
-} as const
-const chainId = CHAIN_IDS[argv.network]
-const { logger, CLIENT_URL, BUNDLER_URL } = await setup({ chainId })
-logger.info(`Chain ID: ${chainId}`)
-
-const signer = new Wallet(process.env.PRIVATE_KEY as string)
-const client = new JsonRpcProvider(CLIENT_URL)
-const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
-	entryPointVersion: 'v0.8',
-	parseError: true,
-	debug: true,
-	async onBeforeEstimation(userOp) {
-		return userOp
+const { signer, bundler, client } = await setupCLI(['r', 'p', 'b'], {
+	bundlerOptions: {
+		entryPointVersion: 'v0.8',
+		parseError: true,
+		debug: true,
+		async onBeforeEstimation(userOp) {
+			return userOp
+		},
 	},
 })
 
@@ -60,7 +37,7 @@ const op = await sendop({
 	// TODO: what's the situation to use 7702 initCode?
 	// initCode: zeroPadRight('0x7702', 20),
 	opGetter: new Simple7702Account({
-		address: argv.address,
+		address: signer.address,
 		client,
 		bundler,
 		signer,

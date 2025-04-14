@@ -9,6 +9,7 @@ interface YargsOptions {
 	'rpc-url': string
 	'private-key': string
 	bundler: 'pimlico' | 'alchemy' | 'skandha'
+	address: string
 }
 
 interface SetupResult {
@@ -19,7 +20,7 @@ interface SetupResult {
 	bundler: Bundler
 }
 
-type OptionAlias = 'r' | 'p' | 'b'
+type OptionAlias = 'r' | 'p' | 'b' | 'a'
 
 /**
  * Sets up yargs with dynamic options and returns web3 objects
@@ -57,6 +58,12 @@ export async function setupCLI(
 			choices: ['pimlico', 'alchemy', 'skandha'] as const,
 			demandOption: false,
 			default: 'pimlico',
+		},
+		a: {
+			option: 'address',
+			type: 'string',
+			description: 'Address',
+			demandOption: true,
 		},
 	} as const
 
