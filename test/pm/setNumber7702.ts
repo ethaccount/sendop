@@ -28,7 +28,6 @@ const PUBLIC_PAYMASTER_ADDRESS = '0xcb04730b8aA92B8fC0d1482A0a7BD3420104556D'
 const client = new JsonRpcProvider(argv.rpcUrl)
 const chainId = await client.getNetwork().then(network => network.chainId)
 const signer = new Wallet(argv.privateKey)
-
 const bundler = new PimlicoBundler(chainId, getBundlerUrl(chainId, 'pimlico'), {
 	entryPointVersion: 'v0.8',
 	parseError: true,
