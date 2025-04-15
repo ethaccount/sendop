@@ -45,7 +45,7 @@ export class RpcProvider {
 		if (data.error) {
 			let errMsg = ''
 			if (typeof data.error === 'string') {
-				// Skandha might return a string error message in data.error
+				// etherspot might return a string error message in data.error
 				errMsg = data.error
 			} else {
 				// Note that data.error.data is specific to Alchemy
@@ -60,7 +60,7 @@ export class RpcProvider {
 			throw new JsonRpcError(errMsg)
 		}
 
-		// Skandha might return a message in data.message
+		// etherspot might return a message in data.message
 		if (data.message) {
 			throw new JsonRpcError(data.message)
 		}

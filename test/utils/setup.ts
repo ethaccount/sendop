@@ -49,7 +49,7 @@ export function getEnv() {
 	}
 }
 
-export function getBundlerUrl(chainId: bigint, source: 'pimlico' | 'alchemy' | 'skandha' = 'pimlico') {
+export function getBundlerUrl(chainId: bigint, source: 'pimlico' | 'alchemy' | 'etherspot' = 'pimlico') {
 	const { PIMLICO_API_KEY, ALCHEMY_API_KEY, ETHERSPOT_API_KEY } = getEnv()
 	switch (chainId) {
 		case 1337n:
@@ -64,7 +64,7 @@ export function getBundlerUrl(chainId: bigint, source: 'pimlico' | 'alchemy' | '
 	switch (source) {
 		case 'pimlico':
 			return `https://api.pimlico.io/v2/${chainId}/rpc?apikey=${PIMLICO_API_KEY}`
-		case 'skandha':
+		case 'etherspot':
 			// 	TODO: v2 only for ep7 and v3 only for ep8 (WTF)
 			return `https://rpc.etherspot.io/v2/${chainId}/?api-key=${ETHERSPOT_API_KEY}`
 	}

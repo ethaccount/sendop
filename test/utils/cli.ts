@@ -2,13 +2,13 @@ import type { BundlerOptions } from '@/bundlers/BaseBundler'
 import { JsonRpcProvider, Wallet } from 'ethers'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { AlchemyBundler, PimlicoBundler, SkandhaBundler, type Bundler } from '../../src'
+import { AlchemyBundler, PimlicoBundler, EtherspotBundler, type Bundler } from '../../src'
 import { getBundlerUrl, logger } from '../utils'
 
 interface YargsOptions {
 	'rpc-url': string
 	'private-key': string
-	bundler: 'pimlico' | 'alchemy' | 'skandha'
+	bundler: 'pimlico' | 'alchemy' | 'etherspot'
 	address: string
 }
 
@@ -55,7 +55,7 @@ export async function setupCLI(
 			option: 'bundler',
 			type: 'string',
 			description: 'Bundler',
-			choices: ['pimlico', 'alchemy', 'skandha'] as const,
+			choices: ['pimlico', 'alchemy', 'etherspot'] as const,
 			demandOption: false,
 			default: 'pimlico',
 		},
@@ -97,8 +97,8 @@ export async function setupCLI(
 		case 'alchemy':
 			bundler = new AlchemyBundler(chainId, getBundlerUrl(chainId, 'alchemy'), options?.bundlerOptions)
 			break
-		case 'skandha':
-			bundler = new SkandhaBundler(chainId, getBundlerUrl(chainId, 'skandha'), options?.bundlerOptions)
+		case 'etherspot':
+			bundler = new EtherspotBundler(chainId, getBundlerUrl(chainId, 'etherspot'), options?.bundlerOptions)
 			break
 		default:
 			bundler = new PimlicoBundler(chainId, getBundlerUrl(chainId, 'pimlico'), options?.bundlerOptions)

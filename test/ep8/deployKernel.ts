@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { EOAValidatorModule, KernelV3Account, sendop, SkandhaBundler } from '@/index'
+import { EOAValidatorModule, KernelV3Account, sendop, EtherspotBundler } from '@/index'
 import { hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
 import { MyPaymaster, setup } from '../utils'
 
@@ -21,7 +21,7 @@ logger.info(`salt: ${creationOptions.salt}`)
 const computedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
 logger.info('computedAddress:', computedAddress)
 
-const bundler = new SkandhaBundler(chainId, 'http://localhost:14337/rpc', {
+const bundler = new EtherspotBundler(chainId, 'http://localhost:14337/rpc', {
 	entryPointVersion: 'v0.8',
 	parseError: true,
 	debug: true,

@@ -2,7 +2,7 @@ import type { UserOp } from '@/core'
 import { SendopError } from '@/error'
 import { BaseBundler, type BundlerOptions, type GasValues } from './BaseBundler'
 
-export class SkandhaBundler extends BaseBundler {
+export class EtherspotBundler extends BaseBundler {
 	constructor(chainId: bigint, url: string, options?: BundlerOptions) {
 		super(chainId, url, options)
 	}
@@ -30,9 +30,9 @@ export class SkandhaBundler extends BaseBundler {
 	}
 }
 
-export class SkandhaBundlerError extends SendopError {
+export class EtherspotBundlerError extends SendopError {
 	constructor(message: string, options?: ErrorOptions) {
 		super(message, options)
-		this.name = 'SkandhaBundlerError'
+		this.name = 'EtherspotBundlerError'
 	}
 }

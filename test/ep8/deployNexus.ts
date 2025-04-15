@@ -5,7 +5,7 @@ import {
 	EOAValidatorModule,
 	RHINESTONE_ATTESTER_ADDRESS,
 	sendop,
-	SkandhaBundler,
+	EtherspotBundler,
 } from '@/index'
 import { NexusAccount } from '@/smart-accounts/nexus/NexusAccount'
 import type { NexusCreationOptions } from '@/smart-accounts/nexus/types'
@@ -33,7 +33,7 @@ logger.info(`Chain ID: ${chainId}`)
 
 const signer = new Wallet(privateKey)
 const client = new JsonRpcProvider(CLIENT_URL)
-const bundler = new SkandhaBundler(chainId, 'http://localhost:14337/rpc', {
+const bundler = new EtherspotBundler(chainId, 'http://localhost:14337/rpc', {
 	entryPointVersion: 'v0.8',
 	parseError: true,
 	debug: true,
