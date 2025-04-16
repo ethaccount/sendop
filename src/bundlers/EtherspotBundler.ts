@@ -9,10 +9,15 @@ export class EtherspotBundler extends BaseBundler {
 
 	async _getGasValues(userOp: UserOp): Promise<GasValues> {
 		// Get all gas values from estimateUserOperationGas
-		const estimateGas = await this.estimateUserOperationGas(userOp)
-
-		// TODO: better way to handle the response
-		console.log('estimateGas', estimateGas)
+		const estimateGas = (await this.estimateUserOperationGas(userOp)) as {
+			preVerificationGas: string
+			verificationGasLimit: string
+			verificationGas: string
+			validUntil: string
+			callGasLimit: string
+			maxFeePerGas: string
+			maxPriorityFeePerGas: string
+		}
 
 		let gasValues: GasValues = {
 			maxFeePerGas: BigInt(estimateGas.maxFeePerGas),

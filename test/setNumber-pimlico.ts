@@ -5,9 +5,14 @@ import { KernelV3Account } from '@/smart-accounts'
 import { randomBytes32 } from '@/utils'
 import { EOAValidatorModule } from '@/validators/EOAValidatorModule'
 import { getAddress, Interface, toNumber } from 'ethers'
-import { logger, setupCLI } from './utils'
+import { getBundlerUrl, logger, setupCLI } from './utils'
 
-// bun run test/setNumber-pimlico.ts -r $sepolia
+/* 
+
+bun run test/setNumber-pimlico.ts -r $sepolia -b pimlico
+bun run test/setNumber-pimlico.ts -r $sepolia -b alchemy
+
+*/
 
 const { chainId, bundler, client, signer } = await setupCLI(['r', 'p', 'b'], {
 	bundlerOptions: {
@@ -39,7 +44,7 @@ logger.info('computedAddress:', computedAddress)
 
 const pmGetter = new PimlicoPaymaster({
 	chainId,
-	url: bundler.url,
+	url: getBundlerUrl(chainId, 'pimlico'),
 	sponsorshipPolicyId: PIMLICO_SPONSORSHIP_POLICY_ID,
 })
 
