@@ -1,8 +1,8 @@
 import { ADDRESS } from '@/addresses'
 import { ScheduledTransfers__factory } from '@/contract-types'
-import { PimlicoBundler } from '@/index'
-import { ethers, JsonRpcProvider } from 'ethers'
-import { MyPaymaster, setup } from 'test/utils'
+import { PimlicoBundler, PublicPaymaster } from '@/index'
+import { JsonRpcProvider } from 'ethers'
+import { setup } from 'test/utils'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { executeScheduledTransfer } from './executeScheduledTransfer'
@@ -38,10 +38,7 @@ const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 	parseError: true,
 })
 
-const pmGetter = new MyPaymaster({
-	client,
-	paymasterAddress: ADDRESS.PublicPaymaster,
-})
+const pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 
 const scheduledTransfers = ScheduledTransfers__factory.connect(ADDRESS.ScheduledTransfers, client)
 

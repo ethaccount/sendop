@@ -1,7 +1,7 @@
 import { ADDRESS } from '@/addresses'
-import { EOAValidatorModule, KernelV3Account, sendop, EtherspotBundler } from '@/index'
+import { EOAValidatorModule, KernelV3Account, sendop, EtherspotBundler, PublicPaymaster } from '@/index'
 import { hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
-import { MyPaymaster, setup } from '../utils'
+import { setup } from '../utils'
 
 const { logger, chainId, CLIENT_URL, privateKey } = await setup({ chainId: 1337n })
 
@@ -45,10 +45,7 @@ const op = await sendop({
 	executions: [],
 	opGetter: kernel,
 	initCode: kernel.getInitCode(creationOptions),
-	pmGetter: new MyPaymaster({
-		client,
-		paymasterAddress: ADDRESS.PublicPaymaster,
-	}),
+	pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
 })
 
 logger.info(`hash: ${op.hash}`)

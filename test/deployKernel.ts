@@ -1,6 +1,6 @@
 import { ADDRESS } from '@/addresses'
-import { EOAValidatorModule, KernelV3Account, randomBytes32, sendop } from '@/index'
-import { MyPaymaster, logger } from './utils'
+import { EOAValidatorModule, KernelV3Account, PublicPaymaster, randomBytes32, sendop } from '@/index'
+import { logger } from './utils'
 import { setupCLI } from './utils/cli'
 
 const { signer, bundler, client } = await setupCLI(['r', 'p', 'b'], {
@@ -36,10 +36,7 @@ const op = await sendop({
 		}),
 	}),
 	initCode: KernelV3Account.getInitCode(creationOptions),
-	pmGetter: new MyPaymaster({
-		client,
-		paymasterAddress: ADDRESS.PublicPaymaster,
-	}),
+	pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
 })
 
 logger.info(`hash: ${op.hash}`)

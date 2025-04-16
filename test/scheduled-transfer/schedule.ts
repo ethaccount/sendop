@@ -22,7 +22,8 @@ import fs from 'fs'
 import path from 'path'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { MyPaymaster, setup } from '../../test/utils'
+import { setup } from '../../test/utils'
+import { PublicPaymaster } from '@/paymasters'
 
 const argv = await yargs(hideBin(process.argv))
 	.option('network', {
@@ -61,10 +62,7 @@ const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 	// },
 })
 
-const pmGetter = new MyPaymaster({
-	client,
-	paymasterAddress: ADDRESS.PublicPaymaster,
-})
+const pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 
 const creationOptions = {
 	salt: randomBytes32(),

@@ -6,13 +6,14 @@ import {
 	RHINESTONE_ATTESTER_ADDRESS,
 	sendop,
 	EtherspotBundler,
+	PublicPaymaster,
 } from '@/index'
 import { NexusAccount } from '@/smart-accounts/nexus/NexusAccount'
 import type { NexusCreationOptions } from '@/smart-accounts/nexus/types'
 import { hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { MyPaymaster, setup } from '../utils'
+import { setup } from '../utils'
 
 const argv = await yargs(hideBin(process.argv))
 	.option('network', {
@@ -71,10 +72,7 @@ const op = await sendop({
 	executions: [],
 	opGetter: nexus,
 	initCode: nexus.getInitCode(creationOptions),
-	pmGetter: new MyPaymaster({
-		client,
-		paymasterAddress: ADDRESS.PublicPaymaster,
-	}),
+	pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
 })
 
 logger.info(`hash: ${op.hash}`)

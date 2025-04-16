@@ -3,13 +3,14 @@ import {
 	BICONOMY_ATTESTER_ADDRESS,
 	DEV_ATTESTER_ADDRESS,
 	EOAValidatorModule,
+	PublicPaymaster,
 	RHINESTONE_ATTESTER_ADDRESS,
 	sendop,
 } from '@/index'
 import { NexusAccount } from '@/smart-accounts/nexus/NexusAccount'
 import type { NexusCreationOptions } from '@/smart-accounts/nexus/types'
 import { hexlify, randomBytes } from 'ethers'
-import { logger, MyPaymaster } from './utils'
+import { logger } from './utils'
 import { setupCLI } from './utils/cli'
 
 const { signer, bundler, client } = await setupCLI(['r', 'p', 'b'], {
@@ -47,10 +48,7 @@ const op = await sendop({
 	executions: [],
 	opGetter: nexus,
 	initCode: nexus.getInitCode(creationOptions),
-	pmGetter: new MyPaymaster({
-		client,
-		paymasterAddress: ADDRESS.PublicPaymaster,
-	}),
+	pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
 })
 
 logger.info(`hash: ${op.hash}`)

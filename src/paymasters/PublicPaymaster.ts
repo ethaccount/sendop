@@ -11,7 +11,7 @@ export class PublicPaymaster implements PaymasterGetter {
 		return {
 			paymaster: this.address,
 			paymasterData: '0x',
-			paymasterVerificationGasLimit: 8000n,
+			paymasterVerificationGasLimit: 999_999n,
 			paymasterPostOpGasLimit: 0n,
 			isFinal: true,
 		}

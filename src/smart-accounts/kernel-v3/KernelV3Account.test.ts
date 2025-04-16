@@ -25,10 +25,11 @@ import {
 	Wallet,
 	ZeroAddress,
 } from 'ethers'
-import { MyPaymaster, setup } from 'test/utils'
+import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { KernelV3Account } from './KernelV3Account'
 import { KernelValidationType, type KernelCreationOptions } from './types'
+import { PublicPaymaster } from '@/paymasters'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, account1 } = await setup()
 
@@ -51,10 +52,7 @@ describe('KernelV3Account', () => {
 			address: ADDRESS.K1Validator,
 			signer: new Wallet(privateKey),
 		})
-		pmGetter = new MyPaymaster({
-			client,
-			paymasterAddress: ADDRESS.PublicPaymaster,
-		})
+		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 	})
 
 	describe('Kerenl deploy and setNumber', () => {

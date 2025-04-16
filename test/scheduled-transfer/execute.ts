@@ -1,11 +1,11 @@
 import { ADDRESS } from '@/addresses'
-import { PimlicoBundler } from '@/index'
+import { PimlicoBundler, PublicPaymaster } from '@/index'
 import { JsonRpcProvider } from 'ethers'
 import fs from 'fs'
 import path from 'path'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { MyPaymaster, setup } from '../../test/utils'
+import { setup } from '../../test/utils'
 import { executeScheduledTransfer } from './executeScheduledTransfer'
 
 const argv = await yargs(hideBin(process.argv))
@@ -45,10 +45,7 @@ const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 	// debugSend: true,
 })
 
-const pmGetter = new MyPaymaster({
-	client,
-	paymasterAddress: ADDRESS.PublicPaymaster,
-})
+const pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 
 const receipt = await executeScheduledTransfer({
 	accountAddress: kernelAddress,

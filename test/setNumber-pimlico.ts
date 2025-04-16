@@ -1,25 +1,48 @@
 import { ADDRESS } from '@/addresses'
-import { AlchemyBundler } from '@/bundlers/AlchemyBundler'
 import { sendop } from '@/core'
+import { PimlicoPaymaster } from '@/paymasters'
 import { KernelV3Account } from '@/smart-accounts'
+import { randomBytes32 } from '@/utils'
 import { EOAValidatorModule } from '@/validators/EOAValidatorModule'
-import { getAddress, Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
-import { setup } from './utils'
-import { PublicPaymaster } from '@/paymasters'
+import { getAddress, Interface, toNumber } from 'ethers'
+import { logger, setupCLI } from './utils'
 
-const { logger, chainId, CLIENT_URL, ALCHEMY_BUNDLER_URL, privateKey } = await setup({ chainId: 11155111n })
+// bun run test/setNumber-pimlico.ts -r $sepolia
+
+const { chainId, bundler, client, signer } = await setupCLI(['r', 'p', 'b'], {
+	bundlerOptions: {
+		debug: true,
+	},
+})
+
 logger.info(`Chain ID: ${chainId}`)
 
-const FROM = '0x69F062dA4F6e200e235F66e151E2733E5ed306b9' // kernel on sepolia
+const PIMLICO_SPONSORSHIP_POLICY_ID = process.env.PIMLICO_SPONSORSHIP_POLICY_ID
+if (!PIMLICO_SPONSORSHIP_POLICY_ID) {
+	throw new Error('PIMLICO_SPONSORSHIP_POLICY_ID is not set')
+}
 
 const number = Math.floor(Math.random() * 10000)
 logger.info(`Setting number to ${number}`)
 
-const client = new JsonRpcProvider(CLIENT_URL)
-const bundler = new AlchemyBundler(chainId, ALCHEMY_BUNDLER_URL)
-const signer = new Wallet(privateKey)
-
 logger.info('Sending op...')
+const creationOptions = {
+	salt: randomBytes32(),
+	validatorAddress: ADDRESS.ECDSAValidator,
+	validatorInitData: signer.address,
+}
+
+logger.info(`salt: ${creationOptions.salt}`)
+
+const computedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
+logger.info('computedAddress:', computedAddress)
+
+const pmGetter = new PimlicoPaymaster({
+	chainId,
+	url: bundler.url,
+	sponsorshipPolicyId: PIMLICO_SPONSORSHIP_POLICY_ID,
+})
+
 const op = await sendop({
 	bundler,
 	executions: [
@@ -30,15 +53,16 @@ const op = await sendop({
 		},
 	],
 	opGetter: new KernelV3Account({
-		address: FROM,
+		address: computedAddress,
 		client,
 		bundler,
 		validator: new EOAValidatorModule({
-			address: ADDRESS.K1Validator,
+			address: ADDRESS.ECDSAValidator,
 			signer,
 		}),
 	}),
-	pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
+	initCode: KernelV3Account.getInitCode(creationOptions),
+	pmGetter,
 })
 
 const startTime = Date.now()

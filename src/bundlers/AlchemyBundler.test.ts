@@ -1,14 +1,14 @@
+import { ADDRESS } from '@/addresses'
 import { getEmptyUserOp, sendop, type Bundler } from '@/core'
+import { PublicPaymaster } from '@/paymasters'
+import { RpcProvider } from '@/RpcProvider'
 import { KernelV3Account } from '@/smart-accounts'
 import { isSameAddress } from '@/utils'
-import { RpcProvider } from '@/RpcProvider'
 import { EOAValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
-import { MyPaymaster, setup } from 'test/utils'
+import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { AlchemyBundler } from './AlchemyBundler'
-import { PimlicoBundler } from './PimlicoBundler'
-import { ADDRESS } from '@/addresses'
 
 const {
 	logger,
@@ -114,12 +114,7 @@ describe.skip('AlchemyBundler', () => {
 	})
 
 	it('should deploy kernel with PimlicoBundler and set number with AlchemyBundler', async () => {
-		const pimlicoBundler = new PimlicoBundler(chainId, PIMLICO_BUNDLER_URL)
-
-		const myPaymaster = new MyPaymaster({
-			client,
-			paymasterAddress: ADDRESS.PublicPaymaster,
-		})
+		const publicPaymaster = new PublicPaymaster(ADDRESS.PublicPaymaster)
 
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
@@ -137,7 +132,7 @@ describe.skip('AlchemyBundler', () => {
 				address: ADDRESS.K1Validator,
 				signer,
 			}),
-			pmGetter: myPaymaster,
+			pmGetter: publicPaymaster,
 		})
 
 		const op = await kernel.deploy(creationOptions)
@@ -160,7 +155,7 @@ describe.skip('AlchemyBundler', () => {
 				},
 			],
 			opGetter: kernel,
-			pmGetter: myPaymaster,
+			pmGetter: publicPaymaster,
 		})
 
 		const startTime = Date.now()
@@ -198,10 +193,7 @@ describe.skip('AlchemyBundler', () => {
 			bundler: alchemyBundler,
 			executions: [],
 			opGetter: kernel,
-			pmGetter: new MyPaymaster({
-				client,
-				paymasterAddress: ADDRESS.PublicPaymaster,
-			}),
+			pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
 			initCode: kernel.getInitCode(creationOptions),
 		})
 

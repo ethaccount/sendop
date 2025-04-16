@@ -5,10 +5,11 @@ import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } fro
 import { randomBytes32 } from '@/utils'
 import { EOAValidatorModule } from '@/validators'
 import { Interface, JsonRpcProvider, resolveAddress, toNumber, Wallet } from 'ethers'
-import { MyPaymaster, setup } from 'test/utils'
+import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { NexusAccount } from './NexusAccount'
 import type { NexusCreationOptions } from './types'
+import { PublicPaymaster } from '@/index'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup()
 logger.info(`Chain ID: ${chainId}`)
@@ -31,10 +32,7 @@ describe('NexusAccount', () => {
 			address: ADDRESS.ECDSAValidator,
 			signer: new Wallet(privateKey),
 		})
-		pmGetter = new MyPaymaster({
-			client,
-			paymasterAddress: ADDRESS.PublicPaymaster,
-		})
+		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 
 		logger.info(`Signer: ${signer.address}`)
 	})

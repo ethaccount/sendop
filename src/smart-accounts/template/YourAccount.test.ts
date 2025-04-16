@@ -4,10 +4,11 @@ import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } fro
 import { randomBytes32 } from '@/utils'
 import { EOAValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
-import { MyPaymaster, setup } from 'test/utils'
+import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { YourAccount } from './YourAccount'
 import type { YourCreationOptions } from './types'
+import { PublicPaymaster } from '@/paymasters'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup()
 logger.info(`Chain ID: ${chainId}`)
@@ -30,10 +31,7 @@ describe.skip('YourAccount', () => {
 			address: ADDRESS.K1Validator,
 			signer: new Wallet(privateKey),
 		})
-		pmGetter = new MyPaymaster({
-			client,
-			paymasterAddress: ADDRESS.PublicPaymaster,
-		})
+		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 
 		account = new YourAccount({
 			client,

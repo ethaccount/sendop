@@ -6,6 +6,7 @@ import {
 	getPermissionId,
 	KernelV3Account,
 	PimlicoBundler,
+	PublicPaymaster,
 	sendop,
 	zeroPadLeft,
 } from '@/index'
@@ -13,7 +14,7 @@ import { INTERFACES } from '@/interfaces'
 import { JsonRpcProvider, toBeHex, Wallet } from 'ethers'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { MyPaymaster, setup } from '../utils'
+import { setup } from '../utils'
 
 const argv = await yargs(hideBin(process.argv))
 	.option('network', {
@@ -51,10 +52,7 @@ const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 	// },
 })
 
-const pmGetter = new MyPaymaster({
-	client,
-	paymasterAddress: ADDRESS.PublicPaymaster,
-})
+const pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 
 const session: SessionStruct = {
 	sessionValidator: ADDRESS.OwnableValidator,

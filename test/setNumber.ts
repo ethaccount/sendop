@@ -1,12 +1,13 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { sendop } from '@/core'
+import { PublicPaymaster } from '@/paymasters'
 import { NexusAccount } from '@/smart-accounts/nexus/NexusAccount'
 import { EOAValidatorModule } from '@/validators/EOAValidatorModule'
 import { getAddress, Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { MyPaymaster, setup } from './utils'
+import { setup } from './utils'
 
 const argv = await yargs(hideBin(process.argv))
 	.option('network', {
@@ -66,10 +67,7 @@ const op = await sendop({
 			signer,
 		}),
 	}),
-	pmGetter: new MyPaymaster({
-		client,
-		paymasterAddress: ADDRESS.PublicPaymaster,
-	}),
+	pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
 })
 
 const startTime = Date.now()

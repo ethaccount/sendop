@@ -8,8 +8,6 @@ import { setupCLI } from 'test/utils/cli'
 
 // bun run test/ep8/setNumber7702.ts -r $sepolia -p $DEV_7702_PK
 
-const PUBLIC_PAYMASTER_ADDRESS = '0xcb04730b8aA92B8fC0d1482A0a7BD3420104556D'
-
 const { signer, bundler, client } = await setupCLI(['r', 'p', 'b'], {
 	bundlerOptions: {
 		entryPointVersion: 'v0.8',
@@ -42,7 +40,7 @@ const op = await sendop({
 		bundler,
 		signer,
 	}),
-	pmGetter: new PublicPaymaster(PUBLIC_PAYMASTER_ADDRESS),
+	pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
 })
 
 const startTime = Date.now()

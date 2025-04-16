@@ -1,7 +1,7 @@
 import { ADDRESS } from '@/addresses'
-import { EOAValidatorModule, KernelV3Account, sendop } from '@/index'
+import { EOAValidatorModule, KernelV3Account, PublicPaymaster, sendop } from '@/index'
 import { Interface } from 'ethers'
-import { MyPaymaster, logger, setupCLI } from '../utils'
+import { logger, setupCLI } from '../utils'
 
 const { signer, bundler, client } = await setupCLI(['r', 'p', 'b'], {
 	bundlerOptions: {
@@ -38,10 +38,7 @@ const op = await sendop({
 			signer,
 		}),
 	}),
-	pmGetter: new MyPaymaster({
-		client,
-		paymasterAddress: ADDRESS.PublicPaymaster,
-	}),
+	pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
 })
 
 logger.info(`hash: ${op.hash}`)

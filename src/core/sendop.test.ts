@@ -4,10 +4,11 @@ import { KernelV3Account } from '@/smart-accounts'
 import { connectEntryPointV07 } from '@/utils/contract-helper'
 import { EOAValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, parseEther, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
-import { MyPaymaster, setup } from 'test/utils'
+import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import type { Bundler, ERC7579Validator, PaymasterGetter } from './interface'
 import { sendop } from './sendop'
+import { PublicPaymaster } from '@/paymasters'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, isLocal } = await setup()
 
@@ -30,10 +31,7 @@ describe('sendop', () => {
 		client = new JsonRpcProvider(CLIENT_URL)
 		signer = new Wallet(privateKey, client)
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL)
-		pmGetter = new MyPaymaster({
-			client,
-			paymasterAddress: ADDRESS.PublicPaymaster,
-		})
+		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 		validator = new EOAValidatorModule({
 			address: ADDRESS.K1Validator,
 			signer,
@@ -88,7 +86,7 @@ describe('sendop', () => {
 		expect(code).not.toBe('0x')
 	}, 100_000)
 
-	it('should deploy KernelV3Account with charity paymaster', async () => {
+	it('should deploy KernelV3Account with public paymaster', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
 			validatorAddress: ADDRESS.K1Validator,
@@ -108,7 +106,7 @@ describe('sendop', () => {
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 			executions: [],
 			opGetter: kernel,
-			pmGetter,
+			pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
 			initCode: kernel.getInitCode(creationOptions),
 		})
 		logger.info(`hash: ${op.hash}`)
@@ -119,7 +117,7 @@ describe('sendop', () => {
 		expect(code).not.toBe('0x')
 	}, 100_000)
 
-	it('should deploy KernelV3Account with charity paymaster and set number without paymaster', async () => {
+	it('should deploy KernelV3Account with public paymaster and set number without paymaster', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
 			validatorAddress: ADDRESS.K1Validator,
@@ -208,10 +206,7 @@ describe('sendop', () => {
 				},
 			],
 			opGetter: kernel,
-			pmGetter: new MyPaymaster({
-				client,
-				paymasterAddress: ADDRESS.PublicPaymaster,
-			}),
+			pmGetter,
 			initCode: kernel.getInitCode(creationOptions),
 		})
 

@@ -4,9 +4,10 @@ import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } fro
 import { KernelV3Account } from '@/smart-accounts'
 import { EOAValidatorModule } from '@/validators'
 import { hexlify, JsonRpcProvider, randomBytes, resolveAddress, Wallet } from 'ethers'
-import { MyPaymaster, setup } from 'test/utils'
+import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { PimlicoPaymaster } from './PimlicoPaymaster'
+import { PublicPaymaster } from './PublicPaymaster'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, PIMLICO_SPONSORSHIP_POLICY_ID } = await setup({
 	chainId: 11155111n,
@@ -29,10 +30,7 @@ describe.skip('PimlicoPaymaster', () => {
 		client = new JsonRpcProvider(CLIENT_URL)
 		signer = new Wallet(privateKey, client)
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL)
-		pmGetter = new MyPaymaster({
-			client,
-			paymasterAddress: ADDRESS.PublicPaymaster,
-		})
+		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 		validator = new EOAValidatorModule({
 			address: ADDRESS.K1Validator,
 			signer,
