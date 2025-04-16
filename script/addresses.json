@@ -24,5 +24,11 @@
 		"0x7AF8e2116217ea82F7eBfd84C22cB8063BfA01C5": "Counter",
 		"0xcb04730b8aA92B8fC0d1482A0a7BD3420104556D": "PublicPaymaster"
 	},
-	"skip-fetch-abi": ["OwnableValidator", "ScheduledTransfers", "ScheduledOrders", "SimpleAccountV08"]
+	"skip-fetch-abi": [
+		"OwnableValidator",
+		"ScheduledTransfers",
+		"ScheduledOrders",
+		"SimpleAccountV08",
+		"PublicPaymaster"
+	]
 }

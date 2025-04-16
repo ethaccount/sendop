@@ -19,7 +19,7 @@ export class MyPaymaster implements PaymasterGetter {
 	}
 
 	async getPaymasterStubData(userOp: UserOp): Promise<GetPaymasterStubDataResult> {
-		if (this.#paymasterAddress === ADDRESS.CharityPaymaster) {
+		if (this.#paymasterAddress === ADDRESS.PublicPaymaster) {
 			return {
 				sponsor: {
 					name: 'My Wallet',

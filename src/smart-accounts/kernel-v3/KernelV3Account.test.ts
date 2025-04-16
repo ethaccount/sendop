@@ -53,7 +53,7 @@ describe('KernelV3Account', () => {
 		})
 		pmGetter = new MyPaymaster({
 			client,
-			paymasterAddress: ADDRESS.CharityPaymaster,
+			paymasterAddress: ADDRESS.PublicPaymaster,
 		})
 	})
 

@@ -13,7 +13,6 @@ export { KernelV3Factory__factory } from "./KernelV3Factory__factory";
 export { Nexus__factory } from "./Nexus__factory";
 export { NexusBootstrap__factory } from "./NexusBootstrap__factory";
 export { NexusFactory__factory } from "./NexusFactory__factory";
-export { PublicPaymaster__factory } from "./PublicPaymaster__factory";
 export { Registry__factory } from "./Registry__factory";
 export { Simple7702AccountV08__factory } from "./Simple7702AccountV08__factory";
 export { SimpleAccountFactoryV08__factory } from "./SimpleAccountFactoryV08__factory";

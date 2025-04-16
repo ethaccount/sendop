@@ -11,7 +11,7 @@ const provider = new JsonRpcProvider(CLIENT_URL)
 const signer = new Wallet(privateKey, provider)
 const entryPoint = connectEntryPointV07(signer)
 
-const balance = await entryPoint.balanceOf(ADDRESS.CharityPaymaster)
+const balance = await entryPoint.balanceOf(ADDRESS.PublicPaymaster)
 logger.info(`Balance: ${formatEther(balance)}`)
 
 // prompt confirmation
@@ -21,7 +21,7 @@ if (confirmed !== 'y') {
 	process.exit()
 }
 
-const tx = await entryPoint.depositTo(ADDRESS.CharityPaymaster, { value: parseEther('1') })
+const tx = await entryPoint.depositTo(ADDRESS.PublicPaymaster, { value: parseEther('1') })
 const receipt = await tx.wait()
 
 console.log('receipt status', receipt?.status)

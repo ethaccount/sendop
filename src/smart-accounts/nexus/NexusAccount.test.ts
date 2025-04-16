@@ -33,7 +33,7 @@ describe('NexusAccount', () => {
 		})
 		pmGetter = new MyPaymaster({
 			client,
-			paymasterAddress: ADDRESS.CharityPaymaster,
+			paymasterAddress: ADDRESS.PublicPaymaster,
 		})
 
 		logger.info(`Signer: ${signer.address}`)

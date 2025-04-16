@@ -73,7 +73,7 @@ const op = await sendop({
 	initCode: nexus.getInitCode(creationOptions),
 	pmGetter: new MyPaymaster({
 		client,
-		paymasterAddress: ADDRESS.CharityPaymaster,
+		paymasterAddress: ADDRESS.PublicPaymaster,
 	}),
 })
 

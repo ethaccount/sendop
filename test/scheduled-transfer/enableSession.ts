@@ -53,7 +53,7 @@ const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 
 const pmGetter = new MyPaymaster({
 	client,
-	paymasterAddress: ADDRESS.CharityPaymaster,
+	paymasterAddress: ADDRESS.PublicPaymaster,
 })
 
 const session: SessionStruct = {

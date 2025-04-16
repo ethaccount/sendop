@@ -32,7 +32,7 @@ describe.skip('YourAccount', () => {
 		})
 		pmGetter = new MyPaymaster({
 			client,
-			paymasterAddress: ADDRESS.CharityPaymaster,
+			paymasterAddress: ADDRESS.PublicPaymaster,
 		})
 
 		account = new YourAccount({

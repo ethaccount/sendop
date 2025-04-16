@@ -47,7 +47,7 @@ const op = await sendop({
 	initCode: kernel.getInitCode(creationOptions),
 	pmGetter: new MyPaymaster({
 		client,
-		paymasterAddress: ADDRESS.CharityPaymaster,
+		paymasterAddress: ADDRESS.PublicPaymaster,
 	}),
 })
 

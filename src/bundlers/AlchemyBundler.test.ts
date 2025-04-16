@@ -118,7 +118,7 @@ describe.skip('AlchemyBundler', () => {
 
 		const myPaymaster = new MyPaymaster({
 			client,
-			paymasterAddress: ADDRESS.CharityPaymaster,
+			paymasterAddress: ADDRESS.PublicPaymaster,
 		})
 
 		const creationOptions = {
@@ -200,7 +200,7 @@ describe.skip('AlchemyBundler', () => {
 			opGetter: kernel,
 			pmGetter: new MyPaymaster({
 				client,
-				paymasterAddress: ADDRESS.CharityPaymaster,
+				paymasterAddress: ADDRESS.PublicPaymaster,
 			}),
 			initCode: kernel.getInitCode(creationOptions),
 		})

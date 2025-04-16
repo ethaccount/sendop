@@ -2,7 +2,7 @@
 pragma solidity ^0.8.28;
 
 import {Script, console} from "forge-std/Script.sol";
-import {CharityPaymaster} from "../src/CharityPaymaster.sol";
+import {PublicPaymaster} from "../src/PublicPaymaster.sol";
 import {IEntryPoint} from "aa-0.7/contracts/interfaces/IEntryPoint.sol";
 import {Counter} from "../src/Counter.sol";
 
@@ -22,8 +22,8 @@ contract DeployContracts is Script {
         Counter counter = new Counter();
         console.log("Counter deployed at", address(counter));
 
-        CharityPaymaster paymaster = new CharityPaymaster();
-        console.log("CharityPaymaster deployed at", address(paymaster));
+        PublicPaymaster paymaster = new PublicPaymaster();
+        console.log("PublicPaymaster deployed at", address(paymaster));
 
         IEntryPoint(0x0000000071727De22E5E9d8BAf0edAc6f37da032).depositTo{value: 0.1 ether}(address(paymaster));
         console.log("Deposited 0.1 ETH to EntryPoint for paymaster");

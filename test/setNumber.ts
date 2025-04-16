@@ -68,7 +68,7 @@ const op = await sendop({
 	}),
 	pmGetter: new MyPaymaster({
 		client,
-		paymasterAddress: ADDRESS.CharityPaymaster,
+		paymasterAddress: ADDRESS.PublicPaymaster,
 	}),
 })
 

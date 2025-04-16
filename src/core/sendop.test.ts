@@ -32,7 +32,7 @@ describe('sendop', () => {
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL)
 		pmGetter = new MyPaymaster({
 			client,
-			paymasterAddress: ADDRESS.CharityPaymaster,
+			paymasterAddress: ADDRESS.PublicPaymaster,
 		})
 		validator = new EOAValidatorModule({
 			address: ADDRESS.K1Validator,
@@ -210,7 +210,7 @@ describe('sendop', () => {
 			opGetter: kernel,
 			pmGetter: new MyPaymaster({
 				client,
-				paymasterAddress: ADDRESS.CharityPaymaster,
+				paymasterAddress: ADDRESS.PublicPaymaster,
 			}),
 			initCode: kernel.getInitCode(creationOptions),
 		})

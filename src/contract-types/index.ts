@@ -14,7 +14,6 @@ export type { KernelV3Factory } from "./KernelV3Factory";
 export type { Nexus } from "./Nexus";
 export type { NexusBootstrap } from "./NexusBootstrap";
 export type { NexusFactory } from "./NexusFactory";
-export type { PublicPaymaster } from "./PublicPaymaster";
 export type { Registry } from "./Registry";
 export type { Simple7702AccountV08 } from "./Simple7702AccountV08";
 export type { SimpleAccountFactoryV08 } from "./SimpleAccountFactoryV08";
@@ -60,7 +59,6 @@ export { ScheduledTransfers__factory } from "./factories/manual/ScheduledTransfe
 export { Nexus__factory } from "./factories/Nexus__factory";
 export { NexusBootstrap__factory } from "./factories/NexusBootstrap__factory";
 export { NexusFactory__factory } from "./factories/NexusFactory__factory";
-export { PublicPaymaster__factory } from "./factories/PublicPaymaster__factory";
 export { Registry__factory } from "./factories/Registry__factory";
 export { Simple7702AccountV08__factory } from "./factories/Simple7702AccountV08__factory";
 export { SimpleAccountFactoryV08__factory } from "./factories/SimpleAccountFactoryV08__factory";

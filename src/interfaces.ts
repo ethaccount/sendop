@@ -1,6 +1,5 @@
 import { ERC20SpendingLimitPolicy__factory } from '@/contract-types/factories/ERC20SpendingLimitPolicy__factory';
 import { NexusBootstrap__factory } from '@/contract-types/factories/NexusBootstrap__factory';
-import { PublicPaymaster__factory } from '@/contract-types/factories/PublicPaymaster__factory';
 import { SudoPolicy__factory } from '@/contract-types/factories/SudoPolicy__factory';
 import { Nexus__factory } from '@/contract-types/factories/Nexus__factory';
 import { ECDSAValidator__factory } from '@/contract-types/factories/ECDSAValidator__factory';
@@ -34,7 +33,6 @@ import { EntryPointV07__factory } from '@/contract-types/factories/EntryPointV07
 export const INTERFACES = {
     ERC20SpendingLimitPolicy: ERC20SpendingLimitPolicy__factory.createInterface(),
     NexusBootstrap: NexusBootstrap__factory.createInterface(),
-    PublicPaymaster: PublicPaymaster__factory.createInterface(),
     SudoPolicy: SudoPolicy__factory.createInterface(),
     Nexus: Nexus__factory.createInterface(),
     ECDSAValidator: ECDSAValidator__factory.createInterface(),

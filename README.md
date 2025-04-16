@@ -51,7 +51,7 @@ const validator = new EOAValidatorModule({
 const pmGetter = {
 	getPaymasterStubData() {
 		return {
-			paymaster: ADDRESS.CharityPaymaster,
+			paymaster: ADDRESS.PublicPaymaster,
 			paymasterData: '0x',
 			paymasterVerificationGasLimit: toBeHex(999_999n),
 			paymasterPostOpGasLimit: toBeHex(999_999n),
