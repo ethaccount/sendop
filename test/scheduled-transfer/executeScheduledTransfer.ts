@@ -12,7 +12,7 @@ import {
 import { INTERFACES } from '@/interfaces'
 import { KernelValidationType } from '@/smart-accounts/kernel-v3/types'
 import type { JsonRpcProvider, Signer } from 'ethers'
-import { logger } from 'script/common'
+import { logger } from 'script/build:address/common'
 
 export async function executeScheduledTransfer({
 	accountAddress,

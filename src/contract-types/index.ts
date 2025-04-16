@@ -3,7 +3,6 @@
 /* eslint-disable */
 import type * as manual from "./manual";
 export type { manual };
-export type { CharityPaymaster } from "./CharityPaymaster";
 export type { Counter } from "./Counter";
 export type { ECDSAValidator } from "./ECDSAValidator";
 export type { ERC20SpendingLimitPolicy } from "./ERC20SpendingLimitPolicy";
@@ -15,13 +14,15 @@ export type { KernelV3Factory } from "./KernelV3Factory";
 export type { Nexus } from "./Nexus";
 export type { NexusBootstrap } from "./NexusBootstrap";
 export type { NexusFactory } from "./NexusFactory";
+export type { PublicPaymaster } from "./PublicPaymaster";
 export type { Registry } from "./Registry";
+export type { Simple7702AccountV08 } from "./Simple7702AccountV08";
+export type { SimpleAccountFactoryV08 } from "./SimpleAccountFactoryV08";
 export type { SmartSession } from "./SmartSession";
 export type { SudoPolicy } from "./SudoPolicy";
 export type { UniActionPolicy } from "./UniActionPolicy";
 export type { WebAuthnValidator } from "./WebAuthnValidator";
 export * as factories from "./factories";
-export { CharityPaymaster__factory } from "./factories/CharityPaymaster__factory";
 export { Counter__factory } from "./factories/Counter__factory";
 export { ECDSAValidator__factory } from "./factories/ECDSAValidator__factory";
 export { EntryPointV07__factory } from "./factories/EntryPointV07__factory";
@@ -59,7 +60,10 @@ export { ScheduledTransfers__factory } from "./factories/manual/ScheduledTransfe
 export { Nexus__factory } from "./factories/Nexus__factory";
 export { NexusBootstrap__factory } from "./factories/NexusBootstrap__factory";
 export { NexusFactory__factory } from "./factories/NexusFactory__factory";
+export { PublicPaymaster__factory } from "./factories/PublicPaymaster__factory";
 export { Registry__factory } from "./factories/Registry__factory";
+export { Simple7702AccountV08__factory } from "./factories/Simple7702AccountV08__factory";
+export { SimpleAccountFactoryV08__factory } from "./factories/SimpleAccountFactoryV08__factory";
 export { SmartSession__factory } from "./factories/SmartSession__factory";
 export { SudoPolicy__factory } from "./factories/SudoPolicy__factory";
 export { UniActionPolicy__factory } from "./factories/UniActionPolicy__factory";

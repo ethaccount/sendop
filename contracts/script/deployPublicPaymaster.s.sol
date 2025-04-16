@@ -12,7 +12,7 @@ cd contracts
 forge script script/deployPublicPaymaster.s.sol --rpc-url $sepolia --broadcast --verify
 
 // verify on sepolia
-forge verify-contract \                                                           17s
+forge verify-contract \
     --chain-id 11155111 \
     --compiler-version v0.8.28+commit.8e94f5c9 \
     --watch \

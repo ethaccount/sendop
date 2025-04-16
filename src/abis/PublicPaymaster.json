@@ -1,19 +1,6 @@
 {
     "abi": [
         {
-            "inputs": [],
-            "name": "entryPoint",
-            "outputs": [
-                {
-                    "internalType": "contract IEntryPoint",
-                    "name": "",
-                    "type": "address"
-                }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
             "inputs": [
                 {
                     "internalType": "enum IPaymaster.PostOpMode",

@@ -4,24 +4,11 @@
 
 import { Contract, Interface, type ContractRunner } from "ethers";
 import type {
-  CharityPaymaster,
-  CharityPaymasterInterface,
-} from "../CharityPaymaster";
+  PublicPaymaster,
+  PublicPaymasterInterface,
+} from "../PublicPaymaster";
 
 const _abi = [
-  {
-    inputs: [],
-    name: "entryPoint",
-    outputs: [
-      {
-        internalType: "contract IEntryPoint",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
   {
     inputs: [
       {
@@ -133,15 +120,15 @@ const _abi = [
   },
 ] as const;
 
-export class CharityPaymaster__factory {
+export class PublicPaymaster__factory {
   static readonly abi = _abi;
-  static createInterface(): CharityPaymasterInterface {
-    return new Interface(_abi) as CharityPaymasterInterface;
+  static createInterface(): PublicPaymasterInterface {
+    return new Interface(_abi) as PublicPaymasterInterface;
   }
   static connect(
     address: string,
     runner?: ContractRunner | null
-  ): CharityPaymaster {
-    return new Contract(address, _abi, runner) as unknown as CharityPaymaster;
+  ): PublicPaymaster {
+    return new Contract(address, _abi, runner) as unknown as PublicPaymaster;
   }
 }

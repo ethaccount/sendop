@@ -55,15 +55,11 @@ export type PackedUserOperationStructOutput = [
   signature: string;
 };
 
-export interface CharityPaymasterInterface extends Interface {
+export interface PublicPaymasterInterface extends Interface {
   getFunction(
-    nameOrSignature: "entryPoint" | "postOp" | "validatePaymasterUserOp"
+    nameOrSignature: "postOp" | "validatePaymasterUserOp"
   ): FunctionFragment;
 
-  encodeFunctionData(
-    functionFragment: "entryPoint",
-    values?: undefined
-  ): string;
   encodeFunctionData(
     functionFragment: "postOp",
     values: [BigNumberish, BytesLike, BigNumberish, BigNumberish]
@@ -73,7 +69,6 @@ export interface CharityPaymasterInterface extends Interface {
     values: [PackedUserOperationStruct, BytesLike, BigNumberish]
   ): string;
 
-  decodeFunctionResult(functionFragment: "entryPoint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "postOp", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "validatePaymasterUserOp",
@@ -81,11 +76,11 @@ export interface CharityPaymasterInterface extends Interface {
   ): Result;
 }
 
-export interface CharityPaymaster extends BaseContract {
-  connect(runner?: ContractRunner | null): CharityPaymaster;
+export interface PublicPaymaster extends BaseContract {
+  connect(runner?: ContractRunner | null): PublicPaymaster;
   waitForDeployment(): Promise<this>;
 
-  interface: CharityPaymasterInterface;
+  interface: PublicPaymasterInterface;
 
   queryFilter<TCEvent extends TypedContractEvent>(
     event: TCEvent,
@@ -124,8 +119,6 @@ export interface CharityPaymaster extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
-  entryPoint: TypedContractMethod<[], [string], "view">;
-
   postOp: TypedContractMethod<
     [
       mode: BigNumberish,
@@ -151,9 +144,6 @@ export interface CharityPaymaster extends BaseContract {
     key: string | FunctionFragment
   ): T;
 
-  getFunction(
-    nameOrSignature: "entryPoint"
-  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "postOp"
   ): TypedContractMethod<
