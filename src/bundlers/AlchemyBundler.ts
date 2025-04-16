@@ -11,7 +11,7 @@ export class AlchemyBundler extends BaseBundler {
 	/**
 	 * Refer to Alchemy's account-kit method: https://github.com/alchemyplatform/aa-sdk/blob/f7c7911cdc1f690db4107e21956469955c990bc8/account-kit/infra/src/middleware/feeEstimator.ts#L34-L54
 	 */
-	async getGasValues(userOp: UserOp): Promise<GasValues> {
+	async _getGasValues(userOp: UserOp): Promise<GasValues> {
 		const [block, maxPriorityFeePerGas] = await Promise.all([
 			this.rpcProvider.send({ method: 'eth_getBlockByNumber', params: ['latest', true] }),
 			this.rpcProvider.send({ method: 'rundler_maxPriorityFeePerGas' }),
@@ -38,10 +38,6 @@ export class AlchemyBundler extends BaseBundler {
 			preVerificationGas: BigInt(estimateGas.preVerificationGas),
 			verificationGasLimit: BigInt(estimateGas.verificationGasLimit),
 			callGasLimit: BigInt(estimateGas.callGasLimit),
-		}
-
-		if (this.onAfterEstimation) {
-			gasValues = await this.onAfterEstimation(gasValues)
 		}
 
 		return gasValues

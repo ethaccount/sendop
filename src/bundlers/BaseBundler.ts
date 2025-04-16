@@ -27,63 +27,84 @@ export type BundlerOptions = {
 export abstract class BaseBundler implements Bundler {
 	public chainId: bigint
 	public url: string
+	protected readonly _options: BundlerOptions
 	public rpcProvider: RpcProvider
 	public entryPointAddress: string
 
-	protected skipGasEstimation: boolean
-	protected onAfterEstimation?: (gasValues: GasValues) => Promise<GasValues>
-	protected onBeforeEstimation?: (userOp: UserOp) => Promise<UserOp>
-	protected onBeforeSendUserOp?: (userOp: UserOp) => Promise<UserOp>
-	protected debugSend?: boolean
-	protected debug?: boolean
-	protected parseError: boolean = false
-
 	constructor(chainId: bigint, url: string, options?: BundlerOptions) {
-		this.chainId = typeof chainId === 'string' ? BigInt(chainId) : chainId
+		this.chainId = chainId
 		this.url = url
-		this.rpcProvider = new RpcProvider(url)
-		this.skipGasEstimation = options?.skipGasEstimation ?? false
-		this.onBeforeEstimation = options?.onBeforeEstimation
-		this.onAfterEstimation = options?.onAfterEstimation
-		this.onBeforeSendUserOp = options?.onBeforeSendUserOp
-		this.debugSend = options?.debugSend ?? false
-		this.debug = options?.debug ?? false
-		this.parseError = options?.parseError ?? false
-		this.entryPointAddress = options?.entryPointVersion === 'v0.8' ? ADDRESS.EntryPointV08 : ADDRESS.EntryPointV07
 
-		if (this.debugSend) {
-			console.warn('debugSend is enabled. It will skip gas estimation.')
-			this.skipGasEstimation = true
+		this._options = {
+			skipGasEstimation: options?.skipGasEstimation ?? false,
+			onBeforeEstimation: options?.onBeforeEstimation,
+			onAfterEstimation: options?.onAfterEstimation,
+			onBeforeSendUserOp: options?.onBeforeSendUserOp,
+			debugSend: options?.debugSend ?? false,
+			debug: options?.debug ?? false,
+			parseError: options?.parseError ?? false,
+			entryPointVersion: options?.entryPointVersion,
 		}
 
-		if (this.debug) {
+		this.rpcProvider = new RpcProvider(this.url)
+		switch (this._options.entryPointVersion) {
+			case 'v0.8':
+				this.entryPointAddress = ADDRESS.EntryPointV08
+				break
+			case 'v0.7':
+				this.entryPointAddress = ADDRESS.EntryPointV07
+				break
+			default:
+				this.entryPointAddress = ADDRESS.EntryPointV07
+		}
+
+		if (this._options.debugSend) {
+			console.warn('debugSend is enabled. It will skip gas estimation.')
+			this._options.skipGasEstimation = true
+		}
+
+		if (this._options.debug) {
 			console.warn('debug is enabled.')
 		}
 	}
 
-	abstract getGasValues(userOp: UserOp): Promise<GasValues>
+	abstract _getGasValues(userOp: UserOp): Promise<GasValues>
+
+	async getGasValues(userOp: UserOp): Promise<GasValues> {
+		let gasValues = await this._getGasValues(userOp)
+		if (this._options.onAfterEstimation) {
+			gasValues = await this._options.onAfterEstimation(gasValues)
+		}
+		return gasValues
+	}
 
 	async sendUserOperation(userOp: UserOp): Promise<string> {
 		try {
-			if (this.onBeforeSendUserOp) {
-				userOp = await this.onBeforeSendUserOp(userOp)
+			if (this._options.onBeforeSendUserOp) {
+				userOp = await this._options.onBeforeSendUserOp(userOp)
 			}
 
-			const formattedUserOp = formatUserOpToHex(userOp)
-
-			if (this.debug || this.debugSend) {
+			if (this._options.debugSend) {
 				console.log('handleOpsCalldata:')
 				console.log(encodeHandleOpsCalldata([userOp], randomAddress()))
 				console.log('userOp:')
-				console.log(JSON.stringify(formattedUserOp, null, 2))
+				console.log(JSON.stringify(formatUserOpToHex(userOp), null, 2))
 			}
 
 			return await this.rpcProvider.send({
 				method: 'eth_sendUserOperation',
-				params: [formattedUserOp, this.entryPointAddress],
+				params: [formatUserOpToHex(userOp), this.entryPointAddress],
 			})
 		} catch (error: unknown) {
 			const err = normalizeError(error)
+
+			if (this._options.debug) {
+				console.log('handleOpsCalldata:')
+				console.log(encodeHandleOpsCalldata([userOp], randomAddress()))
+				console.log('userOp:')
+				console.log(JSON.stringify(formatUserOpToHex(userOp), null, 2))
+			}
+
 			throw new BaseBundlerError('Failed to send user operation', { cause: err })
 		}
 	}
@@ -93,12 +114,12 @@ export abstract class BaseBundler implements Bundler {
 	}
 
 	protected async estimateUserOperationGas(userOp: UserOp) {
-		if (this.skipGasEstimation) {
+		if (this._options.skipGasEstimation) {
 			return this.getDefaultGasEstimation()
 		}
 
-		if (this.onBeforeEstimation) {
-			userOp = await this.onBeforeEstimation(userOp)
+		if (this._options.onBeforeEstimation) {
+			userOp = await this._options.onBeforeEstimation(userOp)
 		}
 
 		const formattedUserOp = formatUserOpToHex(userOp)
@@ -113,7 +134,7 @@ export abstract class BaseBundler implements Bundler {
 		} catch (error: unknown) {
 			const err = normalizeError(error)
 
-			if (this.debug) {
+			if (this._options.debug) {
 				userOp.preVerificationGas = 99_999n
 				userOp.callGasLimit = 999_999n
 				userOp.verificationGasLimit = 999_999n
@@ -126,7 +147,7 @@ export abstract class BaseBundler implements Bundler {
 				console.log(JSON.stringify(formatUserOpToHex(userOp), null, 2))
 			}
 
-			if (this.parseError) {
+			if (this._options.parseError) {
 				const hexDataMatch = err.message.match(/(0x[a-fA-F0-9]+)(?![0-9a-fA-F])/)
 				const hasHexData = hexDataMatch?.[1]
 

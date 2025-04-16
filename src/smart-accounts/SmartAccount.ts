@@ -2,7 +2,7 @@ import type { Bundler, Execution, OperationGetter, PaymasterGetter, SendOpResult
 import { sendop } from '@/core'
 import { SendopError } from '@/error'
 import { connectEntryPointV07 } from '@/utils'
-import { toBeHex, type JsonRpcProvider } from 'ethers'
+import { type JsonRpcProvider } from 'ethers'
 
 export type SmartAccountOptions = {
 	address?: string

@@ -1,7 +1,5 @@
 import type { UserOp } from '@/core'
-import { ADDRESS } from '@/addresses'
 import { SendopError } from '@/error'
-import { toBeHex } from 'ethers'
 import { BaseBundler, type BundlerOptions, type GasValues } from './BaseBundler'
 
 type PimlicoGasPrice = {
@@ -24,7 +22,7 @@ export class PimlicoBundler extends BaseBundler {
 		super(chainId, url, options)
 	}
 
-	async getGasValues(userOp: UserOp): Promise<GasValues> {
+	async _getGasValues(userOp: UserOp): Promise<GasValues> {
 		// Get gas price
 		// TODO: better way to handle the response
 		const curGasPrice: PimlicoGasPrice = await this.rpcProvider.send({
@@ -47,10 +45,6 @@ export class PimlicoBundler extends BaseBundler {
 			preVerificationGas: BigInt(estimateGas.preVerificationGas),
 			verificationGasLimit: BigInt(estimateGas.verificationGasLimit),
 			callGasLimit: BigInt(estimateGas.callGasLimit),
-		}
-
-		if (this.onAfterEstimation) {
-			gasValues = await this.onAfterEstimation(gasValues)
 		}
 
 		return gasValues
