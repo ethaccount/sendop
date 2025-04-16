@@ -5,9 +5,10 @@ import {Script, console} from "forge-std/Script.sol";
 import {PublicPaymaster} from "../src/PublicPaymaster.sol";
 
 /*
+
 cd contracts
 
-// deploy on sepolia
+// deploy & verify on sepolia
 forge script script/deployPublicPaymaster.s.sol --rpc-url $sepolia --broadcast --verify
 
 // verify on sepolia
@@ -19,9 +20,23 @@ forge verify-contract \                                                         
     0xcb04730b8aA92B8fC0d1482A0a7BD3420104556D \
     PublicPaymaster
 
-// deposit
-cast send --account dev  --rpc-url $sepolia \
+// ep8 balanceOf
+cast to-unit $(cast call --rpc-url $sepolia $ep8 "balanceOf(address)" 0xcb04730b8aA92B8fC0d1482A0a7BD3420104556D) 18
+
+// ep7 balanceOf
+cast to-unit $(cast call --rpc-url $sepolia $ep7 "balanceOf(address)" 0xcb04730b8aA92B8fC0d1482A0a7BD3420104556D) 18
+
+// deposit to ep8
+cast send --account dev --rpc-url $sepolia \
     $ep8 \
+    "depositTo(address account)" \
+    0xcb04730b8aA92B8fC0d1482A0a7BD3420104556D \
+    --value 0.5ether
+    
+
+// deposit to ep7
+cast send --account dev --rpc-url $sepolia \
+    $ep7 \
     "depositTo(address account)" \
     0xcb04730b8aA92B8fC0d1482A0a7BD3420104556D \
     --value 0.5ether
