@@ -11,7 +11,7 @@ export class PublicPaymaster implements PaymasterGetter {
 		return {
 			paymaster: this.address,
 			paymasterData: '0x',
-			paymasterVerificationGasLimit: 999_999n,
+			paymasterVerificationGasLimit: 11_000n, // How to estimate this value? I only use this gas limit or higher during testing to prevent user op from pending
 			paymasterPostOpGasLimit: 0n,
 			isFinal: true,
 		}

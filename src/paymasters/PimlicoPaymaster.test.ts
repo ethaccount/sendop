@@ -3,7 +3,7 @@ import { PimlicoBundler } from '@/bundlers'
 import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
 import { KernelV3Account } from '@/smart-accounts'
 import { EOAValidatorModule } from '@/validators'
-import { hexlify, JsonRpcProvider, randomBytes, resolveAddress, Wallet } from 'ethers'
+import { hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
 import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { PimlicoPaymaster } from './PimlicoPaymaster'
@@ -42,29 +42,34 @@ describe.skip('PimlicoPaymaster', () => {
 	it('should deploy kernel with pimlico paymaster', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ADDRESS.K1Validator,
-			validatorInitData: await resolveAddress(signer),
+			validatorAddress: ADDRESS.ECDSAValidator,
+			validatorInitData: signer.address,
 		}
 
 		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
 
 		const kernel = new KernelV3Account({
 			address: deployedAddress,
-			client: new JsonRpcProvider(CLIENT_URL),
+			client,
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 			validator,
 		})
 
 		const op = await sendop({
+			initCode: kernel.getInitCode(creationOptions),
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 			executions: [],
-			opGetter: kernel,
+			opGetter: new KernelV3Account({
+				address: deployedAddress,
+				client,
+				bundler: new PimlicoBundler(chainId, BUNDLER_URL),
+				validator,
+			}),
 			pmGetter: new PimlicoPaymaster({
 				chainId,
-				url: BUNDLER_URL,
+				url: bundler.url,
 				sponsorshipPolicyId: PIMLICO_SPONSORSHIP_POLICY_ID,
 			}),
-			initCode: kernel.getInitCode(creationOptions),
 		})
 
 		logger.info(`hash: ${op.hash}`)
