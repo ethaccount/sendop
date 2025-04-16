@@ -1,66 +1,27 @@
 import { ADDRESS } from '@/addresses'
-import { UnsupportedEntryPointError } from '@/error'
+import { SendopError, UnsupportedEntryPointError } from '@/error'
 import { getBytesLength, zeroPadRight } from '@/utils'
 import { dataSlice, getBytes } from 'ethers'
-import type { Bundler } from './interface'
+import type { Bundler, PaymasterGetter, SignatureGetter } from './interface'
 import type { SendopOptions, SendOpResult, UserOp, UserOpReceipt } from './types'
 import { getEmptyUserOp, getUserOpHashV07, getUserOpHashV08, getV08DomainAndTypes, packUserOp } from './utils'
 
 export async function sendop(options: SendopOptions): Promise<SendOpResult> {
-	const { bundler, opGetter, onBeforeSignUserOp } = options
-	let userOp = await buildop(options)
+	const { bundler, opGetter, pmGetter } = options
 
-	if (onBeforeSignUserOp) {
-		userOp = await onBeforeSignUserOp(userOp)
+	let userOp = await createUserOp(options)
+	const estimation = await estimateUserOp(userOp, bundler, opGetter, pmGetter)
+	userOp = estimation.userOp
+
+	if (!estimation.pmIsFinal && pmGetter) {
+		userOp = await getPaymasterData(userOp, pmGetter)
 	}
 
-	// Sign UserOp before sending
-	switch (bundler.entryPointAddress) {
-		case ADDRESS.EntryPointV07:
-			userOp.signature = await opGetter.getSignature({
-				entryPointVersion: 'v0.7',
-				hash: getBytes(getUserOpHashV07(packUserOp(userOp), bundler.chainId)),
-				userOp,
-			})
-			break
-		case ADDRESS.EntryPointV08:
-			const { domain, types } = getV08DomainAndTypes(bundler.chainId)
-			const packedUserOp = packUserOp(userOp)
-			userOp.signature = await opGetter.getSignature({
-				entryPointVersion: 'v0.8',
-				hash: getBytes(getUserOpHashV08(packedUserOp, bundler.chainId)),
-				userOp,
-				domain,
-				types,
-				values: packedUserOp,
-			})
-			break
-		default:
-			throw new UnsupportedEntryPointError(bundler.entryPointAddress)
-	}
-
-	return send(bundler, userOp)
+	userOp = await signUserOp(userOp, bundler, opGetter)
+	return sendUserOp(bundler, userOp)
 }
 
-export async function send(bundler: Bundler, userOp: UserOp): Promise<SendOpResult> {
-	const userOpHash = await bundler.sendUserOperation(userOp)
-
-	return {
-		hash: userOpHash,
-		async wait() {
-			let result: UserOpReceipt | null = null
-			while (result === null) {
-				result = await bundler.getUserOperationReceipt(userOpHash)
-				if (result === null) {
-					await new Promise(resolve => setTimeout(resolve, 1000))
-				}
-			}
-			return result
-		},
-	}
-}
-
-export async function buildop(options: SendopOptions): Promise<UserOp> {
+export async function createUserOp(options: SendopOptions): Promise<UserOp> {
 	const { bundler, executions, opGetter, pmGetter, initCode, nonce } = options
 
 	const userOp = getEmptyUserOp()
@@ -95,6 +56,18 @@ export async function buildop(options: SendopOptions): Promise<UserOp> {
 	userOp.nonce = nonce ?? (await opGetter.getNonce())
 	userOp.callData = await opGetter.getCallData(executions)
 
+	return userOp
+}
+
+export async function estimateUserOp(
+	userOp: UserOp,
+	bundler: Bundler,
+	sigGetter: SignatureGetter,
+	pmGetter?: PaymasterGetter,
+): Promise<{
+	userOp: UserOp
+	pmIsFinal: boolean
+}> {
 	// Paymaster Gas Estimation
 	let pmIsFinal = false
 	if (pmGetter) {
@@ -108,7 +81,7 @@ export async function buildop(options: SendopOptions): Promise<UserOp> {
 	}
 
 	// Dummy Signature
-	userOp.signature = await opGetter.getDummySignature(userOp)
+	userOp.signature = await sigGetter.getDummySignature(userOp)
 
 	// Gas Estimation
 	const gasValues = await bundler.getGasValues(userOp)
@@ -118,13 +91,67 @@ export async function buildop(options: SendopOptions): Promise<UserOp> {
 	userOp.verificationGasLimit = gasValues.verificationGasLimit
 	userOp.callGasLimit = gasValues.callGasLimit
 
-	// Get Paymaster Data
-	if (pmGetter && pmGetter.getPaymasterData && !pmIsFinal) {
+	return {
+		userOp,
+		pmIsFinal,
+	}
+}
+
+export async function getPaymasterData(userOp: UserOp, pmGetter: PaymasterGetter): Promise<UserOp> {
+	if (pmGetter && pmGetter.getPaymasterData) {
 		// If pmGetter is provided and pmIsFinal is false, retrieve the paymaster data, usually for signing purposes.
 		const pmData = await pmGetter.getPaymasterData(userOp)
 		userOp.paymaster = pmData.paymaster ?? null
 		userOp.paymasterData = pmData.paymasterData ?? '0x'
+	} else {
+		throw new SendopError('Invalid paymaster getter')
 	}
 
 	return userOp
+}
+
+export async function signUserOp(userOp: UserOp, bundler: Bundler, sigGetter: SignatureGetter): Promise<UserOp> {
+	switch (bundler.entryPointAddress) {
+		case ADDRESS.EntryPointV07:
+			userOp.signature = await sigGetter.getSignature({
+				entryPointVersion: 'v0.7',
+				hash: getBytes(getUserOpHashV07(packUserOp(userOp), bundler.chainId)),
+				userOp,
+			})
+			break
+		case ADDRESS.EntryPointV08:
+			const { domain, types } = getV08DomainAndTypes(bundler.chainId)
+			const packedUserOp = packUserOp(userOp)
+			userOp.signature = await sigGetter.getSignature({
+				entryPointVersion: 'v0.8',
+				hash: getBytes(getUserOpHashV08(packedUserOp, bundler.chainId)),
+				userOp,
+				domain,
+				types,
+				values: packedUserOp,
+			})
+			break
+		default:
+			throw new UnsupportedEntryPointError(bundler.entryPointAddress)
+	}
+
+	return userOp
+}
+
+export async function sendUserOp(bundler: Bundler, userOp: UserOp): Promise<SendOpResult> {
+	const userOpHash = await bundler.sendUserOperation(userOp)
+
+	return {
+		hash: userOpHash,
+		async wait() {
+			let result: UserOpReceipt | null = null
+			while (result === null) {
+				result = await bundler.getUserOperationReceipt(userOpHash)
+				if (result === null) {
+					await new Promise(resolve => setTimeout(resolve, 1000))
+				}
+			}
+			return result
+		},
+	}
 }

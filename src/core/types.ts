@@ -96,7 +96,6 @@ export type SendopOptions = {
 	pmGetter?: PaymasterGetter
 	initCode?: string // userOp.factory ++ userOp.factoryData
 	nonce?: bigint
-	onBeforeSignUserOp?: (userOp: UserOp) => Promise<UserOp> | UserOp
 }
 
 export type SendOpResult = {
