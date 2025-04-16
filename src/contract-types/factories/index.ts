@@ -7,7 +7,6 @@ export { ECDSAValidator__factory } from "./ECDSAValidator__factory";
 export { ERC20SpendingLimitPolicy__factory } from "./ERC20SpendingLimitPolicy__factory";
 export { EntryPointV07__factory } from "./EntryPointV07__factory";
 export { EntryPointV08__factory } from "./EntryPointV08__factory";
-export { K1Validator__factory } from "./K1Validator__factory";
 export { KernelV3__factory } from "./KernelV3__factory";
 export { KernelV3Factory__factory } from "./KernelV3Factory__factory";
 export { Nexus__factory } from "./Nexus__factory";

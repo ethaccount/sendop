@@ -63,7 +63,7 @@ const op = await sendop({
 		client,
 		bundler,
 		validator: new EOAValidatorModule({
-			address: ADDRESS.K1Validator,
+			address: ADDRESS.ECDSAValidator,
 			signer,
 		}),
 	}),

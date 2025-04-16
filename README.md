@@ -45,7 +45,7 @@ const bundler = new AlchemyBundler(chainId, BUNDLER_URL, {
 	parseError: true,
 })
 const validator = new EOAValidatorModule({
-	address: ADDRESS.K1Validator,
+	address: ADDRESS.ECDSAValidator,
 	signer: new Wallet(PRIVATE_KEY),
 })
 const pmGetter = {
@@ -62,7 +62,7 @@ const pmGetter = {
 
 const creationOptions = {
 	salt: randomBytes32(),
-	validatorAddress: ADDRESS.K1Validator,
+	validatorAddress: ADDRESS.ECDSAValidator,
 	validatorInitData: signer.address,
 }
 const computedAddress = await KernelV3Account.getNewAddress(client, creationOptions)

@@ -66,7 +66,7 @@ const pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 
 const creationOptions = {
 	salt: randomBytes32(),
-	validatorAddress: ADDRESS.K1Validator,
+	validatorAddress: ADDRESS.ECDSAValidator,
 	validatorInitData: await signer.getAddress(),
 }
 
@@ -137,7 +137,7 @@ const kernel = new KernelV3Account({
 	client,
 	bundler,
 	validator: new EOAValidatorModule({
-		address: ADDRESS.K1Validator,
+		address: ADDRESS.ECDSAValidator,
 		signer,
 	}),
 })

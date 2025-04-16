@@ -68,7 +68,7 @@ describe.skip('AlchemyBundler', () => {
 		// Create a test userop for kernel deployment
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)), // random salt
-			validatorAddress: ADDRESS.K1Validator,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			validatorInitData: await resolveAddress(signer),
 		}
 
@@ -79,7 +79,7 @@ describe.skip('AlchemyBundler', () => {
 			client,
 			bundler: new AlchemyBundler(chainId, BUNDLER_URL),
 			validator: new EOAValidatorModule({
-				address: ADDRESS.K1Validator,
+				address: ADDRESS.ECDSAValidator,
 				signer,
 			}),
 		})
@@ -118,7 +118,7 @@ describe.skip('AlchemyBundler', () => {
 
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ADDRESS.K1Validator,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			validatorInitData: await resolveAddress(signer),
 		}
 
@@ -129,7 +129,7 @@ describe.skip('AlchemyBundler', () => {
 			client,
 			bundler: new AlchemyBundler(chainId, BUNDLER_URL),
 			validator: new EOAValidatorModule({
-				address: ADDRESS.K1Validator,
+				address: ADDRESS.ECDSAValidator,
 				signer,
 			}),
 			pmGetter: publicPaymaster,
@@ -173,7 +173,7 @@ describe.skip('AlchemyBundler', () => {
 	it.skip('cannot deploy kernel without staking factory', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ADDRESS.K1Validator,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			validatorInitData: await resolveAddress(signer),
 		}
 
@@ -184,7 +184,7 @@ describe.skip('AlchemyBundler', () => {
 			client,
 			bundler: alchemyBundler,
 			validator: new EOAValidatorModule({
-				address: ADDRESS.K1Validator,
+				address: ADDRESS.ECDSAValidator,
 				signer,
 			}),
 		})

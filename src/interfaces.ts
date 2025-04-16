@@ -3,7 +3,6 @@ import { NexusBootstrap__factory } from '@/contract-types/factories/NexusBootstr
 import { SudoPolicy__factory } from '@/contract-types/factories/SudoPolicy__factory';
 import { Nexus__factory } from '@/contract-types/factories/Nexus__factory';
 import { ECDSAValidator__factory } from '@/contract-types/factories/ECDSAValidator__factory';
-import { K1Validator__factory } from '@/contract-types/factories/K1Validator__factory';
 import { Registry__factory } from '@/contract-types/factories/Registry__factory';
 import { WebAuthnValidator__factory } from '@/contract-types/factories/WebAuthnValidator__factory';
 import { Simple7702AccountV08__factory } from '@/contract-types/factories/Simple7702AccountV08__factory';
@@ -36,7 +35,6 @@ export const INTERFACES = {
     SudoPolicy: SudoPolicy__factory.createInterface(),
     Nexus: Nexus__factory.createInterface(),
     ECDSAValidator: ECDSAValidator__factory.createInterface(),
-    K1Validator: K1Validator__factory.createInterface(),
     Registry: Registry__factory.createInterface(),
     WebAuthnValidator: WebAuthnValidator__factory.createInterface(),
     Simple7702AccountV08: Simple7702AccountV08__factory.createInterface(),

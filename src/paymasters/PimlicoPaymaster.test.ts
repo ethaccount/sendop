@@ -32,7 +32,7 @@ describe.skip('PimlicoPaymaster', () => {
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL)
 		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 		validator = new EOAValidatorModule({
-			address: ADDRESS.K1Validator,
+			address: ADDRESS.ECDSAValidator,
 			signer,
 		})
 

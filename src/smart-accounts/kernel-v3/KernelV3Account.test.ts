@@ -49,7 +49,7 @@ describe('KernelV3Account', () => {
 			parseError: true,
 		})
 		validator = new EOAValidatorModule({
-			address: ADDRESS.K1Validator,
+			address: ADDRESS.ECDSAValidator,
 			signer: new Wallet(privateKey),
 		})
 		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
@@ -63,7 +63,7 @@ describe('KernelV3Account', () => {
 		beforeAll(async () => {
 			creationOptions = {
 				salt: hexlify(randomBytes(32)),
-				validatorAddress: ADDRESS.K1Validator,
+				validatorAddress: ADDRESS.ECDSAValidator,
 				validatorInitData: await resolveAddress(signer),
 			}
 		})
@@ -107,7 +107,7 @@ describe('KernelV3Account', () => {
 
 			const creationOptions = {
 				salt: randomBytes32(),
-				validatorAddress: ADDRESS.K1Validator,
+				validatorAddress: ADDRESS.ECDSAValidator,
 				validatorInitData: signer.address,
 			}
 			const computedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
@@ -141,7 +141,7 @@ describe('KernelV3Account', () => {
 	describe('Kerenl schedule transfers and execute', () => {
 		const creationOptions: KernelCreationOptions = {
 			salt: randomBytes32(),
-			validatorAddress: ADDRESS.K1Validator,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			validatorInitData: signer.address,
 		}
 		const sessionSalt = randomBytes32()
@@ -205,7 +205,7 @@ describe('KernelV3Account', () => {
 				client,
 				bundler,
 				validator: new EOAValidatorModule({
-					address: ADDRESS.K1Validator,
+					address: ADDRESS.ECDSAValidator,
 					signer,
 				}),
 			})

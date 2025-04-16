@@ -33,12 +33,12 @@ describe('sendop', () => {
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL)
 		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 		validator = new EOAValidatorModule({
-			address: ADDRESS.K1Validator,
+			address: ADDRESS.ECDSAValidator,
 			signer,
 		})
 		creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ADDRESS.K1Validator,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			owner: signer.address,
 		}
 
@@ -49,7 +49,7 @@ describe('sendop', () => {
 	it.skip('cannot pay prefund for kernel deployment when estimateUserOperationGas with reason: AA13 initCode failed or OOG', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ADDRESS.K1Validator,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			validatorInitData: await resolveAddress(signer),
 		}
 
@@ -89,7 +89,7 @@ describe('sendop', () => {
 	it('should deploy KernelV3Account with public paymaster', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ADDRESS.K1Validator,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			validatorInitData: await resolveAddress(signer),
 		}
 
@@ -120,7 +120,7 @@ describe('sendop', () => {
 	it('should deploy KernelV3Account with public paymaster and set number without paymaster', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ADDRESS.K1Validator,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			validatorInitData: await resolveAddress(signer),
 		}
 
@@ -182,7 +182,7 @@ describe('sendop', () => {
 	it('should deploy KernelV3Account and set number in one user operation', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ADDRESS.K1Validator,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			validatorInitData: await resolveAddress(signer),
 		}
 		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)

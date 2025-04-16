@@ -28,7 +28,7 @@ describe.skip('YourAccount', () => {
 			parseError: true,
 		})
 		validator = new EOAValidatorModule({
-			address: ADDRESS.K1Validator,
+			address: ADDRESS.ECDSAValidator,
 			signer: new Wallet(privateKey),
 		})
 		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
@@ -50,7 +50,7 @@ describe.skip('YourAccount', () => {
 		beforeAll(async () => {
 			creationOptions = {
 				salt: hexlify(randomBytes(32)),
-				validatorAddress: ADDRESS.K1Validator,
+				validatorAddress: ADDRESS.ECDSAValidator,
 				validatorInitData: await resolveAddress(signer),
 			}
 		})
@@ -94,7 +94,7 @@ describe.skip('YourAccount', () => {
 
 			const creationOptions = {
 				salt: randomBytes32(),
-				validatorAddress: ADDRESS.K1Validator,
+				validatorAddress: ADDRESS.ECDSAValidator,
 				validatorInitData: signer.address,
 			}
 			const computedAddress = await YourAccount.getNewAddress(client, creationOptions)

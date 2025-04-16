@@ -12,7 +12,7 @@ const client = new JsonRpcProvider(CLIENT_URL)
 
 const creationOptions = {
 	salt: hexlify(randomBytes(32)), // random salt
-	validatorAddress: ADDRESS.K1Validator,
+	validatorAddress: ADDRESS.ECDSAValidator,
 	validatorInitData: await signer.getAddress(),
 }
 
@@ -35,7 +35,7 @@ const kernel = new KernelV3Account({
 	client,
 	bundler,
 	validator: new EOAValidatorModule({
-		address: ADDRESS.K1Validator,
+		address: ADDRESS.ECDSAValidator,
 		signer,
 	}),
 })
