@@ -90,6 +90,9 @@ export async function estimateUserOp(
 	userOp.preVerificationGas = gasValues.preVerificationGas
 	userOp.verificationGasLimit = gasValues.verificationGasLimit
 	userOp.callGasLimit = gasValues.callGasLimit
+	userOp.paymasterVerificationGasLimit = gasValues.paymasterVerificationGasLimit
+		? gasValues.paymasterVerificationGasLimit
+		: 0n
 
 	return {
 		userOp,

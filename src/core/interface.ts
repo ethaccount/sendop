@@ -9,17 +9,20 @@ import type {
 	UserOpReceipt,
 } from './types'
 
+export type GasValues = {
+	maxFeePerGas: bigint
+	maxPriorityFeePerGas: bigint
+	preVerificationGas: bigint
+	verificationGasLimit: bigint
+	callGasLimit: bigint
+	paymasterVerificationGasLimit: bigint
+}
+
 export interface Bundler {
 	url: string
 	chainId: bigint
 	entryPointAddress: string
-	getGasValues(userOp: UserOp): Promise<{
-		maxFeePerGas: bigint
-		maxPriorityFeePerGas: bigint
-		preVerificationGas: bigint
-		verificationGasLimit: bigint
-		callGasLimit: bigint
-	}>
+	getGasValues(userOp: UserOp): Promise<GasValues>
 	sendUserOperation(userOp: UserOp): Promise<string>
 	getUserOperationReceipt(hash: string): Promise<UserOpReceipt>
 }

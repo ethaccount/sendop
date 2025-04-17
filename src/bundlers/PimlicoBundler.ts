@@ -1,50 +1,46 @@
-import type { UserOp } from '@/core'
+import type { GasValues, UserOp } from '@/core'
 import { SendopError } from '@/error'
-import { BaseBundler, type BundlerOptions, type GasValues } from './BaseBundler'
+import { z } from 'zod'
+import { BaseBundler, type BundlerOptions } from './BaseBundler'
 
-type PimlicoGasPrice = {
-	slow: {
-		maxFeePerGas: string
-		maxPriorityFeePerGas: string
-	}
-	standard: {
-		maxFeePerGas: string
-		maxPriorityFeePerGas: string
-	}
-	fast: {
-		maxFeePerGas: string
-		maxPriorityFeePerGas: string
-	}
+export type PimlicoBundlerOptions = BundlerOptions & {
+	gasPriceType?: 'slow' | 'standard' | 'fast'
 }
 
 export class PimlicoBundler extends BaseBundler {
-	constructor(chainId: bigint, url: string, options?: BundlerOptions) {
+	public gasPriceType: Exclude<PimlicoBundlerOptions['gasPriceType'], undefined>
+
+	constructor(chainId: bigint, url: string, options?: PimlicoBundlerOptions) {
 		super(chainId, url, options)
+		this.gasPriceType = options?.gasPriceType ?? 'standard'
 	}
 
 	async _getGasValues(userOp: UserOp): Promise<GasValues> {
-		// Get gas price
-		// TODO: better way to handle the response
-		const curGasPrice: PimlicoGasPrice = await this.rpcProvider.send({
-			method: 'pimlico_getUserOperationGasPrice',
-		})
-		if (!curGasPrice?.standard?.maxFeePerGas) {
-			throw new PimlicoBundlerError('Invalid gas price response from rpcProvider')
+		const parsed = gasPriceSchema.safeParse(
+			await this.rpcProvider.send({
+				method: 'pimlico_getUserOperationGasPrice', // https://docs.pimlico.io/infra/bundler/endpoints/pimlico_getUserOperationGasPrice
+			}),
+		)
+		if (!parsed.success) {
+			throw new PimlicoBundlerError(`Invalid gas price response: ${parsed.error}`)
 		}
 
-		// Ensure userOp.maxFeePerGas is greater than 0 before gas estimation
-		// TODO: check if this is correct
-		userOp.maxFeePerGas = BigInt(curGasPrice.standard.maxFeePerGas)
+		const maxFeePerGas = parsed.data[this.gasPriceType].maxFeePerGas
+		const maxPriorityFeePerGas = parsed.data[this.gasPriceType].maxPriorityFeePerGas
 
-		// Send eth_estimateUserOperationGas
+		// Pimlico bundler requires user operation max fee per gas to be larger than 0 during gas estimation
+		userOp.maxFeePerGas = 1n
+
+		// https://docs.pimlico.io/infra/bundler/endpoints/eth_estimateUserOperationGas
 		const estimateGas = await this.estimateUserOperationGas(userOp)
 
 		let gasValues: GasValues = {
-			maxFeePerGas: BigInt(curGasPrice.standard.maxFeePerGas),
-			maxPriorityFeePerGas: BigInt(curGasPrice.standard.maxPriorityFeePerGas),
-			preVerificationGas: BigInt(estimateGas.preVerificationGas),
-			verificationGasLimit: BigInt(estimateGas.verificationGasLimit),
-			callGasLimit: BigInt(estimateGas.callGasLimit),
+			maxFeePerGas: BigInt(maxFeePerGas),
+			maxPriorityFeePerGas: BigInt(maxPriorityFeePerGas),
+			preVerificationGas: estimateGas.preVerificationGas,
+			verificationGasLimit: estimateGas.verificationGasLimit,
+			callGasLimit: estimateGas.callGasLimit,
+			paymasterVerificationGasLimit: estimateGas.paymasterVerificationGasLimit,
 		}
 
 		return gasValues
@@ -57,3 +53,18 @@ export class PimlicoBundlerError extends SendopError {
 		this.name = 'PimlicoBundlerError'
 	}
 }
+
+const gasPriceSchema = z.object({
+	slow: z.object({
+		maxFeePerGas: z.string().startsWith('0x'),
+		maxPriorityFeePerGas: z.string().startsWith('0x'),
+	}),
+	standard: z.object({
+		maxFeePerGas: z.string().startsWith('0x'),
+		maxPriorityFeePerGas: z.string().startsWith('0x'),
+	}),
+	fast: z.object({
+		maxFeePerGas: z.string().startsWith('0x'),
+		maxPriorityFeePerGas: z.string().startsWith('0x'),
+	}),
+})

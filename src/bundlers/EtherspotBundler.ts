@@ -1,6 +1,6 @@
-import type { UserOp } from '@/core'
+import type { GasValues, UserOp } from '@/core'
 import { SendopError } from '@/error'
-import { BaseBundler, type BundlerOptions, type GasValues } from './BaseBundler'
+import { BaseBundler, type BundlerOptions } from './BaseBundler'
 
 export class EtherspotBundler extends BaseBundler {
 	constructor(chainId: bigint, url: string, options?: BundlerOptions) {
@@ -8,23 +8,16 @@ export class EtherspotBundler extends BaseBundler {
 	}
 
 	async _getGasValues(userOp: UserOp): Promise<GasValues> {
-		// Get all gas values from estimateUserOperationGas
-		const estimateGas = (await this.estimateUserOperationGas(userOp)) as {
-			preVerificationGas: string
-			verificationGasLimit: string
-			verificationGas: string
-			validUntil: string
-			callGasLimit: string
-			maxFeePerGas: string
-			maxPriorityFeePerGas: string
-		}
+		// https://etherspot.fyi/api-endpoints/skandha/api-reference/estimate-userop
+		const estimateGas = await this.estimateUserOperationGas(userOp)
 
 		let gasValues: GasValues = {
-			maxFeePerGas: BigInt(estimateGas.maxFeePerGas),
-			maxPriorityFeePerGas: BigInt(estimateGas.maxPriorityFeePerGas),
-			preVerificationGas: BigInt(estimateGas.preVerificationGas),
-			verificationGasLimit: BigInt(estimateGas.verificationGasLimit),
-			callGasLimit: BigInt(estimateGas.callGasLimit),
+			maxFeePerGas: estimateGas.maxFeePerGas,
+			maxPriorityFeePerGas: estimateGas.maxPriorityFeePerGas,
+			preVerificationGas: estimateGas.preVerificationGas,
+			verificationGasLimit: estimateGas.verificationGasLimit,
+			callGasLimit: estimateGas.callGasLimit,
+			paymasterVerificationGasLimit: estimateGas.paymasterVerificationGasLimit,
 		}
 
 		return gasValues

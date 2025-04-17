@@ -1,43 +1,43 @@
-import type { UserOp } from '@/core'
+import type { GasValues, UserOp } from '@/core'
 import { SendopError } from '@/error'
-import { toBeHex } from 'ethers'
-import { BaseBundler, type BundlerOptions, type GasValues } from './BaseBundler'
+import { BaseBundler, type BundlerOptions } from './BaseBundler'
+import { z } from 'zod'
 
 export class AlchemyBundler extends BaseBundler {
 	constructor(chainId: bigint, url: string, options?: BundlerOptions) {
 		super(chainId, url, options)
 	}
 
-	/**
-	 * Refer to Alchemy's account-kit method: https://github.com/alchemyplatform/aa-sdk/blob/f7c7911cdc1f690db4107e21956469955c990bc8/account-kit/infra/src/middleware/feeEstimator.ts#L34-L54
-	 */
 	async _getGasValues(userOp: UserOp): Promise<GasValues> {
 		const [block, maxPriorityFeePerGas] = await Promise.all([
-			this.rpcProvider.send({ method: 'eth_getBlockByNumber', params: ['latest', true] }),
-			this.rpcProvider.send({ method: 'rundler_maxPriorityFeePerGas' }),
+			this.rpcProvider.send({ method: 'eth_getBlockByNumber', params: ['latest', true] }), // https://docs.alchemy.com/reference/eth-getblockbynumber
+			this.rpcProvider.send({ method: 'rundler_maxPriorityFeePerGas' }), // https://docs.alchemy.com/reference/rundler-maxpriorityfeepergas
 		])
 
-		if (!block || !block.baseFeePerGas) {
-			throw new AlchemyBundlerError('Missing baseFeePerGas in block')
+		const blockResult = blockResponseSchema.safeParse(block)
+		if (!blockResult.success) {
+			throw new AlchemyBundlerError('Invalid block response: ' + blockResult.error.message)
 		}
 
-		if (!maxPriorityFeePerGas || maxPriorityFeePerGas === '0x0' || maxPriorityFeePerGas === '0x') {
-			throw new AlchemyBundlerError('Invalid maxPriorityFeePerGas response from bundler')
+		const maxPriorityFeeResult = maxPriorityFeeResponseSchema.safeParse(maxPriorityFeePerGas)
+		if (!maxPriorityFeeResult.success) {
+			throw new AlchemyBundlerError(
+				'Invalid maxPriorityFeePerGas response: ' + maxPriorityFeeResult.error.message,
+			)
 		}
 
-		const maxFeePerGas = (BigInt(block.baseFeePerGas) * 150n) / 100n + BigInt(maxPriorityFeePerGas)
+		// Refer to Alchemy's account-kit: https://github.com/alchemyplatform/aa-sdk/blob/f7c7911cdc1f690db4107e21956469955c990bc8/account-kit/infra/src/middleware/feeEstimator.ts#L34-L54
+		const maxFeePerGas = (BigInt(blockResult.data.baseFeePerGas) * 150n) / 100n + BigInt(maxPriorityFeeResult.data)
 
-		userOp.maxFeePerGas = maxFeePerGas
-
-		// Send eth_estimateUserOperationGas
 		const estimateGas = await this.estimateUserOperationGas(userOp)
 
 		let gasValues: GasValues = {
 			maxFeePerGas: maxFeePerGas,
-			maxPriorityFeePerGas: BigInt(maxPriorityFeePerGas),
-			preVerificationGas: BigInt(estimateGas.preVerificationGas),
-			verificationGasLimit: BigInt(estimateGas.verificationGasLimit),
-			callGasLimit: BigInt(estimateGas.callGasLimit),
+			maxPriorityFeePerGas: BigInt(maxPriorityFeeResult.data),
+			preVerificationGas: estimateGas.preVerificationGas,
+			verificationGasLimit: estimateGas.verificationGasLimit,
+			callGasLimit: estimateGas.callGasLimit,
+			paymasterVerificationGasLimit: estimateGas.paymasterVerificationGasLimit,
 		}
 
 		return gasValues
@@ -50,3 +50,9 @@ export class AlchemyBundlerError extends SendopError {
 		this.name = 'AlchemyBundlerError'
 	}
 }
+
+const blockResponseSchema = z.object({
+	baseFeePerGas: z.string().startsWith('0x'),
+})
+
+const maxPriorityFeeResponseSchema = z.string().startsWith('0x')

@@ -1,17 +1,24 @@
 import { ADDRESS } from '@/addresses'
-import { formatUserOpToHex, type Bundler, type UserOp, type UserOpReceipt } from '@/core'
+import { formatUserOpToHex, type Bundler, type GasValues, type UserOp, type UserOpReceipt } from '@/core'
 import { normalizeError, SendopError } from '@/error'
 import { RpcProvider } from '@/RpcProvider'
 import { encodeHandleOpsCalldata, parseContractError, randomAddress } from '@/utils'
 import { type EntryPointVersion } from '@/utils/contract-helper'
+import { z } from 'zod'
 
-export type GasValues = {
-	maxFeePerGas: bigint
-	maxPriorityFeePerGas: bigint
-	preVerificationGas: bigint
-	verificationGasLimit: bigint
-	callGasLimit: bigint
-}
+// Schema for eth_estimateUserOperationGas RPC response. See ERC-7769.
+const estimateGasResponseSchema = z.object({
+	// Required fields
+	preVerificationGas: z.string(), // Hex string
+	verificationGasLimit: z.string(), // Hex string
+	callGasLimit: z.string(), // Hex string
+
+	// Optional fields
+	paymasterVerificationGasLimit: z.string().optional(), // Only returned if UserOperation specifies a Paymaster address
+	// bundler may return maxFeePerGas and maxPriorityFeePerGas (ex. Etherspot)
+	maxFeePerGas: z.string().optional(),
+	maxPriorityFeePerGas: z.string().optional(),
+})
 
 export type BundlerOptions = {
 	skipGasEstimation?: boolean
@@ -113,9 +120,11 @@ export abstract class BaseBundler implements Bundler {
 		return await this.rpcProvider.send({ method: 'eth_getUserOperationReceipt', params: [hash] })
 	}
 
-	protected async estimateUserOperationGas(userOp: UserOp) {
+	protected async estimateUserOperationGas(userOp: UserOp): Promise<GasValues> {
+		const hasPaymaster = !!userOp.paymaster
+
 		if (this._options.skipGasEstimation) {
-			return this.getDefaultGasEstimation()
+			return this.defaultGasValues(hasPaymaster)
 		}
 
 		if (this._options.onBeforeEstimation) {
@@ -124,22 +133,42 @@ export abstract class BaseBundler implements Bundler {
 
 		const formattedUserOp = formatUserOpToHex(userOp)
 
-		let estimateGas
+		let gasValues: GasValues
 
 		try {
-			estimateGas = await this.rpcProvider.send({
+			const response = await this.rpcProvider.send({
 				method: 'eth_estimateUserOperationGas',
 				params: [formattedUserOp, this.entryPointAddress],
 			})
+
+			const parsed = estimateGasResponseSchema.safeParse(response)
+			if (!parsed.success) {
+				throw new BaseBundlerError(`Invalid estimateGas response: ${parsed.error}`)
+			}
+			const estimateGas = parsed.data
+
+			// Convert hex string values to BigInt
+			gasValues = {
+				maxFeePerGas: estimateGas.maxFeePerGas ? BigInt(estimateGas.maxFeePerGas) : 0n,
+				maxPriorityFeePerGas: estimateGas.maxPriorityFeePerGas ? BigInt(estimateGas.maxPriorityFeePerGas) : 0n,
+				preVerificationGas: BigInt(estimateGas.preVerificationGas),
+				verificationGasLimit: BigInt(estimateGas.verificationGasLimit),
+				callGasLimit: BigInt(estimateGas.callGasLimit),
+				paymasterVerificationGasLimit: estimateGas.paymasterVerificationGasLimit
+					? BigInt(estimateGas.paymasterVerificationGasLimit)
+					: 0n,
+			}
 		} catch (error: unknown) {
 			const err = normalizeError(error)
 
 			if (this._options.debug) {
-				userOp.preVerificationGas = 99_999n
-				userOp.callGasLimit = 999_999n
-				userOp.verificationGasLimit = 999_999n
-				userOp.maxFeePerGas = 999_999n
-				userOp.maxPriorityFeePerGas = 999_999n
+				const defaultGasValues = this.defaultGasValues(hasPaymaster)
+				userOp.maxFeePerGas = defaultGasValues.maxFeePerGas
+				userOp.maxPriorityFeePerGas = defaultGasValues.maxPriorityFeePerGas
+				userOp.preVerificationGas = defaultGasValues.preVerificationGas
+				userOp.verificationGasLimit = defaultGasValues.verificationGasLimit
+				userOp.callGasLimit = defaultGasValues.callGasLimit
+				userOp.paymasterVerificationGasLimit = defaultGasValues.paymasterVerificationGasLimit
 
 				console.log('handleOpsCalldata:')
 				console.log(encodeHandleOpsCalldata([userOp], randomAddress()))
@@ -164,30 +193,18 @@ export abstract class BaseBundler implements Bundler {
 			throw new BaseBundlerError('Failed to estimate gas', { cause: err })
 		}
 
-		this.validateGasEstimation(estimateGas)
-		return estimateGas
+		return gasValues
 	}
 
-	protected getDefaultGasEstimation() {
+	protected defaultGasValues(hasPaymaster: boolean) {
 		return {
-			preVerificationGas: 999_999,
-			verificationGasLimit: 999_999,
-			callGasLimit: 999_999,
+			maxFeePerGas: 999_999n,
+			maxPriorityFeePerGas: 999_999n,
+			preVerificationGas: 99_999n,
+			verificationGasLimit: 999_999n,
+			callGasLimit: 999_999n,
+			paymasterVerificationGasLimit: hasPaymaster ? 999_999n : 0n,
 		}
-	}
-
-	protected validateGasEstimation(estimateGas: any) {
-		if (!estimateGas) {
-			throw new BaseBundlerError('Empty response from gas estimation')
-		}
-
-		const requiredFields = ['preVerificationGas', 'verificationGasLimit', 'callGasLimit']
-		for (const field of requiredFields) {
-			if (!(field in estimateGas)) {
-				throw new BaseBundlerError(`Missing required gas estimation field: ${field}`)
-			}
-		}
-		return estimateGas
 	}
 }
 

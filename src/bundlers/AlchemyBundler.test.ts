@@ -1,23 +1,15 @@
 import { ADDRESS } from '@/addresses'
-import { getEmptyUserOp, sendop, type Bundler } from '@/core'
+import { sendop, type Bundler } from '@/core'
 import { PublicPaymaster } from '@/paymasters'
 import { RpcProvider } from '@/RpcProvider'
 import { KernelV3Account } from '@/smart-accounts'
-import { isSameAddress } from '@/utils'
 import { EOAValidatorModule } from '@/validators'
-import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
+import { hexlify, JsonRpcProvider, randomBytes, resolveAddress, Wallet } from 'ethers'
 import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { AlchemyBundler } from './AlchemyBundler'
 
-const {
-	logger,
-	chainId,
-	ALCHEMY_API_KEY,
-	privateKey,
-	CLIENT_URL,
-	BUNDLER_URL: PIMLICO_BUNDLER_URL,
-} = await setup({
+const { logger, chainId, ALCHEMY_API_KEY, privateKey, CLIENT_URL } = await setup({
 	chainId: 11155111n,
 })
 
@@ -25,7 +17,7 @@ logger.info(`Chain ID: ${chainId}`)
 
 const BUNDLER_URL = `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
 
-describe.skip('AlchemyBundler', () => {
+describe('AlchemyBundler', () => {
 	let rpcProvider: RpcProvider
 	let alchemyBundler: Bundler
 	let client: JsonRpcProvider
@@ -64,113 +56,7 @@ describe.skip('AlchemyBundler', () => {
 		maxPriorityFeePerGas = _maxPriorityFeePerGas
 	})
 
-	it('should estimate userop gas by eth_estimateUserOperationGas', async () => {
-		// Create a test userop for kernel deployment
-		const creationOptions = {
-			salt: hexlify(randomBytes(32)), // random salt
-			validatorAddress: ADDRESS.ECDSAValidator,
-			validatorInitData: await resolveAddress(signer),
-		}
-
-		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
-
-		const kernel = new KernelV3Account({
-			address: deployedAddress,
-			client,
-			bundler: new AlchemyBundler(chainId, BUNDLER_URL),
-			validator: new EOAValidatorModule({
-				address: ADDRESS.ECDSAValidator,
-				signer,
-			}),
-		})
-
-		const userOp = getEmptyUserOp()
-		userOp.sender = await kernel.getSender()
-		const initCode = kernel.getInitCode(creationOptions)
-
-		const initCodeWithoutPrefix = initCode.slice(2) // remove 0x prefix
-		userOp.factory = '0x' + initCodeWithoutPrefix.slice(0, 40)
-		userOp.factoryData = '0x' + initCodeWithoutPrefix.slice(40)
-
-		userOp.nonce = await kernel.getNonce()
-		userOp.callData = await kernel.getCallData([])
-		userOp.signature = await kernel.getDummySignature(userOp)
-		userOp.maxFeePerGas = BigInt(gasPrice)
-		userOp.maxPriorityFeePerGas = BigInt(maxPriorityFeePerGas)
-
-		// Send request for gas estimation
-		const gasValues = await rpcProvider.send({
-			method: 'eth_estimateUserOperationGas',
-			params: [userOp, ADDRESS.EntryPointV07],
-		})
-
-		logger.info(`Gas values: ${JSON.stringify(gasValues)}`)
-
-		expect(gasValues.preVerificationGas).toBeDefined()
-		expect(gasValues.callGasLimit).toBeDefined()
-		expect(gasValues.verificationGasLimit).toBeDefined()
-		expect(gasValues.paymasterVerificationGasLimit).toBeNull()
-		expect(gasValues.paymasterPostOpGasLimit).toBeUndefined()
-	})
-
-	it('should deploy kernel with PimlicoBundler and set number with AlchemyBundler', async () => {
-		const publicPaymaster = new PublicPaymaster(ADDRESS.PublicPaymaster)
-
-		const creationOptions = {
-			salt: hexlify(randomBytes(32)),
-			validatorAddress: ADDRESS.ECDSAValidator,
-			validatorInitData: await resolveAddress(signer),
-		}
-
-		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
-
-		const kernel = new KernelV3Account({
-			address: deployedAddress,
-			client,
-			bundler: new AlchemyBundler(chainId, BUNDLER_URL),
-			validator: new EOAValidatorModule({
-				address: ADDRESS.ECDSAValidator,
-				signer,
-			}),
-			pmGetter: publicPaymaster,
-		})
-
-		const op = await kernel.deploy(creationOptions)
-		logger.info(`hash: ${op.hash}`)
-		await op.wait()
-		logger.info('deployed address: ', deployedAddress)
-
-		const code = await client.getCode(deployedAddress)
-		expect(code).not.toBe('0x')
-
-		const number = Math.floor(Math.random() * 10000)
-
-		const op2 = await sendop({
-			bundler: alchemyBundler,
-			executions: [
-				{
-					to: ADDRESS.Counter,
-					data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
-					value: 0n,
-				},
-			],
-			opGetter: kernel,
-			pmGetter: publicPaymaster,
-		})
-
-		const startTime = Date.now()
-
-		logger.info(`hash: ${op2.hash}`)
-		const receipt = await op2.wait()
-		const duration = (Date.now() - startTime) / 1000
-		logger.info(`Receipt received after ${duration.toFixed(2)} seconds`)
-
-		const log = receipt.logs.find(log => isSameAddress(log.address, ADDRESS.Counter))
-		expect(log && toNumber(log.data)).toBe(number)
-	}, 200000)
-
-	// error: JSON-RPC Error: eth_sendUserOperation (-32502): Sender storage at (address: 0xa454cbe9a4077e27684242f88d959ba0ea7657b3 slot: 0xbe55d3a7367afc8f11e8660685ae16561c5dd7f65775e84cb5e06a64601e7d76) accessed during deployment. Factory (or None) must be staked
-	it.skip('cannot deploy kernel without staking factory', async () => {
+	it('should deploy kernel', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
 			validatorAddress: ADDRESS.ECDSAValidator,
