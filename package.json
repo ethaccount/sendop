@@ -49,6 +49,7 @@
 		"@types/yargs": "^17.0.33",
 		"consola": "^3.2.3",
 		"dotenv": "^16.4.7",
+		"evm-providers": "^0.5.7",
 		"typechain": "^8.3.2",
 		"vite": "^6.2.0",
 		"vite-plugin-dts": "^4.4.0",

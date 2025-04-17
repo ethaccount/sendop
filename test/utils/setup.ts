@@ -1,5 +1,7 @@
 import { createConsola } from 'consola'
 import { Wallet } from 'ethers'
+import { alchemy } from 'evm-providers'
+import type { Chain } from 'node_modules/evm-providers/dist/providers/alchemy'
 
 import 'dotenv/config'
 
@@ -64,6 +66,8 @@ export function getBundlerUrl(chainId: bigint, source: 'pimlico' | 'alchemy' | '
 	switch (source) {
 		case 'pimlico':
 			return `https://api.pimlico.io/v2/${chainId}/rpc?apikey=${PIMLICO_API_KEY}`
+		case 'alchemy':
+			return alchemy(Number(chainId) as unknown as Chain, ALCHEMY_API_KEY)
 		case 'etherspot':
 			// 	TODO: v2 only for ep7 and v3 only for ep8 (WTF)
 			return `https://rpc.etherspot.io/v2/${chainId}/?api-key=${ETHERSPOT_API_KEY}`

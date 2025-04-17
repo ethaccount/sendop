@@ -76,7 +76,10 @@ export class KernelV3Account extends ModularSmartAccount {
 			throw new KernelError('Invalid salt')
 		}
 		const kernelFactory = new Contract(ADDRESS.KernelV3Factory, KernelV3Account.factoryInterface, client)
-		return await kernelFactory['getAddress(bytes,bytes32)'](KernelV3Account.encodeInitialize(creationOptions), salt)
+		return (await kernelFactory['getAddress(bytes,bytes32)'](
+			KernelV3Account.encodeInitialize(creationOptions),
+			salt,
+		)) as string
 	}
 
 	override async getNonce() {

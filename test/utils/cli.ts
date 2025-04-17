@@ -2,7 +2,7 @@ import type { BundlerOptions } from '@/bundlers/BaseBundler'
 import { JsonRpcProvider, Wallet } from 'ethers'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { AlchemyBundler, PimlicoBundler, EtherspotBundler, type Bundler } from '../../src'
+import { AlchemyBundler, EtherspotBundler, PimlicoBundler, type Bundler } from '../../src'
 import { getBundlerUrl, logger } from '../utils'
 
 interface YargsOptions {
