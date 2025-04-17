@@ -66,12 +66,12 @@ export abstract class BaseBundler implements Bundler {
 		}
 
 		if (this._options.debugSend) {
-			console.warn('debugSend is enabled. It will skip gas estimation.')
+			console.warn('Bundler debugSend is enabled. It will skip gas estimation.')
 			this._options.skipGasEstimation = true
 		}
 
 		if (this._options.debug) {
-			console.warn('debug is enabled.')
+			console.warn('Bundler debug is enabled.')
 		}
 	}
 

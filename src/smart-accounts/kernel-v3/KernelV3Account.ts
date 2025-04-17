@@ -3,10 +3,11 @@ import { CallType, encodeExecutions, ERC7579_MODULE_TYPE, ExecType, ModeSelector
 import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
 import { abiEncode, connectEntryPointV07, isBytes, isBytes32, toBytes32, zeroBytes } from '@/utils'
-import { concat, Contract, hexlify, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
+import { concat, Contract, hexlify, JsonRpcProvider, toBeHex, ZeroAddress, type TypedDataField } from 'ethers'
 import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
 import type { KernelCreationOptions, KernelInstallModuleConfig, SimpleKernelInstallModuleConfig } from './types'
 import { KernelValidationMode, KernelValidationType } from './types'
+import type { TypedDataDomain } from 'ethers'
 
 export type KernelV3AccountOptions = ModularSmartAccountOptions & KernelV3AccountConfig
 

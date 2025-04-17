@@ -30,6 +30,7 @@ export class PimlicoBundler extends BaseBundler {
 
 		// Pimlico bundler requires user operation max fee per gas to be larger than 0 during gas estimation
 		userOp.maxFeePerGas = 1n
+		userOp.maxPriorityFeePerGas = 1n
 
 		// https://docs.pimlico.io/infra/bundler/endpoints/eth_estimateUserOperationGas
 		const estimateGas = await this.estimateUserOperationGas(userOp)
