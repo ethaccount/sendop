@@ -17,20 +17,20 @@ forge verify-contract \
     --compiler-version v0.8.28+commit.8e94f5c9 \
     --watch \
     --etherscan-api-key $ETHERSCAN_API_KEY \
-    0xcb04730b8aA92B8fC0d1482A0a7BD3420104556D \
+    0xcD1c62f36A99f306948dB76c35Bbc1A639f92ce8 \
     PublicPaymaster
 
 // ep8 balanceOf
-cast to-unit $(cast call --rpc-url $sepolia $ep8 "balanceOf(address)" 0xcb04730b8aA92B8fC0d1482A0a7BD3420104556D) 18
+cast to-unit $(cast call --rpc-url $sepolia $ep8 "balanceOf(address)" 0xcD1c62f36A99f306948dB76c35Bbc1A639f92ce8) 18
 
 // ep7 balanceOf
-cast to-unit $(cast call --rpc-url $sepolia $ep7 "balanceOf(address)" 0xcb04730b8aA92B8fC0d1482A0a7BD3420104556D) 18
+cast to-unit $(cast call --rpc-url $sepolia $ep7 "balanceOf(address)" 0xcD1c62f36A99f306948dB76c35Bbc1A639f92ce8) 18
 
 // deposit to ep8
 cast send --account dev --rpc-url $sepolia \
     $ep8 \
     "depositTo(address account)" \
-    0xcb04730b8aA92B8fC0d1482A0a7BD3420104556D \
+    0xcD1c62f36A99f306948dB76c35Bbc1A639f92ce8 \
     --value 0.5ether
     
 
@@ -38,7 +38,7 @@ cast send --account dev --rpc-url $sepolia \
 cast send --account dev --rpc-url $sepolia \
     $ep7 \
     "depositTo(address account)" \
-    0xcb04730b8aA92B8fC0d1482A0a7BD3420104556D \
+    0xcD1c62f36A99f306948dB76c35Bbc1A639f92ce8 \
     --value 0.5ether
 
 */
