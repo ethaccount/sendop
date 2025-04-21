@@ -1,11 +1,13 @@
 import { ADDRESS } from '@/addresses'
-import { Safe7579Launchpad__factory, SafeProxyFactory__factory } from '@/contract-types'
+import { ISafe7579__factory, Safe7579Launchpad__factory, SafeProxyFactory__factory } from '@/contract-types'
 import { ERC7579_MODULE_TYPE, type Execution, type PaymasterGetter, type SendOpResult } from '@/core'
 import { INTERFACES } from '@/interfaces'
 import { SendopError } from '@/error'
 import type { JsonRpcProvider } from 'ethers'
 import { ZeroAddress } from 'ethers/constants'
 import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
+import { zeroPadRight } from '@/utils'
+import { concat } from 'ethers/utils'
 
 export type Safe7579CreationOptions = {
 	salt: string
@@ -39,18 +41,11 @@ export class Safe7579Account extends ModularSmartAccount {
 		})
 	}
 
-	static override async getNewAddress(client: JsonRpcProvider, creationOptions: Safe7579CreationOptions) {
-		const {
-			salt: userSalt,
-			validatorAddress,
-			validatorInitData,
-			owners,
-			ownersThreshold,
-			attesters,
-			attestersThreshold,
-		} = creationOptions
+	private _getInitializer(creationOptions: Safe7579CreationOptions): string {
+		const { validatorAddress, validatorInitData, owners, ownersThreshold, attesters, attestersThreshold } =
+			creationOptions
 
-		const initializer = INTERFACES.ISafe.encodeFunctionData('setup', [
+		return INTERFACES.ISafe.encodeFunctionData('setup', [
 			owners, // address[] calldata _owners
 			ownersThreshold, // uint256 _threshold
 			ADDRESS.Safe7579Launchpad,
@@ -71,14 +66,18 @@ export class Safe7579Account extends ModularSmartAccount {
 			0n, // uint256 payment
 			ZeroAddress, // address payable paymentReceiver
 		])
+	}
 
+	static override async getNewAddress(client: JsonRpcProvider, creationOptions: Safe7579CreationOptions) {
+		const instance = new Safe7579Account({ client } as Safe7579AccountOptions)
+		const initializer = instance._getInitializer(creationOptions)
 		const launchpad = Safe7579Launchpad__factory.connect(ADDRESS.Safe7579Launchpad, client)
 
 		return await launchpad.predictSafeAddress(
 			ADDRESS.Safe,
 			ADDRESS.SafeProxyFactory,
 			await SafeProxyFactory__factory.connect(ADDRESS.SafeProxyFactory, client).proxyCreationCode(),
-			userSalt,
+			creationOptions.salt,
 			initializer,
 		)
 
@@ -94,31 +93,36 @@ export class Safe7579Account extends ModularSmartAccount {
 		// const computedAddress = getAddress(dataSlice(hash, 12))
 	}
 
-	protected createError(message: string) {
-		return new Safe7579Error(message)
+	override getInitCode(creationOptions: Safe7579CreationOptions): string {
+		const initializer = this._getInitializer(creationOptions)
+		return concat([
+			ADDRESS.SafeProxyFactory,
+			INTERFACES.SafeProxyFactory.encodeFunctionData('createProxyWithNonce', [
+				ADDRESS.Safe,
+				initializer,
+				creationOptions.salt,
+			]),
+		])
 	}
 
 	override getNonceKey(): bigint {
-		return 0n
-	}
-
-	override getCallData(executions: Execution[]): Promise<string> | string {
-		return ''
+		return BigInt(zeroPadRight(this._options.validator.address(), 24))
 	}
 
 	override async deploy(creationOptions: any, pmGetter?: PaymasterGetter): Promise<SendOpResult> {
 		return '' as any
 	}
+
 	override send(executions: Execution[], pmGetter?: PaymasterGetter): Promise<SendOpResult> {
 		return '' as any
 	}
 
-	override getInitCode(creationOptions: any): string {
+	override encodeInstallModule(config: any): string {
 		return ''
 	}
 
-	override encodeInstallModule(config: any): string {
-		return ''
+	protected createError(message: string) {
+		return new Safe7579Error(message)
 	}
 }
 
