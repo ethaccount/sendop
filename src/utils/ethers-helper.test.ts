@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { getBytesLength, isBytes, randomAddress, randomBytes32, toBytes32, zeroBytes } from './ethers-helper'
 
 describe('ethers-helper', () => {
-	it('should turn bigint to 32 bytes hex string', () => {
+	it('toBytes32 - should turn bigint to 32 bytes hex string', () => {
 		expect(toBytes32(1n)).toBe('0x0000000000000000000000000000000000000000000000000000000000000001')
 
 		// Test large numbers
