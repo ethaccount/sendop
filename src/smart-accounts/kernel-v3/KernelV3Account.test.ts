@@ -98,8 +98,8 @@ describe('KernelV3Account', () => {
 				},
 			])
 			const receipt = await op.wait()
-			const log = receipt.logs[receipt.logs.length - 1]
-			expect(toNumber(log.data)).toBe(number)
+			const log = receipt.logs.find(log => log.address === ADDRESS.Counter)
+			expect(toNumber(log?.data ?? 0)).toBe(number)
 		}, 100_000)
 
 		it('should deploy and setNumber in one transaction', async () => {
@@ -133,8 +133,8 @@ describe('KernelV3Account', () => {
 				],
 			})
 			const receipt = await op.wait()
-			const log = receipt.logs[receipt.logs.length - 1]
-			expect(toNumber(log.data)).toBe(number)
+			const log = receipt.logs.find(log => log.address === ADDRESS.Counter)
+			expect(toNumber(log?.data ?? 0)).toBe(number)
 		}, 100_000)
 	})
 

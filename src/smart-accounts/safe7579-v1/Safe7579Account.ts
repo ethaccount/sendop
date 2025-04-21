@@ -1,13 +1,12 @@
 import { ADDRESS } from '@/addresses'
-import { ISafe7579__factory, Safe7579Launchpad__factory, SafeProxyFactory__factory } from '@/contract-types'
-import { ERC7579_MODULE_TYPE, type Execution, type PaymasterGetter, type SendOpResult } from '@/core'
-import { INTERFACES } from '@/interfaces'
+import { Safe7579Launchpad__factory, SafeProxyFactory__factory } from '@/contract-types'
 import { SendopError } from '@/error'
+import { INTERFACES } from '@/interfaces'
+import { sortAndUniquifyAddresses, zeroPadRight } from '@/utils'
 import type { JsonRpcProvider } from 'ethers'
 import { ZeroAddress } from 'ethers/constants'
-import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
-import { zeroPadRight } from '@/utils'
 import { concat } from 'ethers/utils'
+import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
 
 export type Safe7579CreationOptions = {
 	salt: string
@@ -26,22 +25,18 @@ export class Safe7579Account extends ModularSmartAccount {
 		return 'rhinestone.safe7579.v1.0.0'
 	}
 
-	get interface() {
-		return INTERFACES.ISafe7579
-	}
-
 	constructor(options: Safe7579AccountOptions) {
 		super(options)
 	}
 
-	override connect(address: string): ModularSmartAccount {
+	override connect(address: string): Safe7579Account {
 		return new Safe7579Account({
 			...this._options,
 			address,
 		})
 	}
 
-	private _getInitializer(creationOptions: Safe7579CreationOptions): string {
+	static getInitializer(creationOptions: Safe7579CreationOptions): string {
 		const { validatorAddress, validatorInitData, owners, ownersThreshold, attesters, attestersThreshold } =
 			creationOptions
 
@@ -55,11 +50,13 @@ export class Safe7579Account extends ModularSmartAccount {
 					{
 						module: validatorAddress,
 						initData: validatorInitData,
-						moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 					},
 				],
-				attesters, // attesters
-				attestersThreshold, // attestation threshold
+				[], // executors
+				[], // fallbacks
+				[], // hooks
+				sortAndUniquifyAddresses(attesters),
+				attestersThreshold,
 			]),
 			ADDRESS.Safe7579, // address fallbackHandler
 			ZeroAddress, // address paymentToken
@@ -69,8 +66,7 @@ export class Safe7579Account extends ModularSmartAccount {
 	}
 
 	static override async getNewAddress(client: JsonRpcProvider, creationOptions: Safe7579CreationOptions) {
-		const instance = new Safe7579Account({ client } as Safe7579AccountOptions)
-		const initializer = instance._getInitializer(creationOptions)
+		const initializer = Safe7579Account.getInitializer(creationOptions)
 		const launchpad = Safe7579Launchpad__factory.connect(ADDRESS.Safe7579Launchpad, client)
 
 		return await launchpad.predictSafeAddress(
@@ -94,12 +90,11 @@ export class Safe7579Account extends ModularSmartAccount {
 	}
 
 	override getInitCode(creationOptions: Safe7579CreationOptions): string {
-		const initializer = this._getInitializer(creationOptions)
 		return concat([
 			ADDRESS.SafeProxyFactory,
 			INTERFACES.SafeProxyFactory.encodeFunctionData('createProxyWithNonce', [
 				ADDRESS.Safe,
-				initializer,
+				Safe7579Account.getInitializer(creationOptions),
 				creationOptions.salt,
 			]),
 		])
@@ -109,20 +104,13 @@ export class Safe7579Account extends ModularSmartAccount {
 		return BigInt(zeroPadRight(this._options.validator.address(), 24))
 	}
 
-	override async deploy(creationOptions: any, pmGetter?: PaymasterGetter): Promise<SendOpResult> {
-		return '' as any
-	}
-
-	override send(executions: Execution[], pmGetter?: PaymasterGetter): Promise<SendOpResult> {
-		return '' as any
-	}
-
+	// TODO: implement
 	override encodeInstallModule(config: any): string {
-		return ''
+		throw new Safe7579Error('Not implemented')
 	}
 
-	protected createError(message: string) {
-		return new Safe7579Error(message)
+	protected createError(message: string, cause?: Error) {
+		return new Safe7579Error(message, cause)
 	}
 }
 

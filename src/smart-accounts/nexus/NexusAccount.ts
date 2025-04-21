@@ -3,7 +3,7 @@ import { NexusFactory__factory } from '@/contract-types'
 import { ERC7579_MODULE_TYPE } from '@/core'
 import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
-import { abiEncode, zeroBytes } from '@/utils'
+import { abiEncode, zeroBytes, sortAndUniquifyAddresses } from '@/utils'
 import type { JsonRpcProvider } from 'ethers'
 import { concat, hexlify } from 'ethers/utils'
 import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
@@ -21,19 +21,6 @@ export type NexusAccountConfig = {
 
 export class NexusAccount extends ModularSmartAccount {
 	private readonly _nexusConfig: NexusAccountConfig | undefined
-
-	static readonly interface = INTERFACES.Nexus
-	static readonly factoryInterface = INTERFACES.NexusFactory
-	static readonly bootstrapInterface = INTERFACES.NexusBootstrap
-	get interface() {
-		return NexusAccount.interface
-	}
-	get factoryInterface() {
-		return NexusAccount.factoryInterface
-	}
-	get bootstrapInterface() {
-		return NexusAccount.bootstrapInterface
-	}
 
 	static override accountId() {
 		return 'biconomy.nexus.1.0.2'
@@ -56,7 +43,7 @@ export class NexusAccount extends ModularSmartAccount {
 	 * @returns bytes: factory address + factory calldata
 	 */
 	override getInitCode(creationOptions: NexusCreationOptions): string {
-		const factoryCalldata = this.factoryInterface.encodeFunctionData('createAccount', [
+		const factoryCalldata = INTERFACES.NexusFactory.encodeFunctionData('createAccount', [
 			NexusAccount.getInitializeData(creationOptions),
 			creationOptions.salt,
 		])
@@ -91,10 +78,6 @@ export class NexusAccount extends ModularSmartAccount {
 		return concat([key, mode, validator])
 	}
 
-	protected createError(message: string) {
-		return new NexusError(message)
-	}
-
 	/**
 	 * @dev Nexus.initializeAccount's initData = abi.encode(bootstrap address, bootstrap calldata)
 	 */
@@ -102,7 +85,7 @@ export class NexusAccount extends ModularSmartAccount {
 		let bootstrapCalldata: string
 		switch (creationOptions.bootstrap) {
 			case 'initNexusWithSingleValidator':
-				bootstrapCalldata = this.bootstrapInterface.encodeFunctionData('initNexusWithSingleValidator', [
+				bootstrapCalldata = INTERFACES.NexusBootstrap.encodeFunctionData('initNexusWithSingleValidator', [
 					creationOptions.validatorAddress,
 					creationOptions.validatorInitData,
 					creationOptions.registryAddress,
@@ -115,17 +98,6 @@ export class NexusAccount extends ModularSmartAccount {
 				throw new NexusError('Unsupported bootstrap function')
 		}
 		return abiEncode(['address', 'bytes'], [ADDRESS.NexusBootstrap, bootstrapCalldata])
-
-		function sortAndUniquifyAddresses(addresses: string[]): string[] {
-			const uniqueAddresses = [...new Set(addresses.map(addr => addr.toLowerCase()))]
-
-			return uniqueAddresses.sort((a, b) => {
-				const addrA = a.startsWith('0x') ? a.slice(2) : a
-				const addrB = b.startsWith('0x') ? b.slice(2) : b
-
-				return addrA.localeCompare(addrB)
-			})
-		}
 	}
 
 	override encodeInstallModule(config: NexusInstallModuleConfig): string {
@@ -138,7 +110,11 @@ export class NexusAccount extends ModularSmartAccount {
 			default:
 				throw new NexusError('Unsupported module type')
 		}
-		return this.interface.encodeFunctionData('installModule', [config.moduleType, config.moduleAddress, initData])
+		return INTERFACES.Nexus.encodeFunctionData('installModule', [config.moduleType, config.moduleAddress, initData])
+	}
+
+	protected createError(message: string, cause?: Error) {
+		return new NexusError(message, cause)
 	}
 }
 

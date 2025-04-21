@@ -2,7 +2,8 @@ import type { ERC7579Validator, SignatureData, UserOp, Execution } from '@/core'
 import { SmartAccount, type SmartAccountOptions } from './SmartAccount'
 import { CallType, ExecType, ModeSelector, encodeExecutions } from '@/core'
 import { isBytes, toBytes32, zeroBytes } from '@/utils'
-import { concat, Interface } from 'ethers'
+import { concat } from 'ethers'
+import { INTERFACES } from '@/interfaces'
 
 export type ModularSmartAccountOptions = SmartAccountOptions & {
 	validator: ERC7579Validator
@@ -17,7 +18,6 @@ export type ModularSmartAccountOptions = SmartAccountOptions & {
 
 export abstract class ModularSmartAccount extends SmartAccount {
 	protected readonly _options: ModularSmartAccountOptions
-	abstract get interface(): Interface
 
 	constructor(options: ModularSmartAccountOptions) {
 		super(options)
@@ -35,8 +35,6 @@ export abstract class ModularSmartAccount extends SmartAccount {
 	async getSignature(signatureData: SignatureData): Promise<string> {
 		return this.validator.getSignature(signatureData)
 	}
-
-	protected abstract createError(message: string): Error
 
 	getCallData(executions: Execution[]): Promise<string> | string {
 		if (!executions.length) {
@@ -74,12 +72,15 @@ export abstract class ModularSmartAccount extends SmartAccount {
 
 		switch (callType) {
 			case CallType.SIGNLE:
-				return this.interface.encodeFunctionData('execute', [
+				return INTERFACES.IERC7579Account.encodeFunctionData('execute', [
 					execMode,
 					concat([executions[0].to, toBytes32(executions[0].value), executions[0].data]),
 				])
 			case CallType.BATCH:
-				return this.interface.encodeFunctionData('execute', [execMode, encodeExecutions(executions)])
+				return INTERFACES.IERC7579Account.encodeFunctionData('execute', [
+					execMode,
+					encodeExecutions(executions),
+				])
 			default:
 				throw this.createError('unsupported call type')
 		}
@@ -91,4 +92,6 @@ export abstract class ModularSmartAccount extends SmartAccount {
 	 * @returns Encoded calldata for module installation
 	 */
 	abstract encodeInstallModule(config: any): string
+
+	protected abstract createError(message: string, cause?: Error): Error
 }

@@ -25,14 +25,6 @@ export class KernelV3Account extends ModularSmartAccount {
 	static override accountId() {
 		return 'kernel.advanced.v0.3.1'
 	}
-	static readonly interface = INTERFACES.KernelV3
-	static readonly factoryInterface = INTERFACES.KernelV3Factory
-	get interface() {
-		return KernelV3Account.interface
-	}
-	get factoryInterface() {
-		return KernelV3Account.factoryInterface
-	}
 
 	constructor(options: KernelV3AccountOptions) {
 		super(options)
@@ -57,7 +49,7 @@ export class KernelV3Account extends ModularSmartAccount {
 		}
 		return concat([
 			ADDRESS.KernelV3Factory,
-			this.factoryInterface.encodeFunctionData('createAccount', [
+			INTERFACES.KernelV3Factory.encodeFunctionData('createAccount', [
 				KernelV3Account.encodeInitialize(creationOptions),
 				salt,
 			]),
@@ -69,7 +61,7 @@ export class KernelV3Account extends ModularSmartAccount {
 		if (!isBytes32(salt)) {
 			throw new KernelError('Invalid salt')
 		}
-		const kernelFactory = new Contract(ADDRESS.KernelV3Factory, KernelV3Account.factoryInterface, client)
+		const kernelFactory = new Contract(ADDRESS.KernelV3Factory, INTERFACES.KernelV3Factory, client)
 		return (await kernelFactory['getAddress(bytes,bytes32)'](
 			KernelV3Account.encodeInitialize(creationOptions),
 			salt,
@@ -120,10 +112,6 @@ export class KernelV3Account extends ModularSmartAccount {
 		return BigInt(hexlify(concat([mode, type, identifier, key])))
 	}
 
-	protected createError(message: string) {
-		return new KernelError(message)
-	}
-
 	encodeInitialize(creationOptions: KernelCreationOptions) {
 		return KernelV3Account.encodeInitialize(creationOptions)
 	}
@@ -134,7 +122,7 @@ export class KernelV3Account extends ModularSmartAccount {
 		if (!isBytes(rootValidator, 21)) {
 			throw new KernelError('Invalid rootValidator')
 		}
-		return this.interface.encodeFunctionData('initialize', [
+		return INTERFACES.KernelV3.encodeFunctionData('initialize', [
 			rootValidator,
 			hookAddress ?? ZeroAddress,
 			validatorInitData,
@@ -189,7 +177,15 @@ export class KernelV3Account extends ModularSmartAccount {
 				throw new KernelError('Unsupported module type')
 		}
 
-		return this.interface.encodeFunctionData('installModule', [config.moduleType, config.moduleAddress, initData])
+		return INTERFACES.KernelV3.encodeFunctionData('installModule', [
+			config.moduleType,
+			config.moduleAddress,
+			initData,
+		])
+	}
+
+	protected createError(message: string, cause?: Error) {
+		return new KernelError(message, cause)
 	}
 }
 

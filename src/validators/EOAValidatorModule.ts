@@ -1,7 +1,5 @@
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
 import { ERC7579Validator, type SignatureData, type UserOp } from '@/core'
-import { UnsupportedEntryPointError } from '@/error'
-import type { BytesLike } from 'ethers'
 import { type Signer } from 'ethers'
 
 type EOAValidatorModuleOptions = {

@@ -1,15 +1,15 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
-import { BICONOMY_ATTESTER_ADDRESS, DEV_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
+import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
+import { PublicPaymaster } from '@/index'
 import { randomBytes32 } from '@/utils'
-import { EOAValidatorModule } from '@/validators'
-import { Interface, JsonRpcProvider, resolveAddress, toNumber, Wallet } from 'ethers'
+import { OwnableValidator } from '@/validators/OwnableValidator'
+import { Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { NexusAccount } from './NexusAccount'
 import type { NexusCreationOptions } from './types'
-import { PublicPaymaster } from '@/index'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup()
 logger.info(`Chain ID: ${chainId}`)
@@ -28,10 +28,7 @@ describe('NexusAccount', () => {
 			parseError: true,
 			debug: true,
 		})
-		validator = new EOAValidatorModule({
-			address: ADDRESS.ECDSAValidator,
-			signer: new Wallet(privateKey),
-		})
+		validator = new OwnableValidator({ signers: [new Wallet(privateKey)] })
 		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 
 		logger.info(`Signer: ${signer.address}`)
@@ -46,10 +43,10 @@ describe('NexusAccount', () => {
 			creationOptions = {
 				bootstrap: 'initNexusWithSingleValidator',
 				salt: randomBytes32(),
-				validatorAddress: ADDRESS.ECDSAValidator,
-				validatorInitData: await resolveAddress(signer),
+				validatorAddress: ADDRESS.OwnableValidator,
+				validatorInitData: OwnableValidator.getInitData([signer.address], 1),
 				registryAddress: ADDRESS.Registry,
-				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS, DEV_ATTESTER_ADDRESS],
+				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS],
 				threshold: 1,
 			}
 		})
@@ -84,8 +81,8 @@ describe('NexusAccount', () => {
 				},
 			])
 			const receipt = await op.wait()
-			const log = receipt.logs[receipt.logs.length - 1]
-			expect(toNumber(log.data)).toBe(number)
+			const log = receipt.logs.find(log => log.address === ADDRESS.Counter)
+			expect(toNumber(log?.data ?? 0)).toBe(number)
 		}, 100_000)
 
 		it('should deploy and setNumber in one transaction', async () => {
@@ -94,10 +91,10 @@ describe('NexusAccount', () => {
 			const creationOptions: NexusCreationOptions = {
 				bootstrap: 'initNexusWithSingleValidator',
 				salt: randomBytes32(),
-				validatorAddress: ADDRESS.ECDSAValidator,
-				validatorInitData: signer.address,
+				validatorAddress: ADDRESS.OwnableValidator,
+				validatorInitData: OwnableValidator.getInitData([signer.address], 1),
 				registryAddress: ADDRESS.Registry,
-				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS, DEV_ATTESTER_ADDRESS],
+				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS],
 				threshold: 1,
 			}
 
@@ -124,8 +121,8 @@ describe('NexusAccount', () => {
 				],
 			})
 			const receipt = await op.wait()
-			const log = receipt.logs[receipt.logs.length - 1]
-			expect(toNumber(log.data)).toBe(number)
+			const log = receipt.logs.find(log => log.address === ADDRESS.Counter)
+			expect(toNumber(log?.data ?? 0)).toBe(number)
 		}, 100_000)
 
 		// TODO: test batch execution

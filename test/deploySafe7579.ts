@@ -1,15 +1,17 @@
 import { ADDRESS } from '@/addresses'
 import {
 	BICONOMY_ATTESTER_ADDRESS,
-	EOAValidatorModule,
 	PublicPaymaster,
+	randomBytes32,
 	RHINESTONE_ATTESTER_ADDRESS,
 	Safe7579Account,
 	sendop,
 	type Safe7579CreationOptions,
 } from '@/index'
+import { OwnableValidator } from '@/validators/OwnableValidator'
 import { logger } from './utils'
 import { setupCLI } from './utils/cli'
+import { Interface } from 'ethers'
 
 const { signer, bundler, client } = await setupCLI(['r', 'p', 'b'], {
 	bundlerOptions: {
@@ -17,12 +19,12 @@ const { signer, bundler, client } = await setupCLI(['r', 'p', 'b'], {
 	},
 })
 
-const salt = '0x064bf365f08bac12d15b38a6d4b3e6bf160ac5720d5a0b3a86845e17a87f84c5'
+const salt = randomBytes32()
 
 const creationOptions: Safe7579CreationOptions = {
 	salt,
-	validatorAddress: ADDRESS.ECDSAValidator,
-	validatorInitData: signer.address,
+	validatorAddress: ADDRESS.OwnableValidator,
+	validatorInitData: OwnableValidator.getInitData([signer.address], 1),
 	owners: [signer.address],
 	ownersThreshold: 1,
 	attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS],
@@ -37,15 +39,20 @@ const safe7579 = new Safe7579Account({
 	address: computedAddress,
 	client,
 	bundler,
-	validator: new EOAValidatorModule({
-		address: ADDRESS.ECDSAValidator,
-		signer,
-	}),
+	validator: new OwnableValidator({ signers: [signer] }),
 })
+
+const number = Math.floor(Math.random() * 1000000)
 
 const op = await sendop({
 	bundler,
-	executions: [],
+	executions: [
+		{
+			to: ADDRESS.Counter,
+			data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
+			value: 0n,
+		},
+	],
 	opGetter: safe7579,
 	initCode: safe7579.getInitCode(creationOptions),
 	pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),

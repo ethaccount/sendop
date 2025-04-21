@@ -1,7 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import {
 	BICONOMY_ATTESTER_ADDRESS,
-	DEV_ATTESTER_ADDRESS,
 	EOAValidatorModule,
 	RHINESTONE_ATTESTER_ADDRESS,
 	sendop,
@@ -49,7 +48,7 @@ const creationOptions: NexusCreationOptions = {
 	validatorAddress: ADDRESS.ECDSAValidator,
 	validatorInitData: await signer.getAddress(),
 	registryAddress: ADDRESS.Registry,
-	attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS, DEV_ATTESTER_ADDRESS],
+	attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS],
 	threshold: 1,
 }
 logger.info(`salt: ${creationOptions.salt}`)

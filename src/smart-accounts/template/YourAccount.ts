@@ -1,6 +1,7 @@
 import type { Execution, PaymasterGetter, SendOpResult } from '@/core'
 import type { JsonRpcProvider } from 'ethers'
 import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
+import { SendopError } from '@/error'
 
 export type YourCreationOptions = {
 	salt: string
@@ -19,7 +20,7 @@ export class YourAccount extends ModularSmartAccount {
 		super(options)
 	}
 
-	override connect(address: string): ModularSmartAccount {
+	override connect(address: string): YourAccount {
 		return new YourAccount({
 			...this._options,
 			address,
@@ -30,26 +31,26 @@ export class YourAccount extends ModularSmartAccount {
 		return ''
 	}
 
-	override getNonceKey(): bigint {
-		return 0n
-	}
-
-	override getCallData(executions: Execution[]): Promise<string> | string {
-		return ''
-	}
-
-	override async deploy(creationOptions: any, pmGetter?: PaymasterGetter): Promise<SendOpResult> {
-		return '' as any
-	}
-	override send(executions: Execution[], pmGetter?: PaymasterGetter): Promise<SendOpResult> {
-		return '' as any
-	}
-
 	override getInitCode(creationOptions: any): string {
 		return ''
 	}
 
+	override getNonceKey(): bigint {
+		return 0n
+	}
+
 	override encodeInstallModule(config: any): string {
 		return ''
+	}
+
+	protected createError(message: string, cause?: Error): Error {
+		return new YourAccountError(message, cause)
+	}
+}
+
+export class YourAccountError extends SendopError {
+	constructor(message: string, cause?: Error) {
+		super(message, cause)
+		this.name = 'YourAccountError'
 	}
 }
