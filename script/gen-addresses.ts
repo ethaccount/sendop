@@ -40,11 +40,10 @@ const scriptDir = __dirname
 // Write addresses.ts to src
 fs.writeFileSync(path.join(srcDir, 'addresses.ts'), addressesOutput)
 
-// Write no-abi-addresses.json to both directories
-fs.writeFileSync(path.join(srcDir, 'no-abi-addresses.json'), noAbiJson)
-fs.writeFileSync(path.join(scriptDir, 'no-abi-addresses.json'), noAbiJson)
+// Write non-auto-fetched-abi-addresses.json to script/
+fs.writeFileSync(path.join(scriptDir, 'non-auto-fetched-abi-addresses.json'), noAbiJson)
 
-logger.success(`Generated addresses.ts and no-abi-addresses.json successfully!`)
+logger.success(`Generated addresses.ts and non-auto-fetched-abi-addresses.json successfully!`)
 
 // Clean up failed-fetches.json
 if (fs.existsSync(failedFetchesPath)) {

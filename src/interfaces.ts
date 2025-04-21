@@ -6,6 +6,10 @@ import { ECDSAValidator__factory } from '@/contract-types/factories/ECDSAValidat
 import { Registry__factory } from '@/contract-types/factories/Registry__factory';
 import { WebAuthnValidator__factory } from '@/contract-types/factories/WebAuthnValidator__factory';
 import { Simple7702AccountV08__factory } from '@/contract-types/factories/Simple7702AccountV08__factory';
+import { ISafe__factory } from '@/contract-types/factories/manual/safe/ISafe__factory';
+import { SafeProxyFactory__factory } from '@/contract-types/factories/manual/safe/SafeProxyFactory__factory';
+import { Safe7579Launchpad__factory } from '@/contract-types/factories/manual/safe/Safe7579Launchpad__factory';
+import { ISafe7579__factory } from '@/contract-types/factories/manual/safe/ISafe7579__factory';
 import { IValidator__factory } from '@/contract-types/factories/manual/IERC7579Modules.sol/IValidator__factory';
 import { IPolicy__factory } from '@/contract-types/factories/manual/IERC7579Modules.sol/IPolicy__factory';
 import { ISigner__factory } from '@/contract-types/factories/manual/IERC7579Modules.sol/ISigner__factory';
@@ -40,6 +44,10 @@ export const INTERFACES = {
     Registry: Registry__factory.createInterface(),
     WebAuthnValidator: WebAuthnValidator__factory.createInterface(),
     Simple7702AccountV08: Simple7702AccountV08__factory.createInterface(),
+    ISafe: ISafe__factory.createInterface(),
+    SafeProxyFactory: SafeProxyFactory__factory.createInterface(),
+    Safe7579Launchpad: Safe7579Launchpad__factory.createInterface(),
+    ISafe7579: ISafe7579__factory.createInterface(),
     IValidator: IValidator__factory.createInterface(),
     IPolicy: IPolicy__factory.createInterface(),
     ISigner: ISigner__factory.createInterface(),
