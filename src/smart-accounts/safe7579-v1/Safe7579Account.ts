@@ -65,7 +65,7 @@ export class Safe7579Account extends ModularSmartAccount {
 		])
 	}
 
-	static override async getNewAddress(client: JsonRpcProvider, creationOptions: Safe7579CreationOptions) {
+	static override async computeAccountAddress(client: JsonRpcProvider, creationOptions: Safe7579CreationOptions) {
 		const initializer = Safe7579Account.getInitializer(creationOptions)
 		const launchpad = Safe7579Launchpad__factory.connect(ADDRESS.Safe7579Launchpad, client)
 

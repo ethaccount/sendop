@@ -63,7 +63,7 @@ describe.skip('AlchemyBundler', () => {
 			validatorInitData: await resolveAddress(signer),
 		}
 
-		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
+		const deployedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
 
 		const kernel = new KernelV3Account({
 			address: deployedAddress,

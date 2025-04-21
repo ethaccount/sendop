@@ -30,7 +30,7 @@ const creationOptions = {
 	validatorInitData: signer.address,
 }
 
-const computedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
+const computedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
 
 const usdc = IERC20__factory.connect(USDC_ADDRESS, client)
 

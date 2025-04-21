@@ -28,7 +28,7 @@ const creationOptions = {
 	validatorInitData: process.env.acc0 as string,
 }
 
-const computedAddress = KernelV3Account.getNewAddress(client, creationOptions)
+const computedAddress = KernelV3Account.computeAccountAddress(client, creationOptions)
 
 const tx = await usdc.transfer(computedAddress, parseUnits('1', 6))
 const receipt = await tx.wait()

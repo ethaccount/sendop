@@ -56,8 +56,8 @@ describe('Safe7579Account', () => {
 			}
 		})
 
-		it('should getNewAddress', async () => {
-			deployedAddress = await Safe7579Account.getNewAddress(client, creationOptions)
+		it('should computeAccountAddress', async () => {
+			deployedAddress = await Safe7579Account.computeAccountAddress(client, creationOptions)
 			expect(deployedAddress).not.toBe('0x0000000000000000000000000000000000000000')
 		})
 
@@ -102,7 +102,7 @@ describe('Safe7579Account', () => {
 				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS],
 				attestersThreshold: 1,
 			}
-			const computedAddress = await Safe7579Account.getNewAddress(client, creationOptions)
+			const computedAddress = await Safe7579Account.computeAccountAddress(client, creationOptions)
 			const account = new Safe7579Account({
 				address: computedAddress,
 				client,

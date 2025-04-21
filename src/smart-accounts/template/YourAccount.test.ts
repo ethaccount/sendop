@@ -54,8 +54,8 @@ describe.skip('YourAccount', () => {
 			}
 		})
 
-		it('should getNewAddress', async () => {
-			deployedAddress = await YourAccount.getNewAddress(client, creationOptions)
+		it('should computeAccountAddress', async () => {
+			deployedAddress = await YourAccount.computeAccountAddress(client, creationOptions)
 			expect(deployedAddress).not.toBe('0x0000000000000000000000000000000000000000')
 		})
 
@@ -96,7 +96,7 @@ describe.skip('YourAccount', () => {
 				validatorAddress: ADDRESS.ECDSAValidator,
 				validatorInitData: signer.address,
 			}
-			const computedAddress = await YourAccount.getNewAddress(client, creationOptions)
+			const computedAddress = await YourAccount.computeAccountAddress(client, creationOptions)
 			const account = new YourAccount({
 				address: computedAddress,
 				client,

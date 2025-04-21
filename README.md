@@ -65,7 +65,7 @@ const creationOptions = {
 	validatorAddress: ADDRESS.ECDSAValidator,
 	validatorInitData: signer.address,
 }
-const computedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
+const computedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
 
 console.log('computedAddress', computedAddress)
 console.log('Sending userOp...')

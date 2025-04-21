@@ -32,7 +32,7 @@ const creationOptions: Safe7579CreationOptions = {
 }
 logger.info(`salt: ${creationOptions.salt}`)
 
-const computedAddress = await Safe7579Account.getNewAddress(client, creationOptions)
+const computedAddress = await Safe7579Account.computeAccountAddress(client, creationOptions)
 logger.info('computedAddress:', computedAddress)
 
 const safe7579 = new Safe7579Account({

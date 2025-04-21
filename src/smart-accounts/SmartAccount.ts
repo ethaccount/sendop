@@ -56,7 +56,7 @@ export abstract class SmartAccount implements OperationGetter {
 	}
 
 	async deploy(creationOptions: any, pmGetter?: PaymasterGetter): Promise<SendOpResult> {
-		const computedAddress = await (this.constructor as typeof SmartAccount).getNewAddress(
+		const computedAddress = await (this.constructor as typeof SmartAccount).computeAccountAddress(
 			this.client,
 			creationOptions,
 		)
@@ -82,8 +82,8 @@ export abstract class SmartAccount implements OperationGetter {
 		throw new NoImplementationError('accountId')
 	}
 
-	static async getNewAddress(client: JsonRpcProvider, creationOptions: any): Promise<string> {
-		throw new NoImplementationError('getNewAddress')
+	static async computeAccountAddress(client: JsonRpcProvider, creationOptions: any): Promise<string> {
+		throw new NoImplementationError('computeAccountAddress')
 	}
 }
 

@@ -72,7 +72,7 @@ const creationOptions = {
 
 logger.info(`Salt: ${creationOptions.salt}`)
 
-const computedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
+const computedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
 
 const session: SessionStruct = {
 	sessionValidator: ADDRESS.OwnableValidator,

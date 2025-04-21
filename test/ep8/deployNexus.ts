@@ -53,7 +53,7 @@ const creationOptions: NexusCreationOptions = {
 }
 logger.info(`salt: ${creationOptions.salt}`)
 
-const computedAddress = await NexusAccount.getNewAddress(client, creationOptions)
+const computedAddress = await NexusAccount.computeAccountAddress(client, creationOptions)
 logger.info('computedAddress:', computedAddress)
 
 const nexus = new NexusAccount({

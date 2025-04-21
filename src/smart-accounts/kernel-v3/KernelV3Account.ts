@@ -56,7 +56,7 @@ export class KernelV3Account extends ModularSmartAccount {
 		])
 	}
 
-	static override async getNewAddress(client: JsonRpcProvider, creationOptions: KernelCreationOptions) {
+	static override async computeAccountAddress(client: JsonRpcProvider, creationOptions: KernelCreationOptions) {
 		const { salt } = creationOptions
 		if (!isBytes32(salt)) {
 			throw new KernelError('Invalid salt')

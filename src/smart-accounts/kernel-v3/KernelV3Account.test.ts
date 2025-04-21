@@ -68,8 +68,8 @@ describe('KernelV3Account', () => {
 			}
 		})
 
-		it('should getNewAddress', async () => {
-			deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
+		it('should computeAccountAddress', async () => {
+			deployedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
 			expect(deployedAddress).not.toBe('0x0000000000000000000000000000000000000000')
 		})
 
@@ -110,7 +110,7 @@ describe('KernelV3Account', () => {
 				validatorAddress: ADDRESS.ECDSAValidator,
 				validatorInitData: signer.address,
 			}
-			const computedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
+			const computedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
 			const kernel = new KernelV3Account({
 				address: computedAddress,
 				client,
@@ -191,7 +191,7 @@ describe('KernelV3Account', () => {
 		const smartSessionInitData = concat([SMART_SESSIONS_ENABLE_MODE, encodedSessions])
 
 		beforeAll(async () => {
-			deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
+			deployedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
 			await signer.sendTransaction({
 				to: deployedAddress,
 				value: parseEther('0.003'),

@@ -27,7 +27,7 @@ export class YourAccount extends ModularSmartAccount {
 		})
 	}
 
-	static override async getNewAddress(client: JsonRpcProvider, creationOptions: YourCreationOptions) {
+	static override async computeAccountAddress(client: JsonRpcProvider, creationOptions: YourCreationOptions) {
 		return ''
 	}
 

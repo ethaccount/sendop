@@ -35,7 +35,7 @@ describe('PimlicoBundler', () => {
 
 		logger.info(`salt: ${creationOptions.salt}`)
 
-		const computedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
+		const computedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
 		logger.info('computedAddress:', computedAddress)
 
 		const op = await sendop({

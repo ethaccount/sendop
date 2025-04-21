@@ -51,8 +51,8 @@ describe('NexusAccount', () => {
 			}
 		})
 
-		it('should getNewAddress', async () => {
-			deployedAddress = await NexusAccount.getNewAddress(client, creationOptions)
+		it('should computeAccountAddress', async () => {
+			deployedAddress = await NexusAccount.computeAccountAddress(client, creationOptions)
 			expect(deployedAddress).not.toBe('0x0000000000000000000000000000000000000000')
 		})
 
@@ -98,7 +98,7 @@ describe('NexusAccount', () => {
 				threshold: 1,
 			}
 
-			const computedAddress = await NexusAccount.getNewAddress(client, creationOptions)
+			const computedAddress = await NexusAccount.computeAccountAddress(client, creationOptions)
 			const account = new NexusAccount({
 				address: computedAddress,
 				client,

@@ -50,7 +50,7 @@ export class NexusAccount extends ModularSmartAccount {
 		return concat([ADDRESS.NexusFactory, factoryCalldata])
 	}
 
-	static override async getNewAddress(client: JsonRpcProvider, creationOptions: NexusCreationOptions) {
+	static override async computeAccountAddress(client: JsonRpcProvider, creationOptions: NexusCreationOptions) {
 		const factory = NexusFactory__factory.connect(ADDRESS.NexusFactory, client)
 		const address = await factory.computeAccountAddress(
 			this.getInitializeData(creationOptions),
