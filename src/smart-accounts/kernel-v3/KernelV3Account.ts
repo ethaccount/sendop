@@ -1,13 +1,12 @@
 import { ADDRESS } from '@/addresses'
-import { CallType, encodeExecutions, ERC7579_MODULE_TYPE, ExecType, ModeSelector, type Execution } from '@/core'
+import { ERC7579_MODULE_TYPE } from '@/core'
 import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
-import { abiEncode, connectEntryPointV07, isBytes, isBytes32, toBytes32, zeroBytes } from '@/utils'
-import { concat, Contract, hexlify, JsonRpcProvider, toBeHex, ZeroAddress, type TypedDataField } from 'ethers'
+import { abiEncode, connectEntryPointV07, isBytes, isBytes32, zeroBytes } from '@/utils'
+import { concat, Contract, hexlify, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
 import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
 import type { KernelCreationOptions, KernelInstallModuleConfig, SimpleKernelInstallModuleConfig } from './types'
 import { KernelValidationMode, KernelValidationType } from './types'
-import type { TypedDataDomain } from 'ethers'
 
 export type KernelV3AccountOptions = ModularSmartAccountOptions & KernelV3AccountConfig
 
@@ -17,13 +16,6 @@ export type KernelV3AccountConfig = {
 		type?: KernelValidationType
 		identifier?: string
 		key?: string
-	}
-	execMode?: {
-		callType?: CallType // 1 byte
-		execType?: ExecType // 1 byte
-		unused?: string // 4 bytes
-		modeSelector?: ModeSelector // 4 bytes
-		modePayload?: string // 22 bytes
 	}
 }
 
@@ -44,7 +36,8 @@ export class KernelV3Account extends ModularSmartAccount {
 
 	constructor(options: KernelV3AccountOptions) {
 		super(options)
-		this._kernelConfig = { ...options }
+		const { nonce } = options
+		this._kernelConfig = { nonce }
 	}
 
 	override connect(address: string): KernelV3Account {
@@ -127,56 +120,8 @@ export class KernelV3Account extends ModularSmartAccount {
 		return BigInt(hexlify(concat([mode, type, identifier, key])))
 	}
 
-	override getCallData(executions: Execution[]): Promise<string> | string {
-		if (!executions.length) {
-			return '0x'
-		}
-
-		// Execute 1 function directly on the smart account if it's the only one and to address is itself
-		if (executions.length === 1 && executions[0].to == this.address) {
-			return executions[0].data
-		}
-
-		const defaultExecutionMode = {
-			callType: CallType.BATCH,
-			execType: ExecType.DEFAULT,
-			unused: zeroBytes(4),
-			modeSelector: ModeSelector.DEFAULT,
-			modePayload: zeroBytes(22),
-		}
-		let { callType, execType, modeSelector, modePayload, unused } = {
-			...defaultExecutionMode,
-			...this._kernelConfig?.execMode,
-		}
-
-		// If there is only one execution, set callType to SIGNLE
-		if (executions.length === 1) {
-			callType = CallType.SIGNLE
-		}
-		/// |--------------------------------------------------------------------|
-		/// | CALLTYPE  | EXECTYPE  |   UNUSED   | ModeSelector  |  ModePayload  |
-		/// |--------------------------------------------------------------------|
-		/// | 1 byte    | 1 byte    |   4 bytes  | 4 bytes       |   22 bytes    |
-		/// |--------------------------------------------------------------------|
-		if (!isBytes(callType, 1)) throw new KernelError(`invalid callType ${callType}`)
-		if (!isBytes(execType, 1)) throw new KernelError(`invalid execType ${execType}`)
-		if (!isBytes(unused, 4)) throw new KernelError(`invalid unused ${unused}`)
-		if (!isBytes(modeSelector, 4)) throw new KernelError(`invalid modeSelector ${modeSelector}`)
-		if (!isBytes(modePayload, 22)) throw new KernelError(`invalid modePayload ${modePayload}`)
-		const execMode = concat([callType, execType, unused, modeSelector, modePayload])
-
-		switch (callType) {
-			case CallType.SIGNLE:
-				return this.interface.encodeFunctionData('execute', [
-					execMode,
-					// decodeSingle is address (20) + value (32) + data (bytes) without abi.encode
-					concat([executions[0].to, toBytes32(executions[0].value), executions[0].data]),
-				])
-			case CallType.BATCH:
-				return this.interface.encodeFunctionData('execute', [execMode, encodeExecutions(executions)])
-			default:
-				throw new KernelError('unsupported call type')
-		}
+	protected createError(message: string) {
+		return new KernelError(message)
 	}
 
 	encodeInitialize(creationOptions: KernelCreationOptions) {

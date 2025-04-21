@@ -1,9 +1,9 @@
 import { ADDRESS } from '@/addresses'
 import { NexusFactory__factory } from '@/contract-types'
-import { CallType, encodeExecutions, ERC7579_MODULE_TYPE, ExecType, ModeSelector, type Execution } from '@/core'
+import { ERC7579_MODULE_TYPE } from '@/core'
 import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
-import { abiEncode, isBytes, toBytes32, zeroBytes } from '@/utils'
+import { abiEncode, zeroBytes } from '@/utils'
 import type { JsonRpcProvider } from 'ethers'
 import { concat, hexlify } from 'ethers/utils'
 import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
@@ -16,13 +16,6 @@ export type NexusAccountConfig = {
 		mode?: NexusValidationMode // 1 byte
 		validator?: string // 20 bytes
 		key?: string // 3 bytes
-	}
-	execMode?: {
-		callType?: CallType // 1 byte
-		execType?: ExecType // 1 byte
-		unused?: string // 4 bytes
-		modeSelector?: ModeSelector // 4 bytes
-		modePayload?: string // 22 bytes
 	}
 }
 
@@ -48,7 +41,8 @@ export class NexusAccount extends ModularSmartAccount {
 
 	constructor(options: NexusAccountOptions) {
 		super(options)
-		this._nexusConfig = { ...options }
+		const { nonce } = options
+		this._nexusConfig = { nonce }
 	}
 
 	override connect(address: string): NexusAccount {
@@ -97,56 +91,8 @@ export class NexusAccount extends ModularSmartAccount {
 		return concat([key, mode, validator])
 	}
 
-	override getCallData(executions: Execution[]): Promise<string> | string {
-		if (!executions.length) {
-			return '0x'
-		}
-
-		// Execute 1 function directly on the smart account if it's the only one and to address is itself
-		if (executions.length === 1 && executions[0].to == this.address) {
-			return executions[0].data
-		}
-
-		const defaultExecutionMode = {
-			callType: CallType.BATCH,
-			execType: ExecType.DEFAULT,
-			unused: zeroBytes(4),
-			modeSelector: ModeSelector.DEFAULT,
-			modePayload: zeroBytes(22),
-		}
-		let { callType, execType, modeSelector, modePayload, unused } = {
-			...defaultExecutionMode,
-			...this._nexusConfig?.execMode,
-		}
-
-		// If there is only one execution, set callType to SIGNLE
-		if (executions.length === 1) {
-			callType = CallType.SIGNLE
-		}
-		/// |--------------------------------------------------------------------|
-		/// | CALLTYPE  | EXECTYPE  |   UNUSED   | ModeSelector  |  ModePayload  |
-		/// |--------------------------------------------------------------------|
-		/// | 1 byte    | 1 byte    |   4 bytes  | 4 bytes       |   22 bytes    |
-		/// |--------------------------------------------------------------------|
-		if (!isBytes(callType, 1)) throw new NexusError(`invalid callType ${callType}`)
-		if (!isBytes(execType, 1)) throw new NexusError(`invalid execType ${execType}`)
-		if (!isBytes(unused, 4)) throw new NexusError(`invalid unused ${unused}`)
-		if (!isBytes(modeSelector, 4)) throw new NexusError(`invalid modeSelector ${modeSelector}`)
-		if (!isBytes(modePayload, 22)) throw new NexusError(`invalid modePayload ${modePayload}`)
-		const execMode = concat([callType, execType, unused, modeSelector, modePayload])
-
-		switch (callType) {
-			case CallType.SIGNLE:
-				return this.interface.encodeFunctionData('execute', [
-					execMode,
-					// Nexus's decodeSingle is address (20) + value (32) + data (bytes)
-					concat([executions[0].to, toBytes32(executions[0].value), executions[0].data]),
-				])
-			case CallType.BATCH:
-				return this.interface.encodeFunctionData('execute', [execMode, encodeExecutions(executions)])
-			default:
-				throw new NexusError('unsupported call type')
-		}
+	protected createError(message: string) {
+		return new NexusError(message)
 	}
 
 	/**

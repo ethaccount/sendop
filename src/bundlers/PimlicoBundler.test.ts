@@ -58,5 +58,5 @@ describe('PimlicoBundler', () => {
 
 		await op.wait()
 		logger.info('deployed address:', computedAddress)
-	})
+	}, 100_000)
 })

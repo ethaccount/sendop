@@ -2,6 +2,7 @@ import { ADDRESS } from '@/addresses'
 import { Safe7579Launchpad__factory, SafeProxyFactory__factory } from '@/contract-types'
 import { ERC7579_MODULE_TYPE, type Execution, type PaymasterGetter, type SendOpResult } from '@/core'
 import { INTERFACES } from '@/interfaces'
+import { SendopError } from '@/error'
 import type { JsonRpcProvider } from 'ethers'
 import { ZeroAddress } from 'ethers/constants'
 import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
@@ -21,6 +22,10 @@ export type Safe7579AccountOptions = ModularSmartAccountOptions
 export class Safe7579Account extends ModularSmartAccount {
 	static override accountId() {
 		return 'rhinestone.safe7579.v1.0.0'
+	}
+
+	get interface() {
+		return INTERFACES.ISafe7579
 	}
 
 	constructor(options: Safe7579AccountOptions) {
@@ -89,6 +94,10 @@ export class Safe7579Account extends ModularSmartAccount {
 		// const computedAddress = getAddress(dataSlice(hash, 12))
 	}
 
+	protected createError(message: string) {
+		return new Safe7579Error(message)
+	}
+
 	override getNonceKey(): bigint {
 		return 0n
 	}
@@ -110,5 +119,12 @@ export class Safe7579Account extends ModularSmartAccount {
 
 	override encodeInstallModule(config: any): string {
 		return ''
+	}
+}
+
+export class Safe7579Error extends SendopError {
+	constructor(message: string, cause?: Error) {
+		super(message, cause)
+		this.name = 'Safe7579Error'
 	}
 }

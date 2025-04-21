@@ -1,12 +1,23 @@
-import type { ERC7579Validator, SignatureData, UserOp } from '@/core'
+import type { ERC7579Validator, SignatureData, UserOp, Execution } from '@/core'
 import { SmartAccount, type SmartAccountOptions } from './SmartAccount'
+import { CallType, ExecType, ModeSelector, encodeExecutions } from '@/core'
+import { isBytes, toBytes32, zeroBytes } from '@/utils'
+import { concat, Interface } from 'ethers'
 
 export type ModularSmartAccountOptions = SmartAccountOptions & {
 	validator: ERC7579Validator
+	execMode?: {
+		callType?: CallType // 1 byte
+		execType?: ExecType // 1 byte
+		unused?: string // 4 bytes
+		modeSelector?: ModeSelector // 4 bytes
+		modePayload?: string // 22 bytes
+	}
 }
 
 export abstract class ModularSmartAccount extends SmartAccount {
 	protected readonly _options: ModularSmartAccountOptions
+	abstract get interface(): Interface
 
 	constructor(options: ModularSmartAccountOptions) {
 		super(options)
@@ -23,6 +34,55 @@ export abstract class ModularSmartAccount extends SmartAccount {
 
 	async getSignature(signatureData: SignatureData): Promise<string> {
 		return this.validator.getSignature(signatureData)
+	}
+
+	protected abstract createError(message: string): Error
+
+	getCallData(executions: Execution[]): Promise<string> | string {
+		if (!executions.length) {
+			return '0x'
+		}
+
+		if (executions.length === 1 && executions[0].to == this.address) {
+			return executions[0].data
+		}
+
+		const defaultExecutionMode = {
+			callType: CallType.BATCH,
+			execType: ExecType.DEFAULT,
+			unused: zeroBytes(4),
+			modeSelector: ModeSelector.DEFAULT,
+			modePayload: zeroBytes(22),
+		}
+
+		let { callType, execType, modeSelector, modePayload, unused } = {
+			...defaultExecutionMode,
+			...this._options.execMode,
+		}
+
+		if (executions.length === 1) {
+			callType = CallType.SIGNLE
+		}
+
+		if (!isBytes(callType, 1)) throw this.createError(`invalid callType ${callType}`)
+		if (!isBytes(execType, 1)) throw this.createError(`invalid execType ${execType}`)
+		if (!isBytes(unused, 4)) throw this.createError(`invalid unused ${unused}`)
+		if (!isBytes(modeSelector, 4)) throw this.createError(`invalid modeSelector ${modeSelector}`)
+		if (!isBytes(modePayload, 22)) throw this.createError(`invalid modePayload ${modePayload}`)
+
+		const execMode = concat([callType, execType, unused, modeSelector, modePayload])
+
+		switch (callType) {
+			case CallType.SIGNLE:
+				return this.interface.encodeFunctionData('execute', [
+					execMode,
+					concat([executions[0].to, toBytes32(executions[0].value), executions[0].data]),
+				])
+			case CallType.BATCH:
+				return this.interface.encodeFunctionData('execute', [execMode, encodeExecutions(executions)])
+			default:
+				throw this.createError('unsupported call type')
+		}
 	}
 
 	/**
