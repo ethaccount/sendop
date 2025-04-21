@@ -1,7 +1,12 @@
 import type { Execution, PaymasterGetter, SendOpResult } from '@/core'
 import type { JsonRpcProvider } from 'ethers'
 import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
-import type { YourCreationOptions } from './types'
+
+export type YourCreationOptions = {
+	salt: string
+	validatorAddress: string
+	validatorInitData: string
+}
 
 export type YourAccountOptions = ModularSmartAccountOptions
 
@@ -15,7 +20,10 @@ export class YourAccount extends ModularSmartAccount {
 	}
 
 	override connect(address: string): ModularSmartAccount {
-		return this as any
+		return new YourAccount({
+			...this._options,
+			address,
+		})
 	}
 
 	static override async getNewAddress(client: JsonRpcProvider, creationOptions: YourCreationOptions) {

@@ -6,19 +6,19 @@ import { EOAValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
 import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { YourAccount, type YourCreationOptions } from './YourAccount'
+import { Safe7579Account, type Safe7579CreationOptions } from './Safe7579Account'
 import { PublicPaymaster } from '@/paymasters'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup()
 logger.info(`Chain ID: ${chainId}`)
 
-describe.skip('YourAccount', () => {
+describe.skip('Safe7579Account', () => {
 	let signer: Wallet
 	let client: JsonRpcProvider
 	let bundler: Bundler
 	let validator: ERC7579Validator
 	let pmGetter: PaymasterGetter
-	let account: YourAccount
+	let account: Safe7579Account
 
 	beforeAll(() => {
 		signer = new Wallet(privateKey)
@@ -32,7 +32,7 @@ describe.skip('YourAccount', () => {
 		})
 		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 
-		account = new YourAccount({
+		account = new Safe7579Account({
 			client,
 			bundler,
 			validator,
@@ -42,8 +42,8 @@ describe.skip('YourAccount', () => {
 	})
 
 	describe('Deploy and setNumber', () => {
-		let account: YourAccount
-		let creationOptions: YourCreationOptions
+		let account: Safe7579Account
+		let creationOptions: Safe7579CreationOptions
 		let deployedAddress: string
 
 		beforeAll(async () => {
@@ -55,12 +55,12 @@ describe.skip('YourAccount', () => {
 		})
 
 		it('should getNewAddress', async () => {
-			deployedAddress = await YourAccount.getNewAddress(client, creationOptions)
+			deployedAddress = await Safe7579Account.getNewAddress(client, creationOptions)
 			expect(deployedAddress).not.toBe('0x0000000000000000000000000000000000000000')
 		})
 
 		it('should deploy the contract', async () => {
-			account = new YourAccount({
+			account = new Safe7579Account({
 				address: deployedAddress,
 				client,
 				bundler,
@@ -96,8 +96,8 @@ describe.skip('YourAccount', () => {
 				validatorAddress: ADDRESS.ECDSAValidator,
 				validatorInitData: signer.address,
 			}
-			const computedAddress = await YourAccount.getNewAddress(client, creationOptions)
-			const account = new YourAccount({
+			const computedAddress = await Safe7579Account.getNewAddress(client, creationOptions)
+			const account = new Safe7579Account({
 				address: computedAddress,
 				client,
 				bundler,
