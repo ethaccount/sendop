@@ -37,46 +37,6 @@ const _abi = [
   },
   {
     type: "function",
-    name: "emergencyUninstallHook",
-    inputs: [
-      {
-        name: "data",
-        type: "tuple",
-        internalType: "struct EmergencyUninstall",
-        components: [
-          {
-            name: "hook",
-            type: "address",
-            internalType: "address",
-          },
-          {
-            name: "hookType",
-            type: "uint256",
-            internalType: "uint256",
-          },
-          {
-            name: "deInitData",
-            type: "bytes",
-            internalType: "bytes",
-          },
-          {
-            name: "nonce",
-            type: "uint256",
-            internalType: "uint256",
-          },
-        ],
-      },
-      {
-        name: "signature",
-        type: "bytes",
-        internalType: "bytes",
-      },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
     name: "execute",
     inputs: [
       {
@@ -132,6 +92,25 @@ const _abi = [
   },
   {
     type: "function",
+    name: "getActiveHook",
+    inputs: [
+      {
+        name: "selector",
+        type: "bytes4",
+        internalType: "bytes4",
+      },
+    ],
+    outputs: [
+      {
+        name: "hook",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
     name: "getExecutorsPaginated",
     inputs: [
       {
@@ -161,30 +140,6 @@ const _abi = [
   },
   {
     type: "function",
-    name: "getFallbackHandlerBySelector",
-    inputs: [
-      {
-        name: "selector",
-        type: "bytes4",
-        internalType: "bytes4",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "bytes1",
-        internalType: "CallType",
-      },
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
     name: "getNonce",
     inputs: [
       {
@@ -203,25 +158,6 @@ const _abi = [
         name: "nonce",
         type: "uint256",
         internalType: "uint256",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "getPrevalidationHook",
-    inputs: [
-      {
-        name: "moduleType",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
-    outputs: [
-      {
-        name: "hook",
-        type: "address",
-        internalType: "address",
       },
     ],
     stateMutability: "view",
@@ -346,7 +282,7 @@ const _abi = [
     name: "initializeAccount",
     inputs: [
       {
-        name: "modules",
+        name: "validators",
         type: "tuple[]",
         internalType: "struct ModuleInit[]",
         components: [
@@ -360,10 +296,56 @@ const _abi = [
             type: "bytes",
             internalType: "bytes",
           },
+        ],
+      },
+      {
+        name: "executors",
+        type: "tuple[]",
+        internalType: "struct ModuleInit[]",
+        components: [
           {
-            name: "moduleType",
-            type: "uint256",
-            internalType: "uint256",
+            name: "module",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "initData",
+            type: "bytes",
+            internalType: "bytes",
+          },
+        ],
+      },
+      {
+        name: "fallbacks",
+        type: "tuple[]",
+        internalType: "struct ModuleInit[]",
+        components: [
+          {
+            name: "module",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "initData",
+            type: "bytes",
+            internalType: "bytes",
+          },
+        ],
+      },
+      {
+        name: "hooks",
+        type: "tuple[]",
+        internalType: "struct ModuleInit[]",
+        components: [
+          {
+            name: "module",
+            type: "address",
+            internalType: "address",
+          },
+          {
+            name: "initData",
+            type: "bytes",
+            internalType: "bytes",
           },
         ],
       },
@@ -411,11 +393,6 @@ const _abi = [
             name: "initData",
             type: "bytes",
             internalType: "bytes",
-          },
-          {
-            name: "moduleType",
-            type: "uint256",
-            internalType: "uint256",
           },
         ],
       },
@@ -680,44 +657,6 @@ const _abi = [
   },
   {
     type: "event",
-    name: "EmergencyHookUninstallRequest",
-    inputs: [
-      {
-        name: "hook",
-        type: "address",
-        indexed: false,
-        internalType: "address",
-      },
-      {
-        name: "time",
-        type: "uint256",
-        indexed: false,
-        internalType: "uint256",
-      },
-    ],
-    anonymous: false,
-  },
-  {
-    type: "event",
-    name: "EmergencyHookUninstallRequestReset",
-    inputs: [
-      {
-        name: "hook",
-        type: "address",
-        indexed: false,
-        internalType: "address",
-      },
-      {
-        name: "time",
-        type: "uint256",
-        indexed: false,
-        internalType: "uint256",
-      },
-    ],
-    anonymous: false,
-  },
-  {
-    type: "event",
     name: "ModuleInstalled",
     inputs: [
       {
@@ -753,16 +692,6 @@ const _abi = [
       },
     ],
     anonymous: false,
-  },
-  {
-    type: "error",
-    name: "EmergencyTimeLockNotExpired",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "EmergencyUninstallSigError",
-    inputs: [],
   },
   {
     type: "error",
@@ -847,49 +776,12 @@ const _abi = [
   },
   {
     type: "error",
-    name: "InvalidNonce",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "ModuleNotInstalled",
-    inputs: [
-      {
-        name: "module",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "moduleType",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
-  },
-  {
-    type: "error",
     name: "NoFallbackHandler",
     inputs: [
       {
         name: "msgSig",
         type: "bytes4",
         internalType: "bytes4",
-      },
-    ],
-  },
-  {
-    type: "error",
-    name: "PreValidationHookAlreadyInstalled",
-    inputs: [
-      {
-        name: "currentHook",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "moduleType",
-        type: "uint256",
-        internalType: "uint256",
       },
     ],
   },

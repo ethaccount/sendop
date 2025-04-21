@@ -23,20 +23,6 @@ import type {
   TypedContractMethod,
 } from "../../common";
 
-export type EmergencyUninstallStruct = {
-  hook: AddressLike;
-  hookType: BigNumberish;
-  deInitData: BytesLike;
-  nonce: BigNumberish;
-};
-
-export type EmergencyUninstallStructOutput = [
-  hook: string,
-  hookType: bigint,
-  deInitData: string,
-  nonce: bigint
-] & { hook: string; hookType: bigint; deInitData: string; nonce: bigint };
-
 export type PackedUserOperationStruct = {
   sender: AddressLike;
   nonce: BigNumberish;
@@ -71,17 +57,12 @@ export type PackedUserOperationStructOutput = [
   signature: string;
 };
 
-export type ModuleInitStruct = {
-  module: AddressLike;
-  initData: BytesLike;
-  moduleType: BigNumberish;
-};
+export type ModuleInitStruct = { module: AddressLike; initData: BytesLike };
 
-export type ModuleInitStructOutput = [
-  module: string,
-  initData: string,
-  moduleType: bigint
-] & { module: string; initData: string; moduleType: bigint };
+export type ModuleInitStructOutput = [module: string, initData: string] & {
+  module: string;
+  initData: string;
+};
 
 export type RegistryInitStruct = {
   registry: AddressLike;
@@ -100,14 +81,12 @@ export interface ISafe7579Interface extends Interface {
     nameOrSignature:
       | "accountId"
       | "domainSeparator"
-      | "emergencyUninstallHook"
       | "execute"
       | "executeFromExecutor"
-      | "getActiveHook"
+      | "getActiveHook()"
+      | "getActiveHook(bytes4)"
       | "getExecutorsPaginated"
-      | "getFallbackHandlerBySelector"
       | "getNonce"
-      | "getPrevalidationHook"
       | "getSafeOp"
       | "getValidatorsPaginated"
       | "initializeAccount"
@@ -125,8 +104,6 @@ export interface ISafe7579Interface extends Interface {
   getEvent(
     nameOrSignatureOrTopic:
       | "ERC7484RegistryConfigured"
-      | "EmergencyHookUninstallRequest"
-      | "EmergencyHookUninstallRequestReset"
       | "ModuleInstalled"
       | "ModuleUninstalled"
   ): EventFragment;
@@ -137,10 +114,6 @@ export interface ISafe7579Interface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "emergencyUninstallHook",
-    values: [EmergencyUninstallStruct, BytesLike]
-  ): string;
-  encodeFunctionData(
     functionFragment: "execute",
     values: [BytesLike, BytesLike]
   ): string;
@@ -149,24 +122,20 @@ export interface ISafe7579Interface extends Interface {
     values: [BytesLike, BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "getActiveHook",
+    functionFragment: "getActiveHook()",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getActiveHook(bytes4)",
+    values: [BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "getExecutorsPaginated",
     values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "getFallbackHandlerBySelector",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
     functionFragment: "getNonce",
     values: [AddressLike, AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getPrevalidationHook",
-    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getSafeOp",
@@ -178,7 +147,13 @@ export interface ISafe7579Interface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "initializeAccount",
-    values: [ModuleInitStruct[], RegistryInitStruct]
+    values: [
+      ModuleInitStruct[],
+      ModuleInitStruct[],
+      ModuleInitStruct[],
+      ModuleInitStruct[],
+      RegistryInitStruct
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "initializeAccountWithValidators",
@@ -222,32 +197,24 @@ export interface ISafe7579Interface extends Interface {
     functionFragment: "domainSeparator",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "emergencyUninstallHook",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "execute", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "executeFromExecutor",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getActiveHook",
+    functionFragment: "getActiveHook()",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getActiveHook(bytes4)",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "getExecutorsPaginated",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "getFallbackHandlerBySelector",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "getNonce", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "getPrevalidationHook",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "getSafeOp", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getValidatorsPaginated",
@@ -301,32 +268,6 @@ export namespace ERC7484RegistryConfiguredEvent {
   export interface OutputObject {
     smartAccount: string;
     registry: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace EmergencyHookUninstallRequestEvent {
-  export type InputTuple = [hook: AddressLike, time: BigNumberish];
-  export type OutputTuple = [hook: string, time: bigint];
-  export interface OutputObject {
-    hook: string;
-    time: bigint;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace EmergencyHookUninstallRequestResetEvent {
-  export type InputTuple = [hook: AddressLike, time: BigNumberish];
-  export type OutputTuple = [hook: string, time: bigint];
-  export interface OutputObject {
-    hook: string;
-    time: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -407,12 +348,6 @@ export interface ISafe7579 extends BaseContract {
 
   domainSeparator: TypedContractMethod<[], [string], "view">;
 
-  emergencyUninstallHook: TypedContractMethod<
-    [data: EmergencyUninstallStruct, signature: BytesLike],
-    [void],
-    "nonpayable"
-  >;
-
   execute: TypedContractMethod<
     [mode: BytesLike, executionCalldata: BytesLike],
     [void],
@@ -425,7 +360,13 @@ export interface ISafe7579 extends BaseContract {
     "nonpayable"
   >;
 
-  getActiveHook: TypedContractMethod<[], [string], "view">;
+  "getActiveHook()": TypedContractMethod<[], [string], "view">;
+
+  "getActiveHook(bytes4)": TypedContractMethod<
+    [selector: BytesLike],
+    [string],
+    "view"
+  >;
 
   getExecutorsPaginated: TypedContractMethod<
     [cursor: AddressLike, size: BigNumberish],
@@ -433,21 +374,9 @@ export interface ISafe7579 extends BaseContract {
     "view"
   >;
 
-  getFallbackHandlerBySelector: TypedContractMethod<
-    [selector: BytesLike],
-    [[string, string]],
-    "view"
-  >;
-
   getNonce: TypedContractMethod<
     [safe: AddressLike, validator: AddressLike],
     [bigint],
-    "view"
-  >;
-
-  getPrevalidationHook: TypedContractMethod<
-    [moduleType: BigNumberish],
-    [string],
     "view"
   >;
 
@@ -471,7 +400,13 @@ export interface ISafe7579 extends BaseContract {
   >;
 
   initializeAccount: TypedContractMethod<
-    [modules: ModuleInitStruct[], registryInit: RegistryInitStruct],
+    [
+      validators: ModuleInitStruct[],
+      executors: ModuleInitStruct[],
+      fallbacks: ModuleInitStruct[],
+      hooks: ModuleInitStruct[],
+      registryInit: RegistryInitStruct
+    ],
     [void],
     "nonpayable"
   >;
@@ -549,13 +484,6 @@ export interface ISafe7579 extends BaseContract {
     nameOrSignature: "domainSeparator"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
-    nameOrSignature: "emergencyUninstallHook"
-  ): TypedContractMethod<
-    [data: EmergencyUninstallStruct, signature: BytesLike],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
     nameOrSignature: "execute"
   ): TypedContractMethod<
     [mode: BytesLike, executionCalldata: BytesLike],
@@ -570,8 +498,11 @@ export interface ISafe7579 extends BaseContract {
     "nonpayable"
   >;
   getFunction(
-    nameOrSignature: "getActiveHook"
+    nameOrSignature: "getActiveHook()"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "getActiveHook(bytes4)"
+  ): TypedContractMethod<[selector: BytesLike], [string], "view">;
   getFunction(
     nameOrSignature: "getExecutorsPaginated"
   ): TypedContractMethod<
@@ -580,18 +511,12 @@ export interface ISafe7579 extends BaseContract {
     "view"
   >;
   getFunction(
-    nameOrSignature: "getFallbackHandlerBySelector"
-  ): TypedContractMethod<[selector: BytesLike], [[string, string]], "view">;
-  getFunction(
     nameOrSignature: "getNonce"
   ): TypedContractMethod<
     [safe: AddressLike, validator: AddressLike],
     [bigint],
     "view"
   >;
-  getFunction(
-    nameOrSignature: "getPrevalidationHook"
-  ): TypedContractMethod<[moduleType: BigNumberish], [string], "view">;
   getFunction(
     nameOrSignature: "getSafeOp"
   ): TypedContractMethod<
@@ -616,7 +541,13 @@ export interface ISafe7579 extends BaseContract {
   getFunction(
     nameOrSignature: "initializeAccount"
   ): TypedContractMethod<
-    [modules: ModuleInitStruct[], registryInit: RegistryInitStruct],
+    [
+      validators: ModuleInitStruct[],
+      executors: ModuleInitStruct[],
+      fallbacks: ModuleInitStruct[],
+      hooks: ModuleInitStruct[],
+      registryInit: RegistryInitStruct
+    ],
     [void],
     "nonpayable"
   >;
@@ -688,20 +619,6 @@ export interface ISafe7579 extends BaseContract {
     ERC7484RegistryConfiguredEvent.OutputObject
   >;
   getEvent(
-    key: "EmergencyHookUninstallRequest"
-  ): TypedContractEvent<
-    EmergencyHookUninstallRequestEvent.InputTuple,
-    EmergencyHookUninstallRequestEvent.OutputTuple,
-    EmergencyHookUninstallRequestEvent.OutputObject
-  >;
-  getEvent(
-    key: "EmergencyHookUninstallRequestReset"
-  ): TypedContractEvent<
-    EmergencyHookUninstallRequestResetEvent.InputTuple,
-    EmergencyHookUninstallRequestResetEvent.OutputTuple,
-    EmergencyHookUninstallRequestResetEvent.OutputObject
-  >;
-  getEvent(
     key: "ModuleInstalled"
   ): TypedContractEvent<
     ModuleInstalledEvent.InputTuple,
@@ -726,28 +643,6 @@ export interface ISafe7579 extends BaseContract {
       ERC7484RegistryConfiguredEvent.InputTuple,
       ERC7484RegistryConfiguredEvent.OutputTuple,
       ERC7484RegistryConfiguredEvent.OutputObject
-    >;
-
-    "EmergencyHookUninstallRequest(address,uint256)": TypedContractEvent<
-      EmergencyHookUninstallRequestEvent.InputTuple,
-      EmergencyHookUninstallRequestEvent.OutputTuple,
-      EmergencyHookUninstallRequestEvent.OutputObject
-    >;
-    EmergencyHookUninstallRequest: TypedContractEvent<
-      EmergencyHookUninstallRequestEvent.InputTuple,
-      EmergencyHookUninstallRequestEvent.OutputTuple,
-      EmergencyHookUninstallRequestEvent.OutputObject
-    >;
-
-    "EmergencyHookUninstallRequestReset(address,uint256)": TypedContractEvent<
-      EmergencyHookUninstallRequestResetEvent.InputTuple,
-      EmergencyHookUninstallRequestResetEvent.OutputTuple,
-      EmergencyHookUninstallRequestResetEvent.OutputObject
-    >;
-    EmergencyHookUninstallRequestReset: TypedContractEvent<
-      EmergencyHookUninstallRequestResetEvent.InputTuple,
-      EmergencyHookUninstallRequestResetEvent.OutputTuple,
-      EmergencyHookUninstallRequestResetEvent.OutputObject
     >;
 
     "ModuleInstalled(uint256,address)": TypedContractEvent<

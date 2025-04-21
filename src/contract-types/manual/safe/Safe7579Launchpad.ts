@@ -23,17 +23,12 @@ import type {
   TypedContractMethod,
 } from "../../common";
 
-export type ModuleInitStruct = {
-  module: AddressLike;
-  initData: BytesLike;
-  moduleType: BigNumberish;
-};
+export type ModuleInitStruct = { module: AddressLike; initData: BytesLike };
 
-export type ModuleInitStructOutput = [
-  module: string,
-  initData: string,
-  moduleType: bigint
-] & { module: string; initData: string; moduleType: bigint };
+export type ModuleInitStructOutput = [module: string, initData: string] & {
+  module: string;
+  initData: string;
+};
 
 export type PackedUserOperationStruct = {
   sender: AddressLike;
@@ -134,7 +129,15 @@ export interface Safe7579LaunchpadInterface extends Interface {
   encodeFunctionData(functionFragment: "accountId", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "addSafe7579",
-    values: [AddressLike, ModuleInitStruct[], AddressLike[], BigNumberish]
+    values: [
+      AddressLike,
+      ModuleInitStruct[],
+      ModuleInitStruct[],
+      ModuleInitStruct[],
+      ModuleInitStruct[],
+      AddressLike[],
+      BigNumberish
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "domainSeparator",
@@ -154,7 +157,14 @@ export interface Safe7579LaunchpadInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "initSafe7579",
-    values: [AddressLike, ModuleInitStruct[], AddressLike[], BigNumberish]
+    values: [
+      AddressLike,
+      ModuleInitStruct[],
+      ModuleInitStruct[],
+      ModuleInitStruct[],
+      AddressLike[],
+      BigNumberish
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "preValidationSetup",
@@ -306,7 +316,10 @@ export interface Safe7579Launchpad extends BaseContract {
   addSafe7579: TypedContractMethod<
     [
       safe7579: AddressLike,
-      modules: ModuleInitStruct[],
+      validators: ModuleInitStruct[],
+      executors: ModuleInitStruct[],
+      fallbacks: ModuleInitStruct[],
+      hooks: ModuleInitStruct[],
       attesters: AddressLike[],
       threshold: BigNumberish
     ],
@@ -340,7 +353,9 @@ export interface Safe7579Launchpad extends BaseContract {
   initSafe7579: TypedContractMethod<
     [
       safe7579: AddressLike,
-      modules: ModuleInitStruct[],
+      executors: ModuleInitStruct[],
+      fallbacks: ModuleInitStruct[],
+      hooks: ModuleInitStruct[],
       attesters: AddressLike[],
       threshold: BigNumberish
     ],
@@ -412,7 +427,10 @@ export interface Safe7579Launchpad extends BaseContract {
   ): TypedContractMethod<
     [
       safe7579: AddressLike,
-      modules: ModuleInitStruct[],
+      validators: ModuleInitStruct[],
+      executors: ModuleInitStruct[],
+      fallbacks: ModuleInitStruct[],
+      hooks: ModuleInitStruct[],
       attesters: AddressLike[],
       threshold: BigNumberish
     ],
@@ -451,7 +469,9 @@ export interface Safe7579Launchpad extends BaseContract {
   ): TypedContractMethod<
     [
       safe7579: AddressLike,
-      modules: ModuleInitStruct[],
+      executors: ModuleInitStruct[],
+      fallbacks: ModuleInitStruct[],
+      hooks: ModuleInitStruct[],
       attesters: AddressLike[],
       threshold: BigNumberish
     ],
