@@ -22,7 +22,8 @@
 		"deploy-contracts:sepolia": "forge script --root contracts contracts/script/deploy-contracts.s.sol --account dev --rpc-url $sepolia --broadcast",
 		"fetch-abis": "rm -rf abis/*.json && bun run script/fetch-abis.ts",
 		"typechain": "rm -rf src/contract-types && typechain --target ethers-v6 --out-dir src/contract-types 'abis/**/*.json' 'abis/manual/**/*.json'",
-		"typecheck": "tsc -p tsconfig.json --noEmit"
+		"typecheck": "tsc -p tsconfig.json --noEmit",
+		"prepare": "husky"
 	},
 	"type": "module",
 	"files": [
@@ -50,6 +51,7 @@
 		"consola": "^3.2.3",
 		"dotenv": "^16.4.7",
 		"evm-providers": "^0.5.7",
+		"husky": "^9.1.7",
 		"typechain": "^8.3.2",
 		"vite": "^6.2.0",
 		"vite-plugin-dts": "^4.4.0",
