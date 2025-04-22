@@ -3,39 +3,54 @@ import { type Execution, type PaymasterGetter, type SendOpResult, type Signature
 import { SendopError, UnsupportedEntryPointError } from '@/error'
 import { INTERFACES } from '@/interfaces'
 import { connectEntryPointV08 } from '@/utils'
-import type { Signer } from 'ethers'
+import { concat, type JsonRpcProvider, type Signer } from 'ethers'
 import { SmartAccount, type SmartAccountOptions } from './SmartAccount'
+import { ADDRESS } from '@/addresses'
+import { Simple7702AccountV08__factory, SimpleAccountFactoryV08__factory } from '@/contract-types'
+import { Contract } from 'ethers'
 
-export type Simple7702AccountOptions = SmartAccountOptions & {
+export type SimpleAccountCreationOptions = {
+	salt: string
+	owner: string
+}
+
+export type SimpleAccountOptions = SmartAccountOptions & {
 	signer: Signer
 }
 
-export class Simple7702Account extends SmartAccount {
+export class SimpleAccount extends SmartAccount {
 	public readonly signer: Signer
 
 	static override accountId() {
-		return 'infinitism.Simple7702Account.0.8.0'
+		return 'infinitism.SimpleAccount.0.8.0'
 	}
 
-	constructor(options: Simple7702AccountOptions) {
+	constructor(options: SimpleAccountOptions) {
 		super(options)
 		this.signer = options.signer
 	}
 
-	override connect(address: string): Simple7702Account {
-		return new Simple7702Account({
+	override connect(address: string): SimpleAccount {
+		return new SimpleAccount({
 			...this._options,
 			signer: this.signer,
 			address,
 		})
 	}
 
-	override deploy(creationOptions: any, pmGetter?: PaymasterGetter): Promise<SendOpResult> {
-		throw new Simple7702AccountError('Not supported')
+	static override async computeAccountAddress(client: JsonRpcProvider, creationOptions: any): Promise<string> {
+		const factory = new Contract(ADDRESS.SimpleAccountFactoryV08, INTERFACES.SimpleAccountFactoryV08, client)
+		return await factory['getAddress(address,uint256)'](creationOptions.owner, BigInt(creationOptions.salt))
 	}
 
-	override getInitCode(): string {
-		throw new Simple7702AccountError('Not supported')
+	override getInitCode(creationOptions: SimpleAccountCreationOptions): string {
+		return concat([
+			ADDRESS.SimpleAccountFactoryV08,
+			INTERFACES.SimpleAccountFactoryV08.encodeFunctionData('createAccount', [
+				creationOptions.owner,
+				creationOptions.salt,
+			]),
+		])
 	}
 
 	override getNonceKey(): bigint {
@@ -53,7 +68,7 @@ export class Simple7702Account extends SmartAccount {
 
 		if (executions.length === 1) {
 			const execution = executions[0]
-			return INTERFACES.Simple7702AccountV08.encodeFunctionData('execute', [
+			return INTERFACES.SimpleAccountV08.encodeFunctionData('execute', [
 				execution.to,
 				execution.value,
 				execution.data,
@@ -61,7 +76,7 @@ export class Simple7702Account extends SmartAccount {
 		}
 
 		if (executions.length > 1) {
-			return INTERFACES.Simple7702AccountV08.encodeFunctionData('executeBatch', [
+			return INTERFACES.SimpleAccountV08.encodeFunctionData('executeBatch', [
 				executions.map(execution => ({
 					target: execution.to,
 					value: execution.value,
@@ -70,7 +85,7 @@ export class Simple7702Account extends SmartAccount {
 			])
 		}
 
-		throw new Simple7702AccountError('Simple7702Account.getCallData failed')
+		throw new SimpleAccountError('SimpleAccount.getCallData failed')
 	}
 
 	async getDummySignature(userOp: UserOp) {
@@ -82,21 +97,21 @@ export class Simple7702Account extends SmartAccount {
 			case 'v0.8':
 				return await this.signer.signTypedData(signatureData.domain, signatureData.types, signatureData.values)
 			default:
-				throw new Simple7702AccountError(
-					'Simple7702Account.getSignature failed',
+				throw new SimpleAccountError(
+					'SimpleAccount.getSignature failed',
 					new UnsupportedEntryPointError(signatureData.entryPointVersion),
 				)
 		}
 	}
 
 	protected createError(message: string, cause?: Error): Error {
-		return new Simple7702AccountError(message, cause)
+		return new SimpleAccountError(message, cause)
 	}
 }
 
-export class Simple7702AccountError extends SendopError {
+export class SimpleAccountError extends SendopError {
 	constructor(message: string, cause?: Error) {
 		super(message, cause)
-		this.name = 'Simple7702AccountError'
+		this.name = 'SimpleAccountError'
 	}
 }

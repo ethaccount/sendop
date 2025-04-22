@@ -12,3 +12,4 @@ export type { IERC2612 } from "./IERC2612";
 export type { OwnableValidator } from "./OwnableValidator";
 export type { ScheduledOrders } from "./ScheduledOrders";
 export type { ScheduledTransfers } from "./ScheduledTransfers";
+export type { SimpleAccountV08 } from "./SimpleAccountV08";

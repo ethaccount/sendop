@@ -66,6 +66,8 @@ export type { ScheduledOrders } from "./manual/ScheduledOrders";
 export { ScheduledOrders__factory } from "./factories/manual/ScheduledOrders__factory";
 export type { ScheduledTransfers } from "./manual/ScheduledTransfers";
 export { ScheduledTransfers__factory } from "./factories/manual/ScheduledTransfers__factory";
+export type { SimpleAccountV08 } from "./manual/SimpleAccountV08";
+export { SimpleAccountV08__factory } from "./factories/manual/SimpleAccountV08__factory";
 export { Nexus__factory } from "./factories/Nexus__factory";
 export { NexusBootstrap__factory } from "./factories/NexusBootstrap__factory";
 export { NexusFactory__factory } from "./factories/NexusFactory__factory";

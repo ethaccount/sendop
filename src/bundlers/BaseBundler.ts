@@ -112,7 +112,7 @@ export abstract class BaseBundler implements Bundler {
 				console.log(JSON.stringify(formatUserOpToHex(userOp), null, 2))
 			}
 
-			throw new BaseBundlerError('Failed to send user operation', { cause: err })
+			throw new BaseBundlerError('Send user operation failed', { cause: err })
 		}
 	}
 
@@ -190,7 +190,7 @@ export abstract class BaseBundler implements Bundler {
 				}
 			}
 
-			throw new BaseBundlerError('Failed to estimate gas', { cause: err })
+			throw new BaseBundlerError('Gas estimation failed', { cause: err })
 		}
 
 		return gasValues

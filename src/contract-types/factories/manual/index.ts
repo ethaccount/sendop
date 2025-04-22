@@ -9,3 +9,4 @@ export { IERC2612__factory } from "./IERC2612__factory";
 export { OwnableValidator__factory } from "./OwnableValidator__factory";
 export { ScheduledOrders__factory } from "./ScheduledOrders__factory";
 export { ScheduledTransfers__factory } from "./ScheduledTransfers__factory";
+export { SimpleAccountV08__factory } from "./SimpleAccountV08__factory";
