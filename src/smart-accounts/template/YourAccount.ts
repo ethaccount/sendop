@@ -10,7 +10,7 @@ export type YourCreationOptions = {
 
 export type YourAccountOptions = ModularSmartAccountOptions
 
-export class YourAccount extends ModularSmartAccount {
+export class YourAccount extends ModularSmartAccount<YourCreationOptions> {
 	static override accountId() {
 		return ''
 	}

@@ -10,7 +10,7 @@ export type Simple7702AccountOptions = SmartAccountOptions & {
 	signer: Signer
 }
 
-export class Simple7702Account extends SmartAccount {
+export class Simple7702Account extends SmartAccount<any> {
 	public readonly signer: Signer
 
 	static override accountId() {

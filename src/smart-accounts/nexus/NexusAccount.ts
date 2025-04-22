@@ -20,7 +20,7 @@ export type NexusAccountConfig = {
 	}
 }
 
-export class NexusAccount extends ModularSmartAccount {
+export class NexusAccount extends ModularSmartAccount<NexusCreationOptions> {
 	private readonly _nexusConfig: NexusAccountConfig | undefined
 
 	static override accountId() {

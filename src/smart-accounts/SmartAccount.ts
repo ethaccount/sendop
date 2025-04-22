@@ -12,7 +12,9 @@ export type SmartAccountOptions = {
 	pmGetter?: PaymasterGetter
 }
 
-export abstract class SmartAccount implements OperationGetter {
+export type SmartAccountCreationOptions = Record<string, any>
+
+export abstract class SmartAccount<TCreationOptions extends SmartAccountCreationOptions> implements OperationGetter {
 	protected readonly _options: SmartAccountOptions
 
 	constructor(options: SmartAccountOptions) {
@@ -68,7 +70,11 @@ export abstract class SmartAccount implements OperationGetter {
 		})
 	}
 
-	async deploy(creationOptions: any, pmGetter?: PaymasterGetter, executions?: Execution[]): Promise<SendOpResult> {
+	async deploy(
+		creationOptions: TCreationOptions,
+		pmGetter?: PaymasterGetter,
+		executions?: Execution[],
+	): Promise<SendOpResult> {
 		const computedAddress = await (this.constructor as typeof SmartAccount).computeAccountAddress(
 			this.client,
 			creationOptions,
@@ -85,8 +91,8 @@ export abstract class SmartAccount implements OperationGetter {
 	// Abstract methods that need to be implemented by specific accounts
 	abstract getNonceKey(): bigint
 	abstract getCallData(executions: Execution[]): Promise<string> | string
-	abstract connect(address: string): SmartAccount
-	abstract getInitCode(creationOptions: any): string
+	abstract connect(address: string): SmartAccount<TCreationOptions>
+	abstract getInitCode(creationOptions: TCreationOptions): string
 	abstract getDummySignature(userOp: UserOp): Promise<string> | string
 	abstract getSignature(signatureData: SignatureData): Promise<string> | string
 

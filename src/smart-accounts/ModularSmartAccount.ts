@@ -1,5 +1,5 @@
 import type { ERC7579Validator, SignatureData, UserOp, Execution } from '@/core'
-import { SmartAccount, type SmartAccountOptions } from './SmartAccount'
+import { SmartAccount, type SmartAccountCreationOptions, type SmartAccountOptions } from './SmartAccount'
 import { CallType, ExecType, ModeSelector, encodeExecutions } from '@/core'
 import { isBytes, toBytes32, zeroBytes } from '@/utils'
 import { concat } from 'ethers'
@@ -16,7 +16,9 @@ export type ModularSmartAccountOptions = SmartAccountOptions & {
 	}
 }
 
-export abstract class ModularSmartAccount extends SmartAccount {
+export abstract class ModularSmartAccount<
+	TCreationOptions extends SmartAccountCreationOptions,
+> extends SmartAccount<TCreationOptions> {
 	protected readonly _options: ModularSmartAccountOptions
 
 	constructor(options: ModularSmartAccountOptions) {

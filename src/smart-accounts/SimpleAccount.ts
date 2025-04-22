@@ -1,13 +1,11 @@
+import { ADDRESS } from '@/addresses'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import { type Execution, type PaymasterGetter, type SendOpResult, type SignatureData, type UserOp } from '@/core'
+import { type Execution, type SignatureData, type UserOp } from '@/core'
 import { SendopError, UnsupportedEntryPointError } from '@/error'
 import { INTERFACES } from '@/interfaces'
 import { connectEntryPointV08 } from '@/utils'
-import { concat, type JsonRpcProvider, type Signer } from 'ethers'
+import { concat, Contract, type JsonRpcProvider, type Signer } from 'ethers'
 import { SmartAccount, type SmartAccountOptions } from './SmartAccount'
-import { ADDRESS } from '@/addresses'
-import { Simple7702AccountV08__factory, SimpleAccountFactoryV08__factory } from '@/contract-types'
-import { Contract } from 'ethers'
 
 export type SimpleAccountCreationOptions = {
 	salt: string
@@ -18,7 +16,7 @@ export type SimpleAccountOptions = SmartAccountOptions & {
 	signer: Signer
 }
 
-export class SimpleAccount extends SmartAccount {
+export class SimpleAccount extends SmartAccount<SimpleAccountCreationOptions> {
 	public readonly signer: Signer
 
 	static override accountId() {
@@ -38,13 +36,15 @@ export class SimpleAccount extends SmartAccount {
 		})
 	}
 
-	static override async computeAccountAddress(client: JsonRpcProvider, creationOptions: any): Promise<string> {
-		const factory = new Contract(
-			ADDRESS.SimpleAccountFactoryV08,
-			['function getAddress(address,uint256) view returns (address)'],
-			client,
+	static override async computeAccountAddress(
+		client: JsonRpcProvider,
+		creationOptions: SimpleAccountCreationOptions,
+	): Promise<string> {
+		const factory = new Contract(ADDRESS.SimpleAccountFactoryV08, INTERFACES.SimpleAccountFactoryV08, client)
+		return await factory.getFunction('getAddress(address,uint256)')(
+			creationOptions.owner,
+			BigInt(creationOptions.salt),
 		)
-		return await factory['getAddress(address,uint256)'](creationOptions.owner, BigInt(creationOptions.salt))
 	}
 
 	static override getInitCode(creationOptions: SimpleAccountCreationOptions): string {

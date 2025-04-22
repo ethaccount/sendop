@@ -19,7 +19,7 @@ export type KernelV3AccountConfig = {
 	}
 }
 
-export class KernelV3Account extends ModularSmartAccount {
+export class KernelV3Account extends ModularSmartAccount<KernelCreationOptions> {
 	private readonly _kernelConfig: KernelV3AccountConfig | undefined
 
 	static override accountId() {
@@ -42,6 +42,7 @@ export class KernelV3Account extends ModularSmartAccount {
 	override getInitCode(creationOptions: KernelCreationOptions): string {
 		return KernelV3Account.getInitCode(creationOptions)
 	}
+
 	static getInitCode(creationOptions: KernelCreationOptions) {
 		const { salt } = creationOptions
 		if (!isBytes32(salt)) {

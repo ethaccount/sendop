@@ -23,7 +23,7 @@ export type Safe7579CreationOptions = {
 
 export type Safe7579AccountOptions = ModularSmartAccountOptions
 
-export class Safe7579Account extends ModularSmartAccount {
+export class Safe7579Account extends ModularSmartAccount<Safe7579CreationOptions> {
 	static override accountId() {
 		return 'rhinestone.safe7579.v1.0.0'
 	}
