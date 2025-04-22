@@ -1,13 +1,14 @@
 import { ADDRESS } from '@/addresses'
 import { NexusFactory__factory } from '@/contract-types'
-import { ERC7579_MODULE_TYPE } from '@/core'
+import { CallType, ERC7579_MODULE_TYPE, type BaseInstallModuleConfig } from '@/core'
 import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
-import { abiEncode, zeroBytes, sortAndUniquifyAddresses } from '@/utils'
+import { abiEncode, sortAndUniquifyAddresses, zeroBytes } from '@/utils'
 import type { JsonRpcProvider } from 'ethers'
+import { dataLength, isHexString } from 'ethers'
 import { concat, hexlify } from 'ethers/utils'
 import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
-import { NexusValidationMode, type NexusCreationOptions, type NexusInstallModuleConfig } from './types'
+import { NexusValidationMode, type NexusCreationOptions } from './types'
 
 export type NexusAccountOptions = ModularSmartAccountOptions & NexusAccountConfig
 
@@ -101,16 +102,37 @@ export class NexusAccount extends ModularSmartAccount {
 	}
 
 	override encodeInstallModule(config: NexusInstallModuleConfig): string {
-		let initData: string
+		if (!isHexString(config.initData)) {
+			throw new NexusError('Invalid NexusInstallModuleConfig.initData')
+		}
+		let moduleInitData: string
 		switch (config.moduleType) {
 			case ERC7579_MODULE_TYPE.VALIDATOR:
-				initData = config.initData
+				moduleInitData = config.initData
 				break
-			// TODO: add other module types
+			case ERC7579_MODULE_TYPE.EXECUTOR:
+				moduleInitData = config.initData
+				break
+			case ERC7579_MODULE_TYPE.FALLBACK:
+				if (dataLength(config.functionSig) !== 4) {
+					throw new NexusError('Invalid NexusInstallModuleConfig.functionSig')
+				}
+				if (dataLength(config.callType) !== 1) {
+					throw new NexusError('Invalid NexusInstallModuleConfig.callType')
+				}
+				moduleInitData = concat([config.functionSig, config.callType, config.initData])
+				break
+			case ERC7579_MODULE_TYPE.HOOK:
+				moduleInitData = config.initData
+				break
 			default:
-				throw new NexusError('Unsupported module type')
+				throw new NexusError('Invalid NexusInstallModuleConfig.moduleType')
 		}
-		return INTERFACES.Nexus.encodeFunctionData('installModule', [config.moduleType, config.moduleAddress, initData])
+		return INTERFACES.Nexus.encodeFunctionData('installModule', [
+			config.moduleType,
+			config.moduleAddress,
+			moduleInitData,
+		])
 	}
 
 	protected createError(message: string, cause?: Error) {
@@ -124,3 +146,12 @@ export class NexusError extends SendopError {
 		this.name = 'NexusError'
 	}
 }
+
+export type NexusInstallModuleConfig =
+	| BaseInstallModuleConfig<ERC7579_MODULE_TYPE.VALIDATOR>
+	| BaseInstallModuleConfig<ERC7579_MODULE_TYPE.EXECUTOR>
+	| (BaseInstallModuleConfig<ERC7579_MODULE_TYPE.FALLBACK> & {
+			functionSig: string // 4 bytes
+			callType: CallType // 1 byte
+	  })
+	| BaseInstallModuleConfig<ERC7579_MODULE_TYPE.HOOK>
