@@ -92,7 +92,7 @@ export class Safe7579Account extends ModularSmartAccount {
 		// const computedAddress = getAddress(dataSlice(hash, 12))
 	}
 
-	override getInitCode(creationOptions: Safe7579CreationOptions): string {
+	static override getInitCode(creationOptions: Safe7579CreationOptions): string {
 		return concat([
 			ADDRESS.SafeProxyFactory,
 			INTERFACES.SafeProxyFactory.encodeFunctionData('createProxyWithNonce', [
@@ -101,6 +101,10 @@ export class Safe7579Account extends ModularSmartAccount {
 				creationOptions.salt,
 			]),
 		])
+	}
+
+	override getInitCode(creationOptions: Safe7579CreationOptions): string {
+		return Safe7579Account.getInitCode(creationOptions)
 	}
 
 	override getNonceKey(): bigint {

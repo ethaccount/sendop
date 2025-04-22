@@ -40,15 +40,16 @@ export class NexusAccount extends ModularSmartAccount {
 		})
 	}
 
-	/**
-	 * @returns bytes: factory address + factory calldata
-	 */
-	override getInitCode(creationOptions: NexusCreationOptions): string {
+	static override getInitCode(creationOptions: NexusCreationOptions): string {
 		const factoryCalldata = INTERFACES.NexusFactory.encodeFunctionData('createAccount', [
 			NexusAccount.getInitializeData(creationOptions),
 			creationOptions.salt,
 		])
 		return concat([ADDRESS.NexusFactory, factoryCalldata])
+	}
+
+	override getInitCode(creationOptions: NexusCreationOptions): string {
+		return NexusAccount.getInitCode(creationOptions)
 	}
 
 	static override async computeAccountAddress(client: JsonRpcProvider, creationOptions: NexusCreationOptions) {

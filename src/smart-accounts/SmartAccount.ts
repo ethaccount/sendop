@@ -68,14 +68,14 @@ export abstract class SmartAccount implements OperationGetter {
 		})
 	}
 
-	async deploy(creationOptions: any, pmGetter?: PaymasterGetter): Promise<SendOpResult> {
+	async deploy(creationOptions: any, pmGetter?: PaymasterGetter, executions?: Execution[]): Promise<SendOpResult> {
 		const computedAddress = await (this.constructor as typeof SmartAccount).computeAccountAddress(
 			this.client,
 			creationOptions,
 		)
 		return await sendop({
 			bundler: this.bundler,
-			executions: [],
+			executions: executions ?? [],
 			opGetter: this.connect(computedAddress),
 			pmGetter: pmGetter ?? this.pmGetter,
 			initCode: this.getInitCode(creationOptions),
@@ -97,6 +97,10 @@ export abstract class SmartAccount implements OperationGetter {
 
 	static async computeAccountAddress(client: JsonRpcProvider, creationOptions: any): Promise<string> {
 		throw new SendopError('SmartAccount.computeAccountAddress is not implemented')
+	}
+
+	static getInitCode(creationOptions: any): string {
+		throw new SendopError('SmartAccount.getInitCode is not implemented')
 	}
 
 	protected abstract createError(message: string, cause?: Error): Error

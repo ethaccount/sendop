@@ -43,7 +43,7 @@ export class SimpleAccount extends SmartAccount {
 		return await factory['getAddress(address,uint256)'](creationOptions.owner, BigInt(creationOptions.salt))
 	}
 
-	override getInitCode(creationOptions: SimpleAccountCreationOptions): string {
+	static override getInitCode(creationOptions: SimpleAccountCreationOptions): string {
 		return concat([
 			ADDRESS.SimpleAccountFactoryV08,
 			INTERFACES.SimpleAccountFactoryV08.encodeFunctionData('createAccount', [
@@ -51,6 +51,10 @@ export class SimpleAccount extends SmartAccount {
 				creationOptions.salt,
 			]),
 		])
+	}
+
+	override getInitCode(creationOptions: SimpleAccountCreationOptions): string {
+		return SimpleAccount.getInitCode(creationOptions)
 	}
 
 	override getNonceKey(): bigint {
