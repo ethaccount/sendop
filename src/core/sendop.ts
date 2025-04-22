@@ -34,6 +34,7 @@ export async function createUserOp(options: SendopOptions): Promise<UserOp> {
 	}
 
 	function parseInitCode(initCode: string, entryPointAddress: string): { factory: string; factoryData: string } {
+		// TODO: what's the situation to use 7702 initCode?
 		const isEIP7702InitCode =
 			entryPointAddress === ADDRESS.EntryPointV08 && dataSlice(initCode, 0, 20) === zeroPadRight('0x7702', 20)
 

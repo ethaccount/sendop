@@ -1,80 +1,9 @@
-import { createConsola } from 'consola'
 import { Wallet } from 'ethers'
-import { alchemy } from 'evm-providers'
-import type { Chain } from 'node_modules/evm-providers/dist/providers/alchemy'
 
 import 'dotenv/config'
+import { getBundlerUrl, getEnv, logger } from './cli'
 
-export const logger = createConsola({
-	level: 4,
-})
-
-// 0: Fatal and Error
-// 1: Warnings
-// 2: Normal logs
-// 3: Informational logs, success, fail, ready, start, ...
-// 4: Debug logs
-// 5: Trace logs
-// -999: Silent
-// +999: Verbose logs
-
-// consola.info("Using consola 3.0.0");
-// consola.start("Building project...");
-// consola.warn("A new version of consola is available: 3.0.1");
-// consola.success("Project built!");
-// consola.error(new Error("This is an example error. Everything is fine!"));
-// consola.box("I am a simple box");
-// await consola.prompt("Deploy to the production?", {
-//   type
-
-export function getEnv() {
-	if (!process.env.ALCHEMY_API_KEY) {
-		throw new Error('Missing ALCHEMY_API_KEY')
-	}
-
-	const PRIVATE_KEY = process.env.PRIVATE_KEY
-	const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY
-	const PIMLICO_API_KEY = process.env.PIMLICO_API_KEY
-	const ETHERSPOT_API_KEY = process.env.ETHERSPOT_API_KEY
-	const SALT = process.env.SALT || '0x0000000000000000000000000000000000000000000000000000000000000001'
-	const CHAIN_ID = process.env.CHAIN_ID ? BigInt(process.env.CHAIN_ID) : 1337n
-	const PIMLICO_SPONSORSHIP_POLICY_ID = process.env.PIMLICO_SPONSORSHIP_POLICY_ID
-
-	return {
-		PRIVATE_KEY,
-		ALCHEMY_API_KEY,
-		PIMLICO_API_KEY,
-		ETHERSPOT_API_KEY,
-		SALT,
-		CHAIN_ID,
-		PIMLICO_SPONSORSHIP_POLICY_ID,
-	}
-}
-
-export function getBundlerUrl(chainId: bigint, source: 'pimlico' | 'alchemy' | 'etherspot' = 'pimlico') {
-	const { PIMLICO_API_KEY, ALCHEMY_API_KEY, ETHERSPOT_API_KEY } = getEnv()
-	switch (chainId) {
-		case 1337n:
-			return 'http://localhost:4337'
-		case 11155111n:
-			switch (source) {
-				case 'alchemy':
-					return `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
-			}
-	}
-
-	switch (source) {
-		case 'pimlico':
-			return `https://api.pimlico.io/v2/${chainId}/rpc?apikey=${PIMLICO_API_KEY}`
-		case 'alchemy':
-			return alchemy(Number(chainId) as unknown as Chain, ALCHEMY_API_KEY)
-		case 'etherspot':
-			// 	TODO: v2 only for ep7 and v3 only for ep8 (WTF)
-			return `https://rpc.etherspot.io/v2/${chainId}/?api-key=${ETHERSPOT_API_KEY}`
-	}
-
-	throw new Error(`Failed to get bundler url for chainId: ${chainId} and source: ${source}`)
-}
+// this should be deprecated
 
 export async function setup(options?: { chainId?: bigint }) {
 	const { PRIVATE_KEY, ALCHEMY_API_KEY, PIMLICO_API_KEY, SALT, CHAIN_ID, PIMLICO_SPONSORSHIP_POLICY_ID } = getEnv()
@@ -87,8 +16,6 @@ export async function setup(options?: { chainId?: bigint }) {
 		// Existing network configs
 		if (chainId === 11155111n) {
 			return `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
-		} else if (chainId === 7078815900n) {
-			return 'https://rpc.mekong.ethpandaops.io'
 		}
 		throw new Error('Invalid chainId')
 	}
@@ -98,10 +25,9 @@ export async function setup(options?: { chainId?: bigint }) {
 
 	const CLIENT_URL = getClientUrl(chainId)
 
-	// TODO: Distinguish between Pimlico and Alchemy
 	const BUNDLER_URL = getBundlerUrl(chainId)
-	const PIMLICO_BUNDLER_URL = getBundlerUrl(chainId, 'pimlico')
-	const ALCHEMY_BUNDLER_URL = getBundlerUrl(chainId, 'alchemy')
+	const PIMLICO_BUNDLER_URL = getBundlerUrl(chainId, { type: 'pimlico' })
+	const ALCHEMY_BUNDLER_URL = getBundlerUrl(chainId, { type: 'alchemy' })
 
 	// If using local network, fetch actual chainId from the network
 	let actualChainId = chainId
@@ -150,14 +76,4 @@ export async function setup(options?: { chainId?: bigint }) {
 		account0,
 		account1,
 	}
-}
-
-export function askForChainId() {
-	const defaultChainId = 11155111n
-	const chainIdInput = prompt('Enter chainId (defaults to 11155111):')
-	const chainId =
-		chainIdInput === 's' ? defaultChainId : chainIdInput === 'm' ? 7078815900n : chainIdInput || defaultChainId
-
-	logger.info(`ChainId: ${chainId}`)
-	return BigInt(chainId)
 }

@@ -94,7 +94,7 @@ export class NexusAccount extends ModularSmartAccount {
 					creationOptions.threshold,
 				])
 				break
-			// TODO: add other bootstrap functions
+			// NICE-TO-HAVE: implement other bootstrap functions
 			default:
 				throw new NexusError('Unsupported bootstrap function')
 		}

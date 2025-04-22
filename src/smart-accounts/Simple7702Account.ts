@@ -1,9 +1,9 @@
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
 import { type Execution, type PaymasterGetter, type SendOpResult, type SignatureData, type UserOp } from '@/core'
-import { SendopError } from '@/error'
+import { SendopError, UnsupportedEntryPointError } from '@/error'
+import { INTERFACES } from '@/interfaces'
 import { connectEntryPointV08 } from '@/utils'
 import type { Signer } from 'ethers'
-import { Interface } from 'ethers/abi'
 import { SmartAccount, type SmartAccountOptions } from './SmartAccount'
 
 export type Simple7702AccountOptions = SmartAccountOptions & {
@@ -53,13 +53,24 @@ export class Simple7702Account extends SmartAccount {
 
 		if (executions.length === 1) {
 			const execution = executions[0]
-			return new Interface([
-				'function execute(address target, uint256 value, bytes calldata data)',
-			]).encodeFunctionData('execute', [execution.to, execution.value, execution.data])
+			return INTERFACES.Simple7702AccountV08.encodeFunctionData('execute', [
+				execution.to,
+				execution.value,
+				execution.data,
+			])
 		}
 
-		// TODO: function executeBatch(Call[] calldata calls)
-		throw new Error('Not supported')
+		if (executions.length > 1) {
+			return INTERFACES.Simple7702AccountV08.encodeFunctionData('executeBatch', [
+				executions.map(execution => ({
+					target: execution.to,
+					value: execution.value,
+					data: execution.data,
+				})),
+			])
+		}
+
+		throw new Simple7702Error('Simple7702Account.getCallData failed')
 	}
 
 	async getDummySignature(userOp: UserOp) {
@@ -71,7 +82,10 @@ export class Simple7702Account extends SmartAccount {
 			case 'v0.8':
 				return await this.signer.signTypedData(signatureData.domain, signatureData.types, signatureData.values)
 			default:
-				throw new Simple7702Error('Unsupported entry point version')
+				throw new Simple7702Error(
+					'Simple7702Account.getSignature failed',
+					new UnsupportedEntryPointError(signatureData.entryPointVersion),
+				)
 		}
 	}
 

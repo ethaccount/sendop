@@ -32,8 +32,6 @@ const op = await sendop({
 			value: 0n,
 		},
 	],
-	// TODO: what's the situation to use 7702 initCode?
-	// initCode: zeroPadRight('0x7702', 20),
 	opGetter: new Simple7702Account({
 		address: signer.address,
 		client,

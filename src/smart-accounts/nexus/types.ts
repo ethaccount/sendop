@@ -3,7 +3,6 @@ export enum NexusValidationMode {
 	MODULE_ENABLE = '0x01',
 }
 
-// TODO: add other bootstrap functions
 export type NexusCreationOptions = SingleValidatorCreation
 
 export type SingleValidatorCreation = {

@@ -44,7 +44,7 @@ logger.info('computedAddress:', computedAddress)
 
 const pmGetter = new PimlicoPaymaster({
 	chainId,
-	url: getBundlerUrl(chainId, 'pimlico'),
+	url: getBundlerUrl(chainId),
 	sponsorshipPolicyId: PIMLICO_SPONSORSHIP_POLICY_ID,
 })
 

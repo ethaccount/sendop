@@ -12,6 +12,7 @@ import {
 	getPermissionId,
 	OwnableSmartSessionValidator,
 	SMART_SESSIONS_ENABLE_MODE,
+	WebAuthnValidatorModule,
 } from '@/validators'
 import {
 	concat,
@@ -56,7 +57,7 @@ describe('KernelV3Account', () => {
 	})
 
 	describe('Kerenl deploy and setNumber', () => {
-		let kernel: KernelV3Account
+		let account: KernelV3Account
 		let creationOptions: KernelCreationOptions
 		let deployedAddress: string
 
@@ -74,7 +75,7 @@ describe('KernelV3Account', () => {
 		})
 
 		it('should deploy the contract', async () => {
-			kernel = new KernelV3Account({
+			account = new KernelV3Account({
 				address: deployedAddress,
 				client,
 				bundler,
@@ -82,7 +83,7 @@ describe('KernelV3Account', () => {
 				pmGetter,
 			})
 
-			const op = await kernel.deploy(creationOptions)
+			const op = await account.deploy(creationOptions)
 			await op.wait()
 			const code = await client.getCode(deployedAddress)
 			expect(code).not.toBe('0x')
@@ -90,7 +91,7 @@ describe('KernelV3Account', () => {
 
 		it('should setNumber', async () => {
 			const number = Math.floor(Math.random() * 1000000)
-			const op = await kernel.send([
+			const op = await account.send([
 				{
 					to: ADDRESS.Counter,
 					data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
@@ -102,6 +103,47 @@ describe('KernelV3Account', () => {
 			expect(toNumber(log?.data ?? 0)).toBe(number)
 		}, 100_000)
 
+		it('should setNumber with batch execution', async () => {
+			const op = await account.send([
+				{
+					to: ADDRESS.Counter,
+					data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [
+						Math.floor(Math.random() * 1000000),
+					]),
+					value: 0n,
+				},
+				{
+					to: ADDRESS.Counter,
+					data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [
+						Math.floor(Math.random() * 1000000),
+					]),
+					value: 0n,
+				},
+			])
+			const receipt = await op.wait()
+			expect(receipt.success).toBe(true)
+		}, 100_000)
+
+		it('should install WebAuthnValidatorModule', async () => {
+			const op = await account.send([
+				{
+					to: deployedAddress,
+					data: account.encodeInstallModule({
+						moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
+						moduleAddress: ADDRESS.WebAuthnValidator,
+						validatorData: WebAuthnValidatorModule.getInitData({
+							pubKeyX: BigInt(randomBytes32()),
+							pubKeyY: BigInt(randomBytes32()),
+							authenticatorIdHash: randomBytes32(),
+						}),
+					}),
+					value: 0n,
+				},
+			])
+			const receipt = await op.wait()
+			expect(receipt.success).toBe(true)
+		}, 100_000)
+
 		it('should deploy and setNumber in one transaction', async () => {
 			const number = Math.floor(Math.random() * 1000000)
 
@@ -111,7 +153,7 @@ describe('KernelV3Account', () => {
 				validatorInitData: signer.address,
 			}
 			const computedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
-			const kernel = new KernelV3Account({
+			const account = new KernelV3Account({
 				address: computedAddress,
 				client,
 				bundler,
@@ -121,7 +163,7 @@ describe('KernelV3Account', () => {
 
 			const op = await sendop({
 				bundler,
-				opGetter: kernel,
+				opGetter: account,
 				pmGetter,
 				initCode: KernelV3Account.getInitCode(creationOptions),
 				executions: [
@@ -200,7 +242,7 @@ describe('KernelV3Account', () => {
 		})
 
 		it('should schedule transfers', async () => {
-			const kernel = new KernelV3Account({
+			const account = new KernelV3Account({
 				address: deployedAddress,
 				client,
 				bundler,
@@ -251,8 +293,8 @@ describe('KernelV3Account', () => {
 						}),
 					},
 				],
-				opGetter: kernel,
-				initCode: kernel.getInitCode(creationOptions), // create account
+				opGetter: account,
+				initCode: account.getInitCode(creationOptions), // create account
 				pmGetter,
 			})
 			const receipt = await op.wait()
@@ -260,7 +302,7 @@ describe('KernelV3Account', () => {
 		}, 100_000)
 
 		it('should execute the scheduled transfers', async () => {
-			const kernel = new KernelV3Account({
+			const account = new KernelV3Account({
 				address: deployedAddress,
 				client,
 				bundler,
@@ -275,7 +317,7 @@ describe('KernelV3Account', () => {
 			})
 
 			const jobId = 1
-			const op = await kernel.send([
+			const op = await account.send([
 				{
 					to: ADDRESS.ScheduledTransfers,
 					value: 0n,

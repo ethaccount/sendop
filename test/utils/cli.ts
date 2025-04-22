@@ -1,15 +1,23 @@
+import { AlchemyBundler, EtherspotBundler, PimlicoBundler } from '@/bundlers'
 import type { BundlerOptions } from '@/bundlers/BaseBundler'
+import type { Bundler } from '@/core'
+import { createConsola } from 'consola'
 import { JsonRpcProvider, Wallet } from 'ethers'
+import { alchemy } from 'node_modules/evm-providers/dist/providers'
+import type { Chain } from 'node_modules/evm-providers/dist/providers/alchemy'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { AlchemyBundler, EtherspotBundler, PimlicoBundler, type Bundler } from '../../src'
-import { getBundlerUrl, logger } from '../utils'
+
+export const logger = createConsola({
+	level: 4, // Debug logs
+})
 
 interface YargsOptions {
 	'rpc-url': string
 	'private-key': string
 	bundler: 'pimlico' | 'alchemy' | 'etherspot'
 	address: string
+	entryPoint: '07' | '08'
 }
 
 interface SetupResult {
@@ -20,7 +28,7 @@ interface SetupResult {
 	bundler: Bundler
 }
 
-type OptionAlias = 'r' | 'p' | 'b' | 'a'
+type OptionAlias = 'r' | 'p' | 'b' | 'a' | 'e'
 
 /**
  * Sets up yargs with dynamic options and returns web3 objects
@@ -63,7 +71,15 @@ export async function setupCLI(
 			option: 'address',
 			type: 'string',
 			description: 'Address',
-			demandOption: true,
+			demandOption: false,
+		},
+		e: {
+			option: 'entryPoint',
+			type: 'string',
+			description: 'EntryPoint version',
+			choices: ['07', '08'] as const,
+			demandOption: false,
+			default: '07',
 		},
 	} as const
 
@@ -90,23 +106,36 @@ export async function setupCLI(
 
 	let bundler: Bundler
 
+	let bundlerUrl: string
 	switch (argv.bundler) {
 		case 'pimlico':
-			bundler = new PimlicoBundler(chainId, getBundlerUrl(chainId, 'pimlico'), options?.bundlerOptions)
+			bundlerUrl = getBundlerUrl(chainId, { type: 'pimlico' })
+			bundler = new PimlicoBundler(chainId, bundlerUrl, options?.bundlerOptions)
 			break
 		case 'alchemy':
-			bundler = new AlchemyBundler(chainId, getBundlerUrl(chainId, 'alchemy'), options?.bundlerOptions)
+			bundlerUrl = getBundlerUrl(chainId, { type: 'alchemy' })
+			bundler = new AlchemyBundler(chainId, bundlerUrl, options?.bundlerOptions)
 			break
 		case 'etherspot':
-			bundler = new EtherspotBundler(chainId, getBundlerUrl(chainId, 'etherspot'), options?.bundlerOptions)
+			switch (argv.entryPoint) {
+				case '07':
+					bundlerUrl = getBundlerUrl(chainId, { type: 'etherspot', version: 'v2' })
+					bundler = new EtherspotBundler(chainId, bundlerUrl, options?.bundlerOptions)
+					break
+				case '08':
+					bundlerUrl = getBundlerUrl(chainId, { type: 'etherspot', version: 'v3' })
+					bundler = new EtherspotBundler(chainId, bundlerUrl, options?.bundlerOptions)
+					break
+			}
 			break
 		default:
-			bundler = new PimlicoBundler(chainId, getBundlerUrl(chainId, 'pimlico'), options?.bundlerOptions)
+			bundlerUrl = getBundlerUrl(chainId, { type: 'pimlico' })
+			bundler = new PimlicoBundler(chainId, bundlerUrl, options?.bundlerOptions)
 			break
 	}
 
 	if (optionAliases.includes('b')) {
-		logger.info(`bundler: ${argv.bundler}, url: ${getBundlerUrl(chainId, argv.bundler)}`)
+		logger.info(`bundler: ${argv.bundler}, url: ${bundlerUrl}`)
 	}
 
 	return {
@@ -115,5 +144,52 @@ export async function setupCLI(
 		chainId,
 		signer,
 		bundler,
+	}
+}
+
+type BundlerSource = { type: 'pimlico' } | { type: 'alchemy' } | { type: 'etherspot'; version: 'v2' | 'v3' }
+
+export function getBundlerUrl(chainId: bigint, source: BundlerSource = { type: 'pimlico' }) {
+	const { PIMLICO_API_KEY, ALCHEMY_API_KEY, ETHERSPOT_API_KEY } = getEnv()
+	switch (chainId) {
+		case 1337n:
+			return 'http://localhost:4337'
+		case 11155111n:
+			if (source.type === 'alchemy') {
+				return `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
+			}
+	}
+
+	switch (source.type) {
+		case 'pimlico':
+			return `https://api.pimlico.io/v2/${chainId}/rpc?apikey=${PIMLICO_API_KEY}`
+		case 'alchemy':
+			return alchemy(Number(chainId) as unknown as Chain, ALCHEMY_API_KEY)
+		case 'etherspot':
+			return `https://rpc.etherspot.io/${source.version}/${chainId}/?api-key=${ETHERSPOT_API_KEY}`
+	}
+}
+
+export function getEnv() {
+	if (!process.env.ALCHEMY_API_KEY) {
+		throw new Error('Missing ALCHEMY_API_KEY')
+	}
+
+	const PRIVATE_KEY = process.env.PRIVATE_KEY
+	const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY
+	const PIMLICO_API_KEY = process.env.PIMLICO_API_KEY
+	const ETHERSPOT_API_KEY = process.env.ETHERSPOT_API_KEY
+	const SALT = process.env.SALT || '0x0000000000000000000000000000000000000000000000000000000000000001'
+	const CHAIN_ID = process.env.CHAIN_ID ? BigInt(process.env.CHAIN_ID) : 1337n
+	const PIMLICO_SPONSORSHIP_POLICY_ID = process.env.PIMLICO_SPONSORSHIP_POLICY_ID
+
+	return {
+		PRIVATE_KEY,
+		ALCHEMY_API_KEY,
+		PIMLICO_API_KEY,
+		ETHERSPOT_API_KEY,
+		SALT,
+		CHAIN_ID,
+		PIMLICO_SPONSORSHIP_POLICY_ID,
 	}
 }

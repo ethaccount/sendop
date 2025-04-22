@@ -1,8 +1,8 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
-import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
-import { PublicPaymaster } from '@/index'
+import { ERC7579_MODULE_TYPE, sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
+import { PublicPaymaster, WebAuthnValidatorModule } from '@/index'
 import { randomBytes32 } from '@/utils'
 import { OwnableValidator } from '@/validators/OwnableValidator'
 import { Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
@@ -37,7 +37,7 @@ describe('NexusAccount', () => {
 	describe('Deploy Nexus and setNumber', () => {
 		let account: NexusAccount
 		let creationOptions: NexusCreationOptions
-		let deployedAddress: string
+		let computedAddress: string
 
 		beforeAll(async () => {
 			creationOptions = {
@@ -52,13 +52,13 @@ describe('NexusAccount', () => {
 		})
 
 		it('should computeAccountAddress', async () => {
-			deployedAddress = await NexusAccount.computeAccountAddress(client, creationOptions)
-			expect(deployedAddress).not.toBe('0x0000000000000000000000000000000000000000')
+			computedAddress = await NexusAccount.computeAccountAddress(client, creationOptions)
+			expect(computedAddress).not.toBe('0x0000000000000000000000000000000000000000')
 		})
 
 		it('should deploy the contract', async () => {
 			account = new NexusAccount({
-				address: deployedAddress,
+				address: computedAddress,
 				client,
 				bundler,
 				validator,
@@ -67,7 +67,7 @@ describe('NexusAccount', () => {
 
 			const op = await account.deploy(creationOptions)
 			await op.wait()
-			const code = await client.getCode(deployedAddress)
+			const code = await client.getCode(computedAddress)
 			expect(code).not.toBe('0x')
 		}, 100_000)
 
@@ -83,6 +83,47 @@ describe('NexusAccount', () => {
 			const receipt = await op.wait()
 			const log = receipt.logs.find(log => log.address === ADDRESS.Counter)
 			expect(toNumber(log?.data ?? 0)).toBe(number)
+		}, 100_000)
+
+		it('should setNumber with batch execution', async () => {
+			const op = await account.send([
+				{
+					to: ADDRESS.Counter,
+					data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [
+						Math.floor(Math.random() * 1000000),
+					]),
+					value: 0n,
+				},
+				{
+					to: ADDRESS.Counter,
+					data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [
+						Math.floor(Math.random() * 1000000),
+					]),
+					value: 0n,
+				},
+			])
+			const receipt = await op.wait()
+			expect(receipt.success).toBe(true)
+		}, 100_000)
+
+		it('should install WebAuthnValidatorModule', async () => {
+			const op = await account.send([
+				{
+					to: computedAddress,
+					data: account.encodeInstallModule({
+						moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
+						moduleAddress: ADDRESS.WebAuthnValidator,
+						initData: WebAuthnValidatorModule.getInitData({
+							pubKeyX: BigInt(randomBytes32()),
+							pubKeyY: BigInt(randomBytes32()),
+							authenticatorIdHash: randomBytes32(),
+						}),
+					}),
+					value: 0n,
+				},
+			])
+			const receipt = await op.wait()
+			expect(receipt.success).toBe(true)
 		}, 100_000)
 
 		it('should deploy and setNumber in one transaction', async () => {
@@ -124,8 +165,5 @@ describe('NexusAccount', () => {
 			const log = receipt.logs.find(log => log.address === ADDRESS.Counter)
 			expect(toNumber(log?.data ?? 0)).toBe(number)
 		}, 100_000)
-
-		// TODO: test batch execution
-		// TODO: test install module
 	})
 })

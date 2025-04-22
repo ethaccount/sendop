@@ -44,7 +44,6 @@ export class OwnableValidator extends ERC7579Validator {
 		return abiEncode(['uint256', 'address[]'], [threshold, signers])
 	}
 
-	// TODO: check if this is correct
 	static getDeInitData(): string {
 		return '0x'
 	}
