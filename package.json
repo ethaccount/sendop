@@ -23,7 +23,7 @@
 		"fetch-abis": "rm -rf abis/*.json && bun run script/fetch-abis.ts",
 		"typechain": "rm -rf src/contract-types && typechain --target ethers-v6 --out-dir src/contract-types 'abis/**/*.json' 'abis/manual/**/*.json'",
 		"typecheck": "tsc -p tsconfig.json --noEmit",
-		"prepare": "husky"
+		"prepare": "bun husky"
 	},
 	"type": "module",
 	"files": [
