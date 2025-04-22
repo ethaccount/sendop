@@ -74,6 +74,10 @@ export class Simple7702Account extends SmartAccount {
 				throw new Simple7702Error('Unsupported entry point version')
 		}
 	}
+
+	protected createError(message: string, cause?: Error): Error {
+		return new Simple7702Error(message, cause)
+	}
 }
 
 export class Simple7702Error extends SendopError {

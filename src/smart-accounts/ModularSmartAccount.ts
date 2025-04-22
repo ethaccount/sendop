@@ -92,6 +92,4 @@ export abstract class ModularSmartAccount extends SmartAccount {
 	 * @returns Encoded calldata for module installation
 	 */
 	abstract encodeInstallModule(config: any): string
-
-	protected abstract createError(message: string, cause?: Error): Error
 }

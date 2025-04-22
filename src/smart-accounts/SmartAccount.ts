@@ -1,7 +1,8 @@
+import { ADDRESS } from '@/addresses'
 import type { Bundler, Execution, OperationGetter, PaymasterGetter, SendOpResult, SignatureData, UserOp } from '@/core'
 import { sendop } from '@/core'
-import { SendopError } from '@/error'
-import { connectEntryPointV07 } from '@/utils'
+import { SendopError, UnsupportedEntryPointError } from '@/error'
+import { connectEntryPointV07, connectEntryPointV08 } from '@/utils'
 import { type JsonRpcProvider } from 'ethers'
 
 export type SmartAccountOptions = {
@@ -37,13 +38,25 @@ export abstract class SmartAccount implements OperationGetter {
 
 	async getSender(): Promise<string> {
 		if (!this.address) {
-			throw new NoAddressAccountError()
+			throw this.createError(
+				'SmartAccount.getSender failed. Account has no address, set it in the constructor options or call SmartAccount.connect(address) first',
+			)
 		}
 		return this.address
 	}
 
 	async getNonce(): Promise<bigint> {
-		return await connectEntryPointV07(this.client).getNonce(await this.getSender(), this.getNonceKey())
+		switch (this.bundler.entryPointAddress) {
+			case ADDRESS.EntryPointV07:
+				return await connectEntryPointV07(this.client).getNonce(await this.getSender(), this.getNonceKey())
+			case ADDRESS.EntryPointV08:
+				return await connectEntryPointV08(this.client).getNonce(await this.getSender(), this.getNonceKey())
+			default:
+				throw this.createError(
+					'getNonce failed',
+					new UnsupportedEntryPointError(this.bundler.entryPointAddress),
+				)
+		}
 	}
 
 	async send(executions: Execution[], pmGetter?: PaymasterGetter): Promise<SendOpResult> {
@@ -79,24 +92,12 @@ export abstract class SmartAccount implements OperationGetter {
 
 	// Static methods
 	static accountId(): string {
-		throw new NoImplementationError('accountId')
+		throw new SendopError('SmartAccount.accountId is not implemented')
 	}
 
 	static async computeAccountAddress(client: JsonRpcProvider, creationOptions: any): Promise<string> {
-		throw new NoImplementationError('computeAccountAddress')
+		throw new SendopError('SmartAccount.computeAccountAddress is not implemented')
 	}
-}
 
-export class NoImplementationError extends SendopError {
-	constructor(functionName: string) {
-		super(`static method - ${functionName} is not implemented`)
-		this.name = 'NoImplementationError'
-	}
-}
-
-export class NoAddressAccountError extends SendopError {
-	constructor(cause?: Error) {
-		super('account has no address, set it in the constructor options or call connect(address) first', cause)
-		this.name = 'NoAddressAccountError'
-	}
+	protected abstract createError(message: string, cause?: Error): Error
 }
