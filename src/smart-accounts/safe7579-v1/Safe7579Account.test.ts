@@ -41,7 +41,6 @@ describe('Safe7579Account', () => {
 	})
 
 	describe('Deploy and setNumber', () => {
-		let account: Safe7579Account
 		let creationOptions: Safe7579CreationOptions
 		let deployedAddress: string
 

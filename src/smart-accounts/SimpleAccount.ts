@@ -39,7 +39,11 @@ export class SimpleAccount extends SmartAccount {
 	}
 
 	static override async computeAccountAddress(client: JsonRpcProvider, creationOptions: any): Promise<string> {
-		const factory = new Contract(ADDRESS.SimpleAccountFactoryV08, INTERFACES.SimpleAccountFactoryV08, client)
+		const factory = new Contract(
+			ADDRESS.SimpleAccountFactoryV08,
+			['function getAddress(address,uint256) view returns (address)'],
+			client,
+		)
 		return await factory['getAddress(address,uint256)'](creationOptions.owner, BigInt(creationOptions.salt))
 	}
 
@@ -48,7 +52,7 @@ export class SimpleAccount extends SmartAccount {
 			ADDRESS.SimpleAccountFactoryV08,
 			INTERFACES.SimpleAccountFactoryV08.encodeFunctionData('createAccount', [
 				creationOptions.owner,
-				creationOptions.salt,
+				BigInt(creationOptions.salt),
 			]),
 		])
 	}
