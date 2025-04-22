@@ -1,7 +1,6 @@
-import type { Execution, PaymasterGetter, SendOpResult } from '@/core'
+import { SendopError } from '@/error'
 import type { JsonRpcProvider } from 'ethers'
 import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
-import { SendopError } from '@/error'
 
 export type YourCreationOptions = {
 	salt: string

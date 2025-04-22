@@ -1,9 +1,7 @@
 import { defineConfig } from 'vite'
 import path from 'path'
 import dts from 'vite-plugin-dts'
-import pkg from './package.json'
-
-const libName = pkg.name
+import { visualizer } from 'rollup-plugin-visualizer'
 
 export default defineConfig({
 	resolve: {
@@ -16,16 +14,32 @@ export default defineConfig({
 			rollupTypes: false,
 			include: ['src/**/*.ts'],
 		}),
+		visualizer({
+			open: false,
+			gzipSize: true,
+			brotliSize: true,
+			template: 'treemap', // or 'sunburst', 'network'
+		}),
 	],
 	build: {
 		sourcemap: true,
 		lib: {
-			entry: path.resolve(__dirname, 'src/index.ts'),
-			name: libName,
-			formats: ['es', 'umd'],
-			fileName: 'index',
+			entry: {
+				index: 'src/index.ts',
+				'contract-types': 'src/contract-types/index.ts',
+			},
+			formats: ['es'], // only ES modules
+			fileName: (_format, entryName) => `${entryName}.js`,
 		},
 		outDir: 'dist',
+		rollupOptions: {
+			external: ['ethers'],
+			output: {
+				globals: {
+					ethers: 'ethers',
+				},
+			},
+		},
 	},
 })
 
