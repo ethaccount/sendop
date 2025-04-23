@@ -1,15 +1,20 @@
 import { ADDRESS } from '@/addresses'
 import { Safe7579Launchpad__factory, SafeProxyFactory__factory } from '@/contract-types'
+import type { CallType } from '@/core/erc7579'
+import { ERC7579_MODULE_TYPE } from '@/core/erc7579'
 import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
 import { abiEncode, sortAndUniquifyAddresses, zeroPadRight } from '@/utils'
 import type { JsonRpcProvider } from 'ethers'
+import { dataLength } from 'ethers'
 import { ZeroAddress } from 'ethers/constants'
 import { concat, isHexString } from 'ethers/utils'
-import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
-import { ERC7579_MODULE_TYPE } from '@/core/erc7579'
-import type { BaseInstallModuleConfig, CallType } from '@/core/erc7579'
-import { dataLength } from 'ethers'
+import {
+	ModularSmartAccount,
+	type ModularSmartAccountOptions,
+	type SimpleInstallModuleConfig,
+	type SimpleUninstallModuleConfig,
+} from '../ModularSmartAccount'
 
 export type Safe7579CreationOptions = {
 	salt: string
@@ -111,11 +116,13 @@ export class Safe7579Account extends ModularSmartAccount<Safe7579CreationOptions
 		return BigInt(zeroPadRight(this._options.validator.address(), 24))
 	}
 
-	override encodeInstallModule(config: Safe7579InstallModuleConfig): string {
+	static override encodeInstallModule(config: Safe7579InstallModuleConfig): string {
 		if (!isHexString(config.initData)) {
 			throw new Safe7579Error('Invalid Safe7579InstallModuleConfig.initData')
 		}
+
 		let moduleInitData: string
+
 		switch (config.moduleType) {
 			case ERC7579_MODULE_TYPE.VALIDATOR:
 				moduleInitData = config.initData
@@ -155,6 +162,35 @@ export class Safe7579Account extends ModularSmartAccount<Safe7579CreationOptions
 		])
 	}
 
+	static override encodeUninstallModule(config: Safe7579UninstallModuleConfig): string {
+		if (!isHexString(config.deInitData)) {
+			throw new Safe7579Error('Invalid Safe7579UninstallModuleConfig.deInitData')
+		}
+
+		let moduleDeInitData: string
+
+		switch (config.moduleType) {
+			case ERC7579_MODULE_TYPE.VALIDATOR:
+				moduleDeInitData = abiEncode(['address', 'bytes'], [config.prev, config.deInitData])
+				break
+			case ERC7579_MODULE_TYPE.EXECUTOR:
+				moduleDeInitData = abiEncode(['address', 'bytes'], [config.prev, config.deInitData])
+				break
+			case ERC7579_MODULE_TYPE.FALLBACK:
+				moduleDeInitData = concat([config.functionSig, config.deInitData])
+				break
+			case ERC7579_MODULE_TYPE.HOOK:
+				moduleDeInitData = config.deInitData
+				break
+		}
+
+		return INTERFACES.ISafe7579.encodeFunctionData('uninstallModule', [
+			config.moduleType,
+			config.moduleAddress,
+			moduleDeInitData,
+		])
+	}
+
 	protected createError(message: string, cause?: Error) {
 		return new Safe7579Error(message, cause)
 	}
@@ -168,13 +204,13 @@ export class Safe7579Error extends SendopError {
 }
 
 export type Safe7579InstallModuleConfig =
-	| BaseInstallModuleConfig<ERC7579_MODULE_TYPE.VALIDATOR>
-	| BaseInstallModuleConfig<ERC7579_MODULE_TYPE.EXECUTOR>
-	| (BaseInstallModuleConfig<ERC7579_MODULE_TYPE.FALLBACK> & {
+	| SimpleInstallModuleConfig<ERC7579_MODULE_TYPE.VALIDATOR>
+	| SimpleInstallModuleConfig<ERC7579_MODULE_TYPE.EXECUTOR>
+	| (SimpleInstallModuleConfig<ERC7579_MODULE_TYPE.FALLBACK> & {
 			functionSig: string // 4 bytes
 			callType: CallType // 1 byte
 	  })
-	| (BaseInstallModuleConfig<ERC7579_MODULE_TYPE.HOOK> & {
+	| (SimpleInstallModuleConfig<ERC7579_MODULE_TYPE.HOOK> & {
 			hookType: Safe7579HookType // 1 byte
 			selector: string // 4 bytes
 	  })
@@ -183,3 +219,15 @@ export enum Safe7579HookType {
 	GLOBAL = '0x00',
 	SIG = '0x01',
 }
+
+export type Safe7579UninstallModuleConfig =
+	| (SimpleUninstallModuleConfig<ERC7579_MODULE_TYPE.VALIDATOR> & {
+			prev: string // address
+	  })
+	| (SimpleUninstallModuleConfig<ERC7579_MODULE_TYPE.EXECUTOR> & {
+			prev: string // address
+	  })
+	| (SimpleUninstallModuleConfig<ERC7579_MODULE_TYPE.FALLBACK> & {
+			functionSig: string // 4 bytes
+	  })
+	| SimpleUninstallModuleConfig<ERC7579_MODULE_TYPE.HOOK>

@@ -4,8 +4,12 @@ import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
 import { abiEncode, connectEntryPointV07, isBytes, isBytes32, zeroBytes } from '@/utils'
 import { concat, Contract, hexlify, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
-import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
-import type { KernelCreationOptions, KernelInstallModuleConfig, SimpleKernelInstallModuleConfig } from './types'
+import {
+	ModularSmartAccount,
+	type ModularSmartAccountOptions,
+	type SimpleInstallModuleConfig,
+} from '../ModularSmartAccount'
+import type { KernelCreationOptions, KernelInstallModuleConfig, KernelUninstallModuleConfig } from './types'
 import { KernelValidationMode, KernelValidationType } from './types'
 
 export type KernelV3AccountOptions = ModularSmartAccountOptions & KernelV3AccountConfig
@@ -132,10 +136,7 @@ export class KernelV3Account extends ModularSmartAccount<KernelCreationOptions> 
 		])
 	}
 
-	override encodeInstallModule(config: KernelInstallModuleConfig): string {
-		return KernelV3Account.encodeInstallModule(config)
-	}
-	static encodeInstallModule(config: KernelInstallModuleConfig): string {
+	static override encodeInstallModule(config: KernelInstallModuleConfig): string {
 		let initData: string
 
 		switch (config.moduleType) {
@@ -148,7 +149,7 @@ export class KernelV3Account extends ModularSmartAccount<KernelCreationOptions> 
 
 					initData = concat([
 						hookAddress,
-						abiEncode(['bytes', 'bytes', 'bytes'], [config.validatorData, hookData, selectorData]),
+						abiEncode(['bytes', 'bytes', 'bytes'], [config.initData, hookData, selectorData]),
 					])
 				}
 				break
@@ -158,7 +159,7 @@ export class KernelV3Account extends ModularSmartAccount<KernelCreationOptions> 
 					// default values
 					const hookAddress = config.hookAddress ?? ZeroAddress
 					const hookData = config.hookData ?? '0x'
-					initData = concat([hookAddress, abiEncode(['bytes', 'bytes'], [config.executorData, hookData])])
+					initData = concat([hookAddress, abiEncode(['bytes', 'bytes'], [config.initData, hookData])])
 				}
 				break
 
@@ -171,7 +172,7 @@ export class KernelV3Account extends ModularSmartAccount<KernelCreationOptions> 
 				break
 
 			case ERC7579_MODULE_TYPE.HOOK:
-				initData = (config as SimpleKernelInstallModuleConfig<ERC7579_MODULE_TYPE.HOOK>).initData
+				initData = config.initData
 				break
 
 			default:
@@ -182,6 +183,25 @@ export class KernelV3Account extends ModularSmartAccount<KernelCreationOptions> 
 			config.moduleType,
 			config.moduleAddress,
 			initData,
+		])
+	}
+
+	static override encodeUninstallModule(config: KernelUninstallModuleConfig): string {
+		let deInitData: string
+		switch (config.moduleType) {
+			case ERC7579_MODULE_TYPE.VALIDATOR:
+				deInitData = config.deInitData
+				break
+
+			case ERC7579_MODULE_TYPE.EXECUTOR:
+				deInitData = config.deInitData
+				break
+		}
+
+		return INTERFACES.KernelV3.encodeFunctionData('uninstallModule', [
+			config.moduleType,
+			config.moduleAddress,
+			deInitData,
 		])
 	}
 

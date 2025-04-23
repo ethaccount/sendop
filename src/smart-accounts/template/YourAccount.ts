@@ -26,6 +26,10 @@ export class YourAccount extends ModularSmartAccount<YourCreationOptions> {
 		})
 	}
 
+	override getNonceKey(): bigint {
+		return 0n
+	}
+
 	static override async computeAccountAddress(client: JsonRpcProvider, creationOptions: YourCreationOptions) {
 		return ''
 	}
@@ -34,11 +38,15 @@ export class YourAccount extends ModularSmartAccount<YourCreationOptions> {
 		return ''
 	}
 
-	override getNonceKey(): bigint {
-		return 0n
+	static override getInitCode(creationOptions: any): string {
+		return ''
 	}
 
-	override encodeInstallModule(config: any): string {
+	static override encodeInstallModule(config: any): string {
+		return ''
+	}
+
+	static override encodeUninstallModule(config: any): string {
 		return ''
 	}
 

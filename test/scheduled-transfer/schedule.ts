@@ -161,7 +161,7 @@ const op = await sendop({
 			data: KernelV3Account.encodeInstallModule({
 				moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 				moduleAddress: ADDRESS.SmartSession,
-				validatorData: smartSessionInitData,
+				initData: smartSessionInitData,
 				selectorData: INTERFACES.KernelV3.getFunction('execute').selector,
 			}),
 		},
@@ -172,7 +172,7 @@ const op = await sendop({
 			data: KernelV3Account.encodeInstallModule({
 				moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
 				moduleAddress: ADDRESS.ScheduledTransfers,
-				executorData: scheduledTransfersInitData,
+				initData: scheduledTransfersInitData,
 			}),
 		},
 	],

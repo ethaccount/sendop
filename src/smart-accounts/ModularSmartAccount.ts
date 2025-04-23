@@ -1,9 +1,10 @@
-import type { ERC7579Validator, SignatureData, UserOp, Execution } from '@/core'
-import { SmartAccount, type SmartAccountCreationOptions, type SmartAccountOptions } from './SmartAccount'
+import type { ERC7579Validator, ERC7579_MODULE_TYPE, Execution, SignatureData, UserOp } from '@/core'
 import { CallType, ExecType, ModeSelector, encodeExecutions } from '@/core'
+import { SendopError } from '@/error'
+import { INTERFACES } from '@/interfaces'
 import { isBytes, toBytes32, zeroBytes } from '@/utils'
 import { concat } from 'ethers'
-import { INTERFACES } from '@/interfaces'
+import { SmartAccount, type SmartAccountCreationOptions, type SmartAccountOptions } from './SmartAccount'
 
 export type ModularSmartAccountOptions = SmartAccountOptions & {
 	validator: ERC7579Validator
@@ -88,10 +89,24 @@ export abstract class ModularSmartAccount<
 		}
 	}
 
-	/**
-	 * Encodes the calldata for installing a module
-	 * @param config Module installation configuration
-	 * @returns Encoded calldata for module installation
-	 */
-	abstract encodeInstallModule(config: any): string
+	static encodeInstallModule(config: BaseModuleConfig<ERC7579_MODULE_TYPE>): string {
+		throw new SendopError('ModularSmartAccount.encodeInstallModule is not implemented')
+	}
+
+	static encodeUninstallModule(config: BaseModuleConfig<ERC7579_MODULE_TYPE>): string {
+		throw new SendopError('ModularSmartAccount.encodeUninstallModule is not implemented')
+	}
+}
+
+export type BaseModuleConfig<T extends ERC7579_MODULE_TYPE> = {
+	moduleType: T
+	moduleAddress: string
+}
+
+export type SimpleInstallModuleConfig<T extends ERC7579_MODULE_TYPE> = BaseModuleConfig<T> & {
+	initData: string
+}
+
+export type SimpleUninstallModuleConfig<T extends ERC7579_MODULE_TYPE> = BaseModuleConfig<T> & {
+	deInitData: string
 }

@@ -21,7 +21,6 @@ export abstract class SmartAccount<TCreationOptions extends SmartAccountCreation
 		this._options = options
 	}
 
-	// Common getters
 	get address(): string | undefined {
 		return this._options.address
 	}

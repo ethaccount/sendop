@@ -1,13 +1,18 @@
 import { ADDRESS } from '@/addresses'
 import { NexusFactory__factory } from '@/contract-types'
-import { CallType, ERC7579_MODULE_TYPE, type BaseInstallModuleConfig } from '@/core'
+import { CallType, ERC7579_MODULE_TYPE } from '@/core'
 import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
 import { abiEncode, sortAndUniquifyAddresses, zeroBytes } from '@/utils'
 import type { JsonRpcProvider } from 'ethers'
 import { dataLength, isHexString } from 'ethers'
 import { concat, hexlify } from 'ethers/utils'
-import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
+import {
+	ModularSmartAccount,
+	type ModularSmartAccountOptions,
+	type SimpleInstallModuleConfig,
+	type SimpleUninstallModuleConfig,
+} from '../ModularSmartAccount'
 import { NexusValidationMode, type NexusCreationOptions } from './types'
 
 export type NexusAccountOptions = ModularSmartAccountOptions & NexusAccountConfig
@@ -102,7 +107,7 @@ export class NexusAccount extends ModularSmartAccount<NexusCreationOptions> {
 		return abiEncode(['address', 'bytes'], [ADDRESS.NexusBootstrap, bootstrapCalldata])
 	}
 
-	override encodeInstallModule(config: NexusInstallModuleConfig): string {
+	static override encodeInstallModule(config: NexusInstallModuleConfig): string {
 		if (!isHexString(config.initData)) {
 			throw new NexusError('Invalid NexusInstallModuleConfig.initData')
 		}
@@ -136,6 +141,35 @@ export class NexusAccount extends ModularSmartAccount<NexusCreationOptions> {
 		])
 	}
 
+	static override encodeUninstallModule(config: NexusUninstallModuleConfig): string {
+		if (!isHexString(config.deInitData)) {
+			throw new NexusError('Invalid NexusUninstallModuleConfig.deInitData')
+		}
+
+		let moduleDeInitData: string
+
+		switch (config.moduleType) {
+			case ERC7579_MODULE_TYPE.VALIDATOR:
+				moduleDeInitData = abiEncode(['address', 'bytes'], [config.prev, config.deInitData])
+				break
+			case ERC7579_MODULE_TYPE.EXECUTOR:
+				moduleDeInitData = abiEncode(['address', 'bytes'], [config.prev, config.deInitData])
+				break
+			case ERC7579_MODULE_TYPE.FALLBACK:
+				moduleDeInitData = concat([config.selector, config.deInitData])
+				break
+			case ERC7579_MODULE_TYPE.HOOK:
+				moduleDeInitData = config.deInitData
+				break
+		}
+
+		return INTERFACES.Nexus.encodeFunctionData('uninstallModule', [
+			config.moduleType,
+			config.moduleAddress,
+			moduleDeInitData,
+		])
+	}
+
 	protected createError(message: string, cause?: Error) {
 		return new NexusError(message, cause)
 	}
@@ -149,10 +183,22 @@ export class NexusError extends SendopError {
 }
 
 export type NexusInstallModuleConfig =
-	| BaseInstallModuleConfig<ERC7579_MODULE_TYPE.VALIDATOR>
-	| BaseInstallModuleConfig<ERC7579_MODULE_TYPE.EXECUTOR>
-	| (BaseInstallModuleConfig<ERC7579_MODULE_TYPE.FALLBACK> & {
+	| SimpleInstallModuleConfig<ERC7579_MODULE_TYPE.VALIDATOR>
+	| SimpleInstallModuleConfig<ERC7579_MODULE_TYPE.EXECUTOR>
+	| (SimpleInstallModuleConfig<ERC7579_MODULE_TYPE.FALLBACK> & {
 			functionSig: string // 4 bytes
 			callType: CallType // 1 byte
 	  })
-	| BaseInstallModuleConfig<ERC7579_MODULE_TYPE.HOOK>
+	| SimpleInstallModuleConfig<ERC7579_MODULE_TYPE.HOOK>
+
+export type NexusUninstallModuleConfig =
+	| (SimpleUninstallModuleConfig<ERC7579_MODULE_TYPE.VALIDATOR> & {
+			prev: string // address
+	  })
+	| (SimpleUninstallModuleConfig<ERC7579_MODULE_TYPE.EXECUTOR> & {
+			prev: string // address
+	  })
+	| (SimpleUninstallModuleConfig<ERC7579_MODULE_TYPE.FALLBACK> & {
+			selector: string // 4 bytes
+	  })
+	| SimpleUninstallModuleConfig<ERC7579_MODULE_TYPE.HOOK>

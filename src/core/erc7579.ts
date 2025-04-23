@@ -30,11 +30,3 @@ export enum ExecType {
 export enum ModeSelector {
 	DEFAULT = '0x00000000',
 }
-
-// =============================== Types ===============================
-
-export type BaseInstallModuleConfig<T extends ERC7579_MODULE_TYPE> = {
-	moduleType: T
-	moduleAddress: string
-	initData: string
-}

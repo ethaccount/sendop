@@ -5,7 +5,7 @@ import { Registry__factory, SmartSession__factory } from '@/contract-types/facto
 import type { SessionStruct } from '@/contract-types/SmartSession'
 import { ERC7579_MODULE_TYPE, sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
 import { INTERFACES } from '@/interfaces'
-import { getScheduledTransferInitData } from '@/modules/scheduledTransfer'
+import { getScheduledTransferDeInitData, getScheduledTransferInitData } from '@/modules/scheduledTransfer'
 import { abiEncode, getEncodedFunctionParams, randomBytes32 } from '@/utils/ethers-helper'
 import {
 	EOAValidatorModule,
@@ -124,14 +124,14 @@ describe('KernelV3Account', () => {
 			expect(receipt.success).toBe(true)
 		}, 100_000)
 
-		it('should install WebAuthnValidatorModule', async () => {
+		it('should install validator module', async () => {
 			const op = await account.send([
 				{
 					to: deployedAddress,
-					data: account.encodeInstallModule({
+					data: KernelV3Account.encodeInstallModule({
 						moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 						moduleAddress: ADDRESS.WebAuthnValidator,
-						validatorData: WebAuthnValidatorModule.getInitData({
+						initData: WebAuthnValidatorModule.getInitData({
 							pubKeyX: BigInt(randomBytes32()),
 							pubKeyY: BigInt(randomBytes32()),
 							authenticatorIdHash: randomBytes32(),
@@ -142,6 +142,61 @@ describe('KernelV3Account', () => {
 			])
 			const receipt = await op.wait()
 			expect(receipt.success).toBe(true)
+		}, 100_000)
+
+		it('should uninstall validator module', async () => {
+			const op = await account.send([
+				{
+					to: deployedAddress,
+					data: KernelV3Account.encodeUninstallModule({
+						moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
+						moduleAddress: ADDRESS.WebAuthnValidator,
+						deInitData: WebAuthnValidatorModule.getDeInitData(),
+					}),
+					value: 0n,
+				},
+			])
+			const receipt = await op.wait()
+			expect(receipt.success).toBe(true)
+		}, 100_000)
+
+		it('should install and uninstall executor module', async () => {
+			// install ScheduledTransfers
+			const op = await account.send([
+				{
+					to: deployedAddress,
+					value: 0n,
+					data: KernelV3Account.encodeInstallModule({
+						moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
+						moduleAddress: ADDRESS.ScheduledTransfers,
+						initData: getScheduledTransferInitData({
+							executeInterval: 10,
+							numOfExecutions: 3,
+							startDate: 1,
+							recipient: account1.address,
+							token: ZeroAddress,
+							amount: parseEther('0.001'),
+						}),
+					}),
+				},
+			])
+			const receipt = await op.wait()
+			expect(receipt.success).toBe(true)
+
+			// uninstall ScheduledTransfers
+			const op2 = await account.send([
+				{
+					to: deployedAddress,
+					data: KernelV3Account.encodeUninstallModule({
+						moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
+						moduleAddress: ADDRESS.ScheduledTransfers,
+						deInitData: getScheduledTransferDeInitData(),
+					}),
+					value: 0n,
+				},
+			])
+			const receipt2 = await op2.wait()
+			expect(receipt2.success).toBe(true)
 		}, 100_000)
 
 		it('should deploy and setNumber in one transaction', async () => {
@@ -271,7 +326,7 @@ describe('KernelV3Account', () => {
 						data: KernelV3Account.encodeInstallModule({
 							moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 							moduleAddress: ADDRESS.SmartSession,
-							validatorData: smartSessionInitData,
+							initData: smartSessionInitData,
 							selectorData: INTERFACES.KernelV3.getFunction('execute').selector,
 						}),
 					},
@@ -282,7 +337,7 @@ describe('KernelV3Account', () => {
 						data: KernelV3Account.encodeInstallModule({
 							moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
 							moduleAddress: ADDRESS.ScheduledTransfers,
-							executorData: getScheduledTransferInitData({
+							initData: getScheduledTransferInitData({
 								executeInterval: 10,
 								numOfExecutions: 3,
 								startDate: 1,

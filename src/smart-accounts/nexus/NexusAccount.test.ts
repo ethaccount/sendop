@@ -2,14 +2,15 @@ import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 import { ERC7579_MODULE_TYPE, sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
-import { PublicPaymaster, WebAuthnValidatorModule } from '@/index'
-import { randomBytes32 } from '@/utils'
+import { Nexus__factory, PublicPaymaster, WebAuthnValidatorModule } from '@/index'
+import { findPrevious, randomBytes32, zeroPadLeft } from '@/utils'
 import { OwnableValidator } from '@/validators/OwnableValidator'
-import { Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
+import { Interface, JsonRpcProvider, parseEther, toNumber, Wallet, ZeroAddress } from 'ethers'
 import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { NexusAccount } from './NexusAccount'
 import type { NexusCreationOptions } from './types'
+import { getScheduledTransferDeInitData, getScheduledTransferInitData } from '@/modules/scheduledTransfer'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup()
 logger.info(`Chain ID: ${chainId}`)
@@ -106,11 +107,11 @@ describe('NexusAccount', () => {
 			expect(receipt.success).toBe(true)
 		}, 100_000)
 
-		it('should install WebAuthnValidatorModule', async () => {
+		it('should install and uninstall validator module', async () => {
 			const op = await account.send([
 				{
 					to: computedAddress,
-					data: account.encodeInstallModule({
+					data: NexusAccount.encodeInstallModule({
 						moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 						moduleAddress: ADDRESS.WebAuthnValidator,
 						initData: WebAuthnValidatorModule.getInitData({
@@ -124,6 +125,67 @@ describe('NexusAccount', () => {
 			])
 			const receipt = await op.wait()
 			expect(receipt.success).toBe(true)
+
+			const nexus = Nexus__factory.connect(computedAddress, client)
+			const validators = await nexus.getValidatorsPaginated(zeroPadLeft('0x01', 20), 10)
+			const prev = findPrevious(validators.array, ADDRESS.WebAuthnValidator)
+
+			const op2 = await account.send([
+				{
+					to: computedAddress,
+					data: NexusAccount.encodeUninstallModule({
+						moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
+						moduleAddress: ADDRESS.WebAuthnValidator,
+						deInitData: WebAuthnValidatorModule.getDeInitData(),
+						prev,
+					}),
+					value: 0n,
+				},
+			])
+			const receipt2 = await op2.wait()
+			expect(receipt2.success).toBe(true)
+		}, 100_000)
+
+		it('should install and uninstall executor module', async () => {
+			const op = await account.send([
+				{
+					to: computedAddress,
+					value: 0n,
+					data: NexusAccount.encodeInstallModule({
+						moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
+						moduleAddress: ADDRESS.ScheduledTransfers,
+						initData: getScheduledTransferInitData({
+							executeInterval: 10,
+							numOfExecutions: 3,
+							startDate: 1,
+							recipient: ZeroAddress,
+							token: ZeroAddress,
+							amount: parseEther('0.001'),
+						}),
+					}),
+				},
+			])
+			const receipt = await op.wait()
+			expect(receipt.success).toBe(true)
+
+			const nexus = Nexus__factory.connect(computedAddress, client)
+			const validators = await nexus.getExecutorsPaginated(zeroPadLeft('0x01', 20), 10)
+			const prev = findPrevious(validators.array, ADDRESS.ScheduledTransfers)
+
+			const op2 = await account.send([
+				{
+					to: computedAddress,
+					data: NexusAccount.encodeUninstallModule({
+						moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
+						moduleAddress: ADDRESS.ScheduledTransfers,
+						deInitData: getScheduledTransferDeInitData(),
+						prev,
+					}),
+					value: 0n,
+				},
+			])
+			const receipt2 = await op2.wait()
+			expect(receipt2.success).toBe(true)
 		}, 100_000)
 
 		it('should deploy and setNumber in one transaction', async () => {
