@@ -60,19 +60,21 @@ export abstract class SmartAccount<TCreationOptions extends SmartAccountCreation
 		}
 	}
 
-	async send(executions: Execution[], pmGetter?: PaymasterGetter): Promise<SendOpResult> {
+	async send(executions: Execution[], options?: { pmGetter?: PaymasterGetter }): Promise<SendOpResult> {
 		return await sendop({
 			bundler: this.bundler,
 			executions,
 			opGetter: this,
-			pmGetter: pmGetter ?? this.pmGetter,
+			pmGetter: options?.pmGetter ?? this.pmGetter,
 		})
 	}
 
 	async deploy(
 		creationOptions: TCreationOptions,
-		pmGetter?: PaymasterGetter,
-		executions?: Execution[],
+		options?: {
+			pmGetter?: PaymasterGetter
+			executions?: Execution[]
+		},
 	): Promise<SendOpResult> {
 		const computedAddress = await (this.constructor as typeof SmartAccount).computeAccountAddress(
 			this.client,
@@ -80,9 +82,9 @@ export abstract class SmartAccount<TCreationOptions extends SmartAccountCreation
 		)
 		return await sendop({
 			bundler: this.bundler,
-			executions: executions ?? [],
+			executions: options?.executions ?? [],
 			opGetter: this.connect(computedAddress),
-			pmGetter: pmGetter ?? this.pmGetter,
+			pmGetter: options?.pmGetter ?? this.pmGetter,
 			initCode: this.getInitCode(creationOptions),
 		})
 	}

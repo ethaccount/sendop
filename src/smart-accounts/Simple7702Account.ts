@@ -30,7 +30,7 @@ export class Simple7702Account extends SmartAccount<any> {
 		})
 	}
 
-	override deploy(creationOptions: any, pmGetter?: PaymasterGetter): Promise<SendOpResult> {
+	override deploy(creationOptions: any, options?: { pmGetter?: PaymasterGetter }): Promise<SendOpResult> {
 		throw new Simple7702AccountError('Not supported')
 	}
 

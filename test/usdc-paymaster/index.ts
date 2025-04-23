@@ -88,7 +88,9 @@ const kernel = new KernelV3Account({
 const isDeployed = (await client.getCode(computedAddress)) !== '0x'
 
 if (!isDeployed) {
-	const op = await kernel.deploy(creationOptions, new PublicPaymaster(ADDRESS.PublicPaymaster))
+	const op = await kernel.deploy(creationOptions, {
+		pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
+	})
 	const receipt = await op.wait()
 	console.log('receipt.success', receipt.success)
 }
@@ -103,7 +105,9 @@ const op2 = await kernel.connect(computedAddress).send(
 			value: 0n,
 		},
 	],
-	usdcPaymaster,
+	{
+		pmGetter: usdcPaymaster,
+	},
 )
 const receipt2 = await op2.wait()
 console.log('receipt2.success', receipt2.success)
