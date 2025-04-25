@@ -22,6 +22,7 @@
 		"deploy-contracts:sepolia": "forge script --root contracts contracts/script/deploy-contracts.s.sol --account dev --rpc-url $sepolia --broadcast",
 		"fetch-abis": "rm -rf abis/*.json && bun run script/fetch-abis.ts",
 		"typechain": "rm -rf src/contract-types && typechain --target ethers-v6 --out-dir src/contract-types 'abis/**/*.json' 'abis/manual/**/*.json'",
+		"gen-interfaces": "bun run script/gen-interfaces.ts",
 		"typecheck": "tsc -p tsconfig.json --noEmit",
 		"prepare": "bun husky"
 	},
