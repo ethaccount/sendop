@@ -1,7 +1,8 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
-import { KernelV3__factory, Registry__factory, SmartSession__factory } from '@/contract-types/factories'
+import { IERC1271__factory } from '@/contract-types'
+import { Registry__factory, SmartSession__factory } from '@/contract-types/factories'
 import type { SessionStruct } from '@/contract-types/SmartSession'
 import { ERC7579_MODULE_TYPE, sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
 import { INTERFACES } from '@/interfaces'
@@ -25,10 +26,7 @@ import {
 	keccak256,
 	parseEther,
 	randomBytes,
-	recoverAddress,
-	resolveAddress,
 	toNumber,
-	toUtf8Bytes,
 	TypedDataEncoder,
 	Wallet,
 	ZeroAddress,
@@ -37,7 +35,6 @@ import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { KernelV3Account } from './KernelV3Account'
 import { KernelValidationType, type KernelCreationOptions } from './types'
-import { IERC1271__factory } from '@/contract-types'
 import { OwnableValidator } from '@/validators/OwnableValidator'
 
 const { chainId, CLIENT_URL, BUNDLER_URL, privateKey, account1 } = await setup()
@@ -56,7 +53,7 @@ describe('KernelV3Account', () => {
 			parseError: true,
 		})
 		validator = new EOAValidatorModule({
-			address: ADDRESS.OwnableValidator,
+			address: ADDRESS.ECDSAValidator,
 			signer: new Wallet(privateKey),
 		})
 		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
@@ -70,8 +67,8 @@ describe('KernelV3Account', () => {
 		beforeAll(async () => {
 			creationOptions = {
 				salt: hexlify(randomBytes(32)),
-				validatorAddress: ADDRESS.OwnableValidator,
-				validatorInitData: OwnableValidator.getInitData([signer.address], 1),
+				validatorAddress: ADDRESS.ECDSAValidator,
+				validatorInitData: EOAValidatorModule.getInitData(signer.address),
 			}
 		})
 
@@ -108,7 +105,9 @@ describe('KernelV3Account', () => {
 			expect(receipt.success).toBe(true)
 		}, 100_000)
 
-		it('should validate signature using ERC-1271', async () => {
+		// ================================ ERC-1271 ================================
+
+		it('should validate signature using ERC-1271 for ECDSAValidator', async () => {
 			const dataHash = keccak256('0x1271')
 
 			const typedData: TypedData = [
@@ -119,7 +118,7 @@ describe('KernelV3Account', () => {
 					verifyingContract: computedAddress,
 				},
 				{
-					KernelWrapper: [{ name: 'hash', type: 'bytes32' }],
+					Kernel: [{ name: 'hash', type: 'bytes32' }],
 				},
 				{
 					hash: dataHash,
@@ -130,7 +129,7 @@ describe('KernelV3Account', () => {
 
 			const kernelSignature = concat([
 				'0x01', // validation type validator
-				ADDRESS.OwnableValidator,
+				ADDRESS.ECDSAValidator,
 				signature,
 			])
 
@@ -141,6 +140,67 @@ describe('KernelV3Account', () => {
 
 			expect(isValid).toBe(ERC1271_MAGIC_VALUE)
 		})
+
+		it('should validate signature using ERC-1271 for OwnableValidator', async () => {
+			const creationOptions = {
+				salt: randomBytes32(),
+				validatorAddress: ADDRESS.OwnableValidator,
+				validatorInitData: OwnableValidator.getInitData([signer.address], 1),
+			}
+			const computedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
+			const account = new KernelV3Account({
+				address: computedAddress,
+				client,
+				bundler,
+				validator,
+			})
+
+			const op = await sendop({
+				bundler,
+				opGetter: account,
+				pmGetter,
+				initCode: KernelV3Account.getInitCode(creationOptions),
+				executions: [],
+			})
+
+			const receipt = await op.wait()
+			expect(receipt.success).toBe(true)
+
+			const dataHash = keccak256('0x1271')
+
+			const typedData: TypedData = [
+				{
+					name: 'Kernel',
+					version: '0.3.1',
+					chainId,
+					verifyingContract: computedAddress,
+				},
+				{
+					Kernel: [{ name: 'hash', type: 'bytes32' }],
+				},
+				{
+					hash: dataHash,
+				},
+			]
+
+			const typedDataHash = TypedDataEncoder.hash(...typedData)
+			const signature = await signer.signMessage(getBytes(typedDataHash))
+
+			const kernelSignature = concat([
+				'0x01', // validation type: validator
+				ADDRESS.OwnableValidator,
+				signature,
+			])
+
+			const isValid = await IERC1271__factory.connect(computedAddress, client).isValidSignature(
+				dataHash,
+				kernelSignature,
+			)
+
+			expect(isValid).toBe(ERC1271_MAGIC_VALUE)
+		}, 100_000)
+
+		// ================================ Batch execution ================================
 
 		it('should setNumber with batch execution', async () => {
 			const op = await account.send([
@@ -244,7 +304,7 @@ describe('KernelV3Account', () => {
 			const creationOptions = {
 				salt: randomBytes32(),
 				validatorAddress: ADDRESS.ECDSAValidator,
-				validatorInitData: signer.address,
+				validatorInitData: EOAValidatorModule.getInitData(signer.address),
 			}
 			const computedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
 			const account = new KernelV3Account({
@@ -278,7 +338,7 @@ describe('KernelV3Account', () => {
 		const creationOptions: KernelCreationOptions = {
 			salt: randomBytes32(),
 			validatorAddress: ADDRESS.ECDSAValidator,
-			validatorInitData: signer.address,
+			validatorInitData: EOAValidatorModule.getInitData(signer.address),
 		}
 		const sessionSalt = randomBytes32()
 		const sessionOwner = account1

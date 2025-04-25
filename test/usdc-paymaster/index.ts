@@ -58,7 +58,7 @@ const usdcPaymaster = new CircleUSDCPaymaster({
 				verifyingContract: computedAddress,
 			},
 			{
-				KernelWrapper: [{ name: 'hash', type: 'bytes32' }],
+				Kernel: [{ name: 'hash', type: 'bytes32' }],
 			},
 			{
 				hash: permitHash,

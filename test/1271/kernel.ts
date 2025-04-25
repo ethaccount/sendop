@@ -2,7 +2,7 @@ import { ADDRESS } from '@/addresses'
 import { IERC1271__factory } from '@/contract-types'
 import { INTERFACES } from '@/interfaces'
 import { type TypedData } from '@/utils'
-import { concat, TypedDataEncoder } from 'ethers'
+import { concat, getBytes, TypedDataEncoder } from 'ethers'
 import { keccak256 } from 'ethers/crypto'
 import { setupCLI } from 'test/utils'
 
@@ -15,9 +15,10 @@ const { signer, client, chainId } = await setupCLI(['r', 'p', 'b'], {
 	},
 })
 
-const KERNEL_ADDRESS = '0xf3dE595397024CE7fce87538d8B21E8FedEa89de'
+const KERNEL_ADDRESS = '0x9E80bcb1CCcE649659D8Ed69835F2d561866e382'
 
 const dataHash = keccak256('0x1271')
+console.log('dataHash', dataHash)
 
 const typedData: TypedData = [
 	{
@@ -27,7 +28,7 @@ const typedData: TypedData = [
 		verifyingContract: KERNEL_ADDRESS,
 	},
 	{
-		KernelWrapper: [{ name: 'hash', type: 'bytes32' }],
+		Kernel: [{ name: 'hash', type: 'bytes32' }],
 	},
 	{
 		hash: dataHash,
@@ -35,13 +36,11 @@ const typedData: TypedData = [
 ]
 
 const typedDataHash = TypedDataEncoder.hash(...typedData)
-console.log('typedDataHash', typedDataHash)
-
-const signature = await signer.signTypedData(...typedData)
+const signature = await signer.signMessage(getBytes(typedDataHash))
 console.log('signature', signature)
 
 const kernelSignature = concat([
-	'0x01', // validation type validator
+	'0x01', // validation type: validator
 	ADDRESS.ECDSAValidator,
 	signature,
 ])
