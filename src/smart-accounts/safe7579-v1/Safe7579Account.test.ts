@@ -1,21 +1,31 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
+import { IERC1271__factory, ISafe7579__factory } from '@/contract-types'
 import { ERC7579_MODULE_TYPE, sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
+import { WebAuthnValidatorModule } from '@/index'
+import { getScheduledTransferDeInitData, getScheduledTransferInitData } from '@/modules/scheduledTransfer'
 import { PublicPaymaster } from '@/paymasters'
-import { findPrevious, randomBytes32, zeroPadLeft } from '@/utils'
+import { ERC1271_MAGIC_VALUE, findPrevious, randomBytes32, zeroPadLeft } from '@/utils'
 import { OwnableValidator } from '@/validators/OwnableValidator'
-import { hexlify, Interface, JsonRpcProvider, randomBytes, toNumber, Wallet, parseEther } from 'ethers'
+import {
+	concat,
+	getBytes,
+	hexlify,
+	Interface,
+	JsonRpcProvider,
+	keccak256,
+	parseEther,
+	randomBytes,
+	toNumber,
+	Wallet,
+} from 'ethers'
 import { ZeroAddress } from 'ethers/constants'
 import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { Safe7579Account, type Safe7579CreationOptions } from './Safe7579Account'
-import { WebAuthnValidatorModule } from '@/index'
-import { ISafe7579__factory } from '@/contract-types'
-import { getScheduledTransferInitData, getScheduledTransferDeInitData } from '@/modules/scheduledTransfer'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup()
-logger.info(`Chain ID: ${chainId}`)
 
 describe('Safe7579Account', () => {
 	let signer: Wallet
@@ -45,7 +55,7 @@ describe('Safe7579Account', () => {
 
 	describe('Deploy and setNumber', () => {
 		let creationOptions: Safe7579CreationOptions
-		let deployedAddress: string
+		let computedAddress: string
 
 		beforeAll(async () => {
 			creationOptions = {
@@ -60,13 +70,13 @@ describe('Safe7579Account', () => {
 		})
 
 		it('should computeAccountAddress', async () => {
-			deployedAddress = await Safe7579Account.computeAccountAddress(client, creationOptions)
-			expect(deployedAddress).not.toBe('0x0000000000000000000000000000000000000000')
+			computedAddress = await Safe7579Account.computeAccountAddress(client, creationOptions)
+			expect(computedAddress).not.toBe('0x0000000000000000000000000000000000000000')
 		})
 
 		it('should deploy the contract', async () => {
 			account = new Safe7579Account({
-				address: deployedAddress,
+				address: computedAddress,
 				client,
 				bundler,
 				validator,
@@ -75,7 +85,7 @@ describe('Safe7579Account', () => {
 
 			const op = await account.deploy(creationOptions)
 			await op.wait()
-			const code = await client.getCode(deployedAddress)
+			const code = await client.getCode(computedAddress)
 			expect(code).not.toBe('0x')
 		}, 100_000)
 
@@ -92,6 +102,17 @@ describe('Safe7579Account', () => {
 			const log = receipt.logs.find(log => log.address === ADDRESS.Counter)
 			expect(toNumber(log?.data ?? 0)).toBe(number)
 		}, 100_000)
+
+		it('should validate signature using ERC-1271', async () => {
+			const dataHash = keccak256('0x1271')
+			const signature = await signer.signMessage(getBytes(dataHash))
+			const encodedSignature = concat([ADDRESS.OwnableValidator, signature])
+			const isValid = await IERC1271__factory.connect(computedAddress, client).isValidSignature(
+				dataHash,
+				encodedSignature,
+			)
+			expect(isValid).toBe(ERC1271_MAGIC_VALUE)
+		})
 
 		it('should setNumber with batch execution', async () => {
 			const op = await account.send([
@@ -117,7 +138,7 @@ describe('Safe7579Account', () => {
 		it('should install and uninstall validator module', async () => {
 			const op = await account.send([
 				{
-					to: deployedAddress,
+					to: computedAddress,
 					data: Safe7579Account.encodeInstallModule({
 						moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 						moduleAddress: ADDRESS.WebAuthnValidator,
@@ -133,13 +154,13 @@ describe('Safe7579Account', () => {
 			const receipt = await op.wait()
 			expect(receipt.success).toBe(true)
 
-			const safe = ISafe7579__factory.connect(deployedAddress, client)
+			const safe = ISafe7579__factory.connect(computedAddress, client)
 			const validators = await safe.getValidatorsPaginated(zeroPadLeft('0x01', 20), 10)
 			const prev = findPrevious(validators.array, ADDRESS.WebAuthnValidator)
 
 			const op2 = await account.send([
 				{
-					to: deployedAddress,
+					to: computedAddress,
 					data: Safe7579Account.encodeUninstallModule({
 						moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 						moduleAddress: ADDRESS.WebAuthnValidator,
@@ -156,7 +177,7 @@ describe('Safe7579Account', () => {
 		it('should install and uninstall executor module', async () => {
 			const op = await account.send([
 				{
-					to: deployedAddress,
+					to: computedAddress,
 					value: 0n,
 					data: Safe7579Account.encodeInstallModule({
 						moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
@@ -175,13 +196,13 @@ describe('Safe7579Account', () => {
 			const receipt = await op.wait()
 			expect(receipt.success).toBe(true)
 
-			const safe = ISafe7579__factory.connect(deployedAddress, client)
+			const safe = ISafe7579__factory.connect(computedAddress, client)
 			const validators = await safe.getExecutorsPaginated(zeroPadLeft('0x01', 20), 10)
 			const prev = findPrevious(validators.array, ADDRESS.ScheduledTransfers)
 
 			const op2 = await account.send([
 				{
-					to: deployedAddress,
+					to: computedAddress,
 					data: Safe7579Account.encodeUninstallModule({
 						moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
 						moduleAddress: ADDRESS.ScheduledTransfers,
@@ -207,9 +228,9 @@ describe('Safe7579Account', () => {
 				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS],
 				attestersThreshold: 1,
 			}
-			const deployedAddress = await Safe7579Account.computeAccountAddress(client, creationOptions)
+			const computedAddress = await Safe7579Account.computeAccountAddress(client, creationOptions)
 			const account = new Safe7579Account({
-				address: deployedAddress,
+				address: computedAddress,
 				client,
 				bundler,
 				validator,

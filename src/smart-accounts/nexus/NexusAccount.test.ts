@@ -2,18 +2,27 @@ import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 import { ERC7579_MODULE_TYPE, sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
-import { Nexus__factory, PublicPaymaster, WebAuthnValidatorModule } from '@/index'
-import { findPrevious, randomBytes32, zeroPadLeft } from '@/utils'
+import { IERC1271__factory, Nexus__factory, PublicPaymaster, WebAuthnValidatorModule } from '@/index'
+import { getScheduledTransferDeInitData, getScheduledTransferInitData } from '@/modules/scheduledTransfer'
+import { ERC1271_MAGIC_VALUE, findPrevious, randomBytes32, zeroPadLeft } from '@/utils'
 import { OwnableValidator } from '@/validators/OwnableValidator'
-import { Interface, JsonRpcProvider, parseEther, toNumber, Wallet, ZeroAddress } from 'ethers'
+import {
+	concat,
+	getBytes,
+	Interface,
+	JsonRpcProvider,
+	keccak256,
+	parseEther,
+	toNumber,
+	Wallet,
+	ZeroAddress,
+} from 'ethers'
 import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { NexusAccount } from './NexusAccount'
 import type { NexusCreationOptions } from './types'
-import { getScheduledTransferDeInitData, getScheduledTransferInitData } from '@/modules/scheduledTransfer'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup()
-logger.info(`Chain ID: ${chainId}`)
 
 describe('NexusAccount', () => {
 	let signer: Wallet
@@ -85,6 +94,17 @@ describe('NexusAccount', () => {
 			const log = receipt.logs.find(log => log.address === ADDRESS.Counter)
 			expect(toNumber(log?.data ?? 0)).toBe(number)
 		}, 100_000)
+
+		it('should validate signature using ERC-1271', async () => {
+			const dataHash = keccak256('0x1271')
+			const signature = await signer.signMessage(getBytes(dataHash))
+			const encodedSignature = concat([ADDRESS.OwnableValidator, signature])
+			const isValid = await IERC1271__factory.connect(computedAddress, client).isValidSignature(
+				dataHash,
+				encodedSignature,
+			)
+			expect(isValid).toBe(ERC1271_MAGIC_VALUE)
+		})
 
 		it('should setNumber with batch execution', async () => {
 			const op = await account.send([

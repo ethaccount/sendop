@@ -7,6 +7,7 @@ import type * as ierc7579ModulesSol from "./IERC7579Modules.sol";
 export type { ierc7579ModulesSol };
 import type * as safe from "./safe";
 export type { safe };
+export type { IERC1271 } from "./IERC1271";
 export type { IERC20 } from "./IERC20";
 export type { IERC2612 } from "./IERC2612";
 export type { OwnableValidator } from "./OwnableValidator";

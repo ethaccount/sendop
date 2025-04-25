@@ -1,7 +1,8 @@
 import { ADDRESS } from '@/addresses'
 import { IERC20__factory } from '@/contract-types'
 import { PublicPaymaster } from '@/paymasters'
-import { CircleUSDCPaymaster, type TypedData } from '@/paymasters/CircleUSDCPaymaster'
+import { CircleUSDCPaymaster } from '@/paymasters/CircleUSDCPaymaster'
+import type { TypedData } from '@/utils'
 import { KernelV3Account } from '@/smart-accounts'
 import { zeroPadLeft } from '@/utils'
 import { EOAValidatorModule } from '@/validators'
@@ -67,7 +68,7 @@ const usdcPaymaster = new CircleUSDCPaymaster({
 		const signature = await signer.signTypedData(...typedData)
 
 		const kernelSignature = concat([
-			'0x01', // Validation mode or validator type?
+			'0x01', // validator mode
 			ADDRESS.ECDSAValidator,
 			signature,
 		])

@@ -1,10 +1,9 @@
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
 import { type GetPaymasterDataResult, type GetPaymasterStubDataResult, type PaymasterGetter, type UserOp } from '@/core'
+import type { TypedData } from '@/utils'
 import { zeroPadLeft } from '@/utils'
 import type { JsonRpcProvider, TypedDataDomain } from 'ethers'
-import { concat, Contract, Interface, MaxUint256, toBeHex, TypedDataEncoder, type TypedDataField } from 'ethers'
-
-export type TypedData = [TypedDataDomain, Record<string, Array<TypedDataField>>, Record<string, any>]
+import { concat, Contract, Interface, MaxUint256, toBeHex, TypedDataEncoder } from 'ethers'
 
 export type CircleUSDCPaymasterOptions = {
 	client: JsonRpcProvider

@@ -28,6 +28,8 @@ export { EntryPointV08__factory } from "./factories/EntryPointV08__factory";
 export { ERC20SpendingLimitPolicy__factory } from "./factories/ERC20SpendingLimitPolicy__factory";
 export { KernelV3__factory } from "./factories/KernelV3__factory";
 export { KernelV3Factory__factory } from "./factories/KernelV3Factory__factory";
+export type { IERC1271 } from "./manual/IERC1271";
+export { IERC1271__factory } from "./factories/manual/IERC1271__factory";
 export type { IERC20 } from "./manual/IERC20";
 export { IERC20__factory } from "./factories/manual/IERC20__factory";
 export type { IERC2612 } from "./manual/IERC2612";
