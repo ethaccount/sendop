@@ -22,7 +22,8 @@ import fs from 'fs'
 import path from 'path'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { MyPaymaster, setup } from '../../test/utils'
+import { setup } from '../../test/utils'
+import { PublicPaymaster } from '@/paymasters'
 
 const argv = await yargs(hideBin(process.argv))
 	.option('network', {
@@ -40,9 +41,12 @@ const argv = await yargs(hideBin(process.argv))
 	})
 	.help().argv
 
-const network = argv.network === 'sepolia' ? '11155111' : 'local'
-
-const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, account1 } = await setup({ chainId: network })
+const CHAIN_IDS = {
+	local: 1337n,
+	sepolia: 11155111n,
+} as const
+const chainId = CHAIN_IDS[argv.network]
+const { logger, CLIENT_URL, BUNDLER_URL, privateKey, account1 } = await setup({ chainId })
 
 logger.info(`Chain ID: ${chainId}`)
 
@@ -58,20 +62,17 @@ const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 	// },
 })
 
-const pmGetter = new MyPaymaster({
-	client,
-	paymasterAddress: ADDRESS.CharityPaymaster,
-})
+const pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 
 const creationOptions = {
 	salt: randomBytes32(),
-	validatorAddress: ADDRESS.K1Validator,
+	validatorAddress: ADDRESS.ECDSAValidator,
 	validatorInitData: await signer.getAddress(),
 }
 
 logger.info(`Salt: ${creationOptions.salt}`)
 
-const computedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
+const computedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
 
 const session: SessionStruct = {
 	sessionValidator: ADDRESS.OwnableValidator,
@@ -116,7 +117,7 @@ const smartSessionInitData = concat([SMART_SESSIONS_ENABLE_MODE, encodedSessions
 const executeInterval = 10
 const numOfExecutions = 3
 const startDate =
-	network === 'local'
+	chainId === 1337n
 		? 1 // Use a smaller fixed timestamp for local testing
 		: Math.floor(Date.now() / 1000)
 const recipient = account1.address
@@ -136,7 +137,7 @@ const kernel = new KernelV3Account({
 	client,
 	bundler,
 	validator: new EOAValidatorModule({
-		address: ADDRESS.K1Validator,
+		address: ADDRESS.ECDSAValidator,
 		signer,
 	}),
 })
@@ -160,7 +161,7 @@ const op = await sendop({
 			data: KernelV3Account.encodeInstallModule({
 				moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 				moduleAddress: ADDRESS.SmartSession,
-				validatorData: smartSessionInitData,
+				initData: smartSessionInitData,
 				selectorData: INTERFACES.KernelV3.getFunction('execute').selector,
 			}),
 		},
@@ -171,7 +172,7 @@ const op = await sendop({
 			data: KernelV3Account.encodeInstallModule({
 				moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
 				moduleAddress: ADDRESS.ScheduledTransfers,
-				executorData: scheduledTransfersInitData,
+				initData: scheduledTransfersInitData,
 			}),
 		},
 	],

@@ -1,17 +1,28 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
-import { BICONOMY_ATTESTER_ADDRESS, DEV_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
-import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
-import { randomBytes32 } from '@/utils'
-import { EOAValidatorModule } from '@/validators'
-import { Interface, JsonRpcProvider, resolveAddress, toNumber, Wallet } from 'ethers'
-import { MyPaymaster, setup } from 'test/utils'
+import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
+import { ERC7579_MODULE_TYPE, sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
+import { IERC1271__factory, Nexus__factory, PublicPaymaster, WebAuthnValidatorModule } from '@/index'
+import { getScheduledTransferDeInitData, getScheduledTransferInitData } from '@/modules/scheduledTransfer'
+import { ERC1271_MAGIC_VALUE, findPrevious, randomBytes32, zeroPadLeft } from '@/utils'
+import { OwnableValidator } from '@/validators/OwnableValidator'
+import {
+	concat,
+	getBytes,
+	Interface,
+	JsonRpcProvider,
+	keccak256,
+	parseEther,
+	toNumber,
+	Wallet,
+	ZeroAddress,
+} from 'ethers'
+import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { NexusAccount } from './NexusAccount'
 import type { NexusCreationOptions } from './types'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup()
-logger.info(`Chain ID: ${chainId}`)
 
 describe('NexusAccount', () => {
 	let signer: Wallet
@@ -27,14 +38,8 @@ describe('NexusAccount', () => {
 			parseError: true,
 			debug: true,
 		})
-		validator = new EOAValidatorModule({
-			address: ADDRESS.ECDSAValidator,
-			signer: new Wallet(privateKey),
-		})
-		pmGetter = new MyPaymaster({
-			client,
-			paymasterAddress: ADDRESS.CharityPaymaster,
-		})
+		validator = new OwnableValidator({ signers: [new Wallet(privateKey)] })
+		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 
 		logger.info(`Signer: ${signer.address}`)
 	})
@@ -42,28 +47,28 @@ describe('NexusAccount', () => {
 	describe('Deploy Nexus and setNumber', () => {
 		let account: NexusAccount
 		let creationOptions: NexusCreationOptions
-		let deployedAddress: string
+		let computedAddress: string
 
 		beforeAll(async () => {
 			creationOptions = {
 				bootstrap: 'initNexusWithSingleValidator',
 				salt: randomBytes32(),
-				validatorAddress: ADDRESS.ECDSAValidator,
-				validatorInitData: await resolveAddress(signer),
+				validatorAddress: ADDRESS.OwnableValidator,
+				validatorInitData: OwnableValidator.getInitData([signer.address], 1),
 				registryAddress: ADDRESS.Registry,
-				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS, DEV_ATTESTER_ADDRESS],
+				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS],
 				threshold: 1,
 			}
 		})
 
-		it('should getNewAddress', async () => {
-			deployedAddress = await NexusAccount.getNewAddress(client, creationOptions)
-			expect(deployedAddress).not.toBe('0x0000000000000000000000000000000000000000')
+		it('should computeAccountAddress', async () => {
+			computedAddress = await NexusAccount.computeAccountAddress(client, creationOptions)
+			expect(computedAddress).not.toBe('0x0000000000000000000000000000000000000000')
 		})
 
 		it('should deploy the contract', async () => {
 			account = new NexusAccount({
-				address: deployedAddress,
+				address: computedAddress,
 				client,
 				bundler,
 				validator,
@@ -72,7 +77,7 @@ describe('NexusAccount', () => {
 
 			const op = await account.deploy(creationOptions)
 			await op.wait()
-			const code = await client.getCode(deployedAddress)
+			const code = await client.getCode(computedAddress)
 			expect(code).not.toBe('0x')
 		}, 100_000)
 
@@ -86,8 +91,121 @@ describe('NexusAccount', () => {
 				},
 			])
 			const receipt = await op.wait()
-			const log = receipt.logs[receipt.logs.length - 1]
-			expect(toNumber(log.data)).toBe(number)
+			const log = receipt.logs.find(log => log.address === ADDRESS.Counter)
+			expect(toNumber(log?.data ?? 0)).toBe(number)
+		}, 100_000)
+
+		it('should validate signature using ERC-1271', async () => {
+			const dataHash = keccak256('0x1271')
+			const signature = await signer.signMessage(getBytes(dataHash))
+			const encodedSignature = concat([ADDRESS.OwnableValidator, signature])
+			const isValid = await IERC1271__factory.connect(computedAddress, client).isValidSignature(
+				dataHash,
+				encodedSignature,
+			)
+			expect(isValid).toBe(ERC1271_MAGIC_VALUE)
+		})
+
+		it('should setNumber with batch execution', async () => {
+			const op = await account.send([
+				{
+					to: ADDRESS.Counter,
+					data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [
+						Math.floor(Math.random() * 1000000),
+					]),
+					value: 0n,
+				},
+				{
+					to: ADDRESS.Counter,
+					data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [
+						Math.floor(Math.random() * 1000000),
+					]),
+					value: 0n,
+				},
+			])
+			const receipt = await op.wait()
+			expect(receipt.success).toBe(true)
+		}, 100_000)
+
+		it('should install and uninstall validator module', async () => {
+			const op = await account.send([
+				{
+					to: computedAddress,
+					data: NexusAccount.encodeInstallModule({
+						moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
+						moduleAddress: ADDRESS.WebAuthnValidator,
+						initData: WebAuthnValidatorModule.getInitData({
+							pubKeyX: BigInt(randomBytes32()),
+							pubKeyY: BigInt(randomBytes32()),
+							authenticatorIdHash: randomBytes32(),
+						}),
+					}),
+					value: 0n,
+				},
+			])
+			const receipt = await op.wait()
+			expect(receipt.success).toBe(true)
+
+			const nexus = Nexus__factory.connect(computedAddress, client)
+			const validators = await nexus.getValidatorsPaginated(zeroPadLeft('0x01', 20), 10)
+			const prev = findPrevious(validators.array, ADDRESS.WebAuthnValidator)
+
+			const op2 = await account.send([
+				{
+					to: computedAddress,
+					data: NexusAccount.encodeUninstallModule({
+						moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
+						moduleAddress: ADDRESS.WebAuthnValidator,
+						deInitData: WebAuthnValidatorModule.getDeInitData(),
+						prev,
+					}),
+					value: 0n,
+				},
+			])
+			const receipt2 = await op2.wait()
+			expect(receipt2.success).toBe(true)
+		}, 100_000)
+
+		it('should install and uninstall executor module', async () => {
+			const op = await account.send([
+				{
+					to: computedAddress,
+					value: 0n,
+					data: NexusAccount.encodeInstallModule({
+						moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
+						moduleAddress: ADDRESS.ScheduledTransfers,
+						initData: getScheduledTransferInitData({
+							executeInterval: 10,
+							numOfExecutions: 3,
+							startDate: 1,
+							recipient: ZeroAddress,
+							token: ZeroAddress,
+							amount: parseEther('0.001'),
+						}),
+					}),
+				},
+			])
+			const receipt = await op.wait()
+			expect(receipt.success).toBe(true)
+
+			const nexus = Nexus__factory.connect(computedAddress, client)
+			const validators = await nexus.getExecutorsPaginated(zeroPadLeft('0x01', 20), 10)
+			const prev = findPrevious(validators.array, ADDRESS.ScheduledTransfers)
+
+			const op2 = await account.send([
+				{
+					to: computedAddress,
+					data: NexusAccount.encodeUninstallModule({
+						moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
+						moduleAddress: ADDRESS.ScheduledTransfers,
+						deInitData: getScheduledTransferDeInitData(),
+						prev,
+					}),
+					value: 0n,
+				},
+			])
+			const receipt2 = await op2.wait()
+			expect(receipt2.success).toBe(true)
 		}, 100_000)
 
 		it('should deploy and setNumber in one transaction', async () => {
@@ -96,14 +214,14 @@ describe('NexusAccount', () => {
 			const creationOptions: NexusCreationOptions = {
 				bootstrap: 'initNexusWithSingleValidator',
 				salt: randomBytes32(),
-				validatorAddress: ADDRESS.ECDSAValidator,
-				validatorInitData: signer.address,
+				validatorAddress: ADDRESS.OwnableValidator,
+				validatorInitData: OwnableValidator.getInitData([signer.address], 1),
 				registryAddress: ADDRESS.Registry,
-				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS, DEV_ATTESTER_ADDRESS],
+				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS],
 				threshold: 1,
 			}
 
-			const computedAddress = await NexusAccount.getNewAddress(client, creationOptions)
+			const computedAddress = await NexusAccount.computeAccountAddress(client, creationOptions)
 			const account = new NexusAccount({
 				address: computedAddress,
 				client,
@@ -126,11 +244,8 @@ describe('NexusAccount', () => {
 				],
 			})
 			const receipt = await op.wait()
-			const log = receipt.logs[receipt.logs.length - 1]
-			expect(toNumber(log.data)).toBe(number)
+			const log = receipt.logs.find(log => log.address === ADDRESS.Counter)
+			expect(toNumber(log?.data ?? 0)).toBe(number)
 		}, 100_000)
-
-		// TODO: test batch execution
-		// TODO: test install module
 	})
 })

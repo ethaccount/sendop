@@ -1,14 +1,18 @@
 import { ADDRESS } from '@/addresses'
-import { CallType, encodeExecutions, ERC7579_MODULE_TYPE, ExecType, ModeSelector, type Execution } from '@/core'
+import { ERC7579_MODULE_TYPE } from '@/core'
 import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
-import { abiEncode, connectEntryPointV07, isBytes, isBytes32, toBytes32, zeroBytes } from '@/utils'
-import { concat, Contract, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
-import { SmartAccount, type SmartAccountOptions } from '../SmartAccount'
-import type { KernelCreationOptions, KernelInstallModuleConfig, SimpleKernelInstallModuleConfig } from './types'
+import { abiEncode, connectEntryPointV07, isBytes, isBytes32, zeroBytes } from '@/utils'
+import { concat, Contract, hexlify, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
+import {
+	ModularSmartAccount,
+	type ModularSmartAccountOptions,
+	type SimpleInstallModuleConfig,
+} from '../ModularSmartAccount'
+import type { KernelCreationOptions, KernelInstallModuleConfig, KernelUninstallModuleConfig } from './types'
 import { KernelValidationMode, KernelValidationType } from './types'
 
-export type KernelV3AccountOptions = SmartAccountOptions & KernelV3AccountConfig
+export type KernelV3AccountOptions = ModularSmartAccountOptions & KernelV3AccountConfig
 
 export type KernelV3AccountConfig = {
 	nonce?: {
@@ -17,33 +21,19 @@ export type KernelV3AccountConfig = {
 		identifier?: string
 		key?: string
 	}
-	execMode?: {
-		callType?: CallType // 1 byte
-		execType?: ExecType // 1 byte
-		unused?: string // 4 bytes
-		modeSelector?: ModeSelector // 4 bytes
-		modePayload?: string // 22 bytes
-	}
 }
 
-export class KernelV3Account extends SmartAccount {
+export class KernelV3Account extends ModularSmartAccount<KernelCreationOptions> {
 	private readonly _kernelConfig: KernelV3AccountConfig | undefined
 
 	static override accountId() {
 		return 'kernel.advanced.v0.3.1'
 	}
-	static readonly interface = INTERFACES.KernelV3
-	static readonly factoryInterface = INTERFACES.KernelV3Factory
-	get interface() {
-		return KernelV3Account.interface
-	}
-	get factoryInterface() {
-		return KernelV3Account.factoryInterface
-	}
 
 	constructor(options: KernelV3AccountOptions) {
 		super(options)
-		this._kernelConfig = { ...options }
+		const { nonce } = options
+		this._kernelConfig = { nonce }
 	}
 
 	override connect(address: string): KernelV3Account {
@@ -56,6 +46,7 @@ export class KernelV3Account extends SmartAccount {
 	override getInitCode(creationOptions: KernelCreationOptions): string {
 		return KernelV3Account.getInitCode(creationOptions)
 	}
+
 	static getInitCode(creationOptions: KernelCreationOptions) {
 		const { salt } = creationOptions
 		if (!isBytes32(salt)) {
@@ -63,28 +54,30 @@ export class KernelV3Account extends SmartAccount {
 		}
 		return concat([
 			ADDRESS.KernelV3Factory,
-			this.factoryInterface.encodeFunctionData('createAccount', [
+			INTERFACES.KernelV3Factory.encodeFunctionData('createAccount', [
 				KernelV3Account.encodeInitialize(creationOptions),
 				salt,
 			]),
 		])
 	}
 
-	static override async getNewAddress(client: JsonRpcProvider, creationOptions: KernelCreationOptions) {
+	static override async computeAccountAddress(client: JsonRpcProvider, creationOptions: KernelCreationOptions) {
 		const { salt } = creationOptions
 		if (!isBytes32(salt)) {
 			throw new KernelError('Invalid salt')
 		}
-		const kernelFactory = new Contract(ADDRESS.KernelV3Factory, KernelV3Account.factoryInterface, client)
-		return await kernelFactory['getAddress(bytes,bytes32)'](KernelV3Account.encodeInitialize(creationOptions), salt)
+		const kernelFactory = new Contract(ADDRESS.KernelV3Factory, INTERFACES.KernelV3Factory, client)
+		return (await kernelFactory['getAddress(bytes,bytes32)'](
+			KernelV3Account.encodeInitialize(creationOptions),
+			salt,
+		)) as string
 	}
 
 	override async getNonce() {
-		const nonce = await connectEntryPointV07(this.client).getNonce(
+		return await connectEntryPointV07(this.client).getNonce(
 			this.getSender(),
 			this.getNonceKey(this._kernelConfig?.nonce),
 		)
-		return toBeHex(nonce)
 	}
 
 	async getCustomNonce(options: {
@@ -113,7 +106,7 @@ export class KernelV3Account extends SmartAccount {
 		type?: KernelValidationType
 		identifier?: string
 		key?: string
-	}): string {
+	}): bigint {
 		const defaultOptions = {
 			mode: KernelValidationMode.DEFAULT,
 			type: KernelValidationType.ROOT,
@@ -121,59 +114,7 @@ export class KernelV3Account extends SmartAccount {
 			key: zeroBytes(2),
 		}
 		const { mode, type, identifier, key } = { ...defaultOptions, ...options }
-		return concat([mode, type, identifier, key])
-	}
-
-	override getCallData(executions: Execution[]): Promise<string> | string {
-		if (!executions.length) {
-			return '0x'
-		}
-
-		// Execute 1 function directly on the smart account if it's the only one and to address is itself
-		if (executions.length === 1 && executions[0].to == this.address) {
-			return executions[0].data
-		}
-
-		const defaultExecutionMode = {
-			callType: CallType.BATCH,
-			execType: ExecType.DEFAULT,
-			unused: zeroBytes(4),
-			modeSelector: ModeSelector.DEFAULT,
-			modePayload: zeroBytes(22),
-		}
-		let { callType, execType, modeSelector, modePayload, unused } = {
-			...defaultExecutionMode,
-			...this._kernelConfig?.execMode,
-		}
-
-		// If there is only one execution, set callType to SIGNLE
-		if (executions.length === 1) {
-			callType = CallType.SIGNLE
-		}
-		/// |--------------------------------------------------------------------|
-		/// | CALLTYPE  | EXECTYPE  |   UNUSED   | ModeSelector  |  ModePayload  |
-		/// |--------------------------------------------------------------------|
-		/// | 1 byte    | 1 byte    |   4 bytes  | 4 bytes       |   22 bytes    |
-		/// |--------------------------------------------------------------------|
-		if (!isBytes(callType, 1)) throw new KernelError(`invalid callType ${callType}`)
-		if (!isBytes(execType, 1)) throw new KernelError(`invalid execType ${execType}`)
-		if (!isBytes(unused, 4)) throw new KernelError(`invalid unused ${unused}`)
-		if (!isBytes(modeSelector, 4)) throw new KernelError(`invalid modeSelector ${modeSelector}`)
-		if (!isBytes(modePayload, 22)) throw new KernelError(`invalid modePayload ${modePayload}`)
-		const execMode = concat([callType, execType, unused, modeSelector, modePayload])
-
-		switch (callType) {
-			case CallType.SIGNLE:
-				return this.interface.encodeFunctionData('execute', [
-					execMode,
-					// decodeSingle is address (20) + value (32) + data (bytes) without abi.encode
-					concat([executions[0].to, toBytes32(executions[0].value), executions[0].data]),
-				])
-			case CallType.BATCH:
-				return this.interface.encodeFunctionData('execute', [execMode, encodeExecutions(executions)])
-			default:
-				throw new KernelError('unsupported call type')
-		}
+		return BigInt(hexlify(concat([mode, type, identifier, key])))
 	}
 
 	encodeInitialize(creationOptions: KernelCreationOptions) {
@@ -186,7 +127,7 @@ export class KernelV3Account extends SmartAccount {
 		if (!isBytes(rootValidator, 21)) {
 			throw new KernelError('Invalid rootValidator')
 		}
-		return this.interface.encodeFunctionData('initialize', [
+		return INTERFACES.KernelV3.encodeFunctionData('initialize', [
 			rootValidator,
 			hookAddress ?? ZeroAddress,
 			validatorInitData,
@@ -195,10 +136,7 @@ export class KernelV3Account extends SmartAccount {
 		])
 	}
 
-	override encodeInstallModule(config: KernelInstallModuleConfig): string {
-		return KernelV3Account.encodeInstallModule(config)
-	}
-	static encodeInstallModule(config: KernelInstallModuleConfig): string {
+	static override encodeInstallModule(config: KernelInstallModuleConfig): string {
 		let initData: string
 
 		switch (config.moduleType) {
@@ -211,7 +149,7 @@ export class KernelV3Account extends SmartAccount {
 
 					initData = concat([
 						hookAddress,
-						abiEncode(['bytes', 'bytes', 'bytes'], [config.validatorData, hookData, selectorData]),
+						abiEncode(['bytes', 'bytes', 'bytes'], [config.initData, hookData, selectorData]),
 					])
 				}
 				break
@@ -221,7 +159,7 @@ export class KernelV3Account extends SmartAccount {
 					// default values
 					const hookAddress = config.hookAddress ?? ZeroAddress
 					const hookData = config.hookData ?? '0x'
-					initData = concat([hookAddress, abiEncode(['bytes', 'bytes'], [config.executorData, hookData])])
+					initData = concat([hookAddress, abiEncode(['bytes', 'bytes'], [config.initData, hookData])])
 				}
 				break
 
@@ -234,14 +172,41 @@ export class KernelV3Account extends SmartAccount {
 				break
 
 			case ERC7579_MODULE_TYPE.HOOK:
-				initData = (config as SimpleKernelInstallModuleConfig<ERC7579_MODULE_TYPE.HOOK>).initData
+				initData = config.initData
 				break
 
 			default:
 				throw new KernelError('Unsupported module type')
 		}
 
-		return this.interface.encodeFunctionData('installModule', [config.moduleType, config.moduleAddress, initData])
+		return INTERFACES.KernelV3.encodeFunctionData('installModule', [
+			config.moduleType,
+			config.moduleAddress,
+			initData,
+		])
+	}
+
+	static override encodeUninstallModule(config: KernelUninstallModuleConfig): string {
+		let deInitData: string
+		switch (config.moduleType) {
+			case ERC7579_MODULE_TYPE.VALIDATOR:
+				deInitData = config.deInitData
+				break
+
+			case ERC7579_MODULE_TYPE.EXECUTOR:
+				deInitData = config.deInitData
+				break
+		}
+
+		return INTERFACES.KernelV3.encodeFunctionData('uninstallModule', [
+			config.moduleType,
+			config.moduleAddress,
+			deInitData,
+		])
+	}
+
+	protected createError(message: string, cause?: Error) {
+		return new KernelError(message, cause)
 	}
 }
 

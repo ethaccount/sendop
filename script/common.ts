@@ -67,7 +67,7 @@ async function fetchABIFromNetwork(address: string, network: Network): Promise<E
 	return (await response.json()) as EtherscanResponse
 }
 
-export async function fetchABI(address: string, network: Network, contractName: string, output: string = 'src/abis') {
+export async function fetchABI(address: string, network: Network, contractName: string, output: string = 'abis') {
 	const isFilePath = output.endsWith('.json')
 	const outputPath = isFilePath ? output : path.join(output, `${contractName}.json`)
 

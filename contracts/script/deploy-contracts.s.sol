@@ -4,8 +4,8 @@ pragma solidity ^0.8.13;
 import {Script, console} from "forge-std/Script.sol";
 import {ECDSAValidator} from "kernel/validator/ECDSAValidator.sol";
 import {WebAuthnValidator} from "../src/validators/webauthn/WebAuthnValidator.sol";
-import {CharityPaymaster} from "../src/CharityPaymaster.sol";
-import {IEntryPoint} from "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
+import {PublicPaymaster} from "../src/PublicPaymaster.sol";
+import {IEntryPoint} from "aa-0.7/contracts/interfaces/IEntryPoint.sol";
 import {Counter} from "../src/Counter.sol";
 
 /*
@@ -34,8 +34,8 @@ contract DeployContracts is Script {
         Counter counter = new Counter{salt: salt}();
         console.log("Counter deployed at", address(counter));
 
-        CharityPaymaster paymaster = new CharityPaymaster{salt: salt}();
-        console.log("CharityPaymaster deployed at", address(paymaster));
+        PublicPaymaster paymaster = new PublicPaymaster{salt: salt}();
+        console.log("PublicPaymaster deployed at", address(paymaster));
 
         IEntryPoint(0x0000000071727De22E5E9d8BAf0edAc6f37da032).depositTo{value: 1 ether}(address(paymaster));
         console.log("Deposited 1 ETH to EntryPoint for paymaster");

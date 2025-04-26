@@ -1,15 +1,21 @@
 import { ADDRESS } from '@/addresses'
 import { NexusFactory__factory } from '@/contract-types'
-import { CallType, encodeExecutions, ERC7579_MODULE_TYPE, ExecType, ModeSelector, type Execution } from '@/core'
+import { CallType, ERC7579_MODULE_TYPE } from '@/core'
 import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
-import { abiEncode, isBytes, toBytes32, zeroBytes } from '@/utils'
+import { abiEncode, sortAndUniquifyAddresses, zeroBytes } from '@/utils'
 import type { JsonRpcProvider } from 'ethers'
-import { concat } from 'ethers/utils'
-import { SmartAccount, type SmartAccountOptions } from '../SmartAccount'
-import { NexusValidationMode, type NexusCreationOptions, type NexusInstallModuleConfig } from './types'
+import { dataLength, isHexString } from 'ethers'
+import { concat, hexlify } from 'ethers/utils'
+import {
+	ModularSmartAccount,
+	type ModularSmartAccountOptions,
+	type SimpleInstallModuleConfig,
+	type SimpleUninstallModuleConfig,
+} from '../ModularSmartAccount'
+import { NexusValidationMode, type NexusCreationOptions } from './types'
 
-export type NexusAccountOptions = SmartAccountOptions & NexusAccountConfig
+export type NexusAccountOptions = ModularSmartAccountOptions & NexusAccountConfig
 
 export type NexusAccountConfig = {
 	nonce?: {
@@ -17,30 +23,10 @@ export type NexusAccountConfig = {
 		validator?: string // 20 bytes
 		key?: string // 3 bytes
 	}
-	execMode?: {
-		callType?: CallType // 1 byte
-		execType?: ExecType // 1 byte
-		unused?: string // 4 bytes
-		modeSelector?: ModeSelector // 4 bytes
-		modePayload?: string // 22 bytes
-	}
 }
 
-export class NexusAccount extends SmartAccount {
+export class NexusAccount extends ModularSmartAccount<NexusCreationOptions> {
 	private readonly _nexusConfig: NexusAccountConfig | undefined
-
-	static readonly interface = INTERFACES.Nexus
-	static readonly factoryInterface = INTERFACES.NexusFactory
-	static readonly bootstrapInterface = INTERFACES.NexusBootstrap
-	get interface() {
-		return NexusAccount.interface
-	}
-	get factoryInterface() {
-		return NexusAccount.factoryInterface
-	}
-	get bootstrapInterface() {
-		return NexusAccount.bootstrapInterface
-	}
 
 	static override accountId() {
 		return 'biconomy.nexus.1.0.2'
@@ -48,7 +34,8 @@ export class NexusAccount extends SmartAccount {
 
 	constructor(options: NexusAccountOptions) {
 		super(options)
-		this._nexusConfig = { ...options }
+		const { nonce } = options
+		this._nexusConfig = { nonce }
 	}
 
 	override connect(address: string): NexusAccount {
@@ -58,18 +45,19 @@ export class NexusAccount extends SmartAccount {
 		})
 	}
 
-	/**
-	 * @returns bytes: factory address + factory calldata
-	 */
-	override getInitCode(creationOptions: NexusCreationOptions): string {
-		const factoryCalldata = this.factoryInterface.encodeFunctionData('createAccount', [
+	static override getInitCode(creationOptions: NexusCreationOptions): string {
+		const factoryCalldata = INTERFACES.NexusFactory.encodeFunctionData('createAccount', [
 			NexusAccount.getInitializeData(creationOptions),
 			creationOptions.salt,
 		])
 		return concat([ADDRESS.NexusFactory, factoryCalldata])
 	}
 
-	static override async getNewAddress(client: JsonRpcProvider, creationOptions: NexusCreationOptions) {
+	override getInitCode(creationOptions: NexusCreationOptions): string {
+		return NexusAccount.getInitCode(creationOptions)
+	}
+
+	static override async computeAccountAddress(client: JsonRpcProvider, creationOptions: NexusCreationOptions) {
 		const factory = NexusFactory__factory.connect(ADDRESS.NexusFactory, client)
 		const address = await factory.computeAccountAddress(
 			this.getInitializeData(creationOptions),
@@ -78,8 +66,8 @@ export class NexusAccount extends SmartAccount {
 		return address
 	}
 
-	override getNonceKey(): string {
-		return this._getNonceKey(this._nexusConfig?.nonce)
+	override getNonceKey(): bigint {
+		return BigInt(hexlify(this._getNonceKey(this._nexusConfig?.nonce)))
 	}
 
 	/**
@@ -97,58 +85,6 @@ export class NexusAccount extends SmartAccount {
 		return concat([key, mode, validator])
 	}
 
-	override getCallData(executions: Execution[]): Promise<string> | string {
-		if (!executions.length) {
-			return '0x'
-		}
-
-		// Execute 1 function directly on the smart account if it's the only one and to address is itself
-		if (executions.length === 1 && executions[0].to == this.address) {
-			return executions[0].data
-		}
-
-		const defaultExecutionMode = {
-			callType: CallType.BATCH,
-			execType: ExecType.DEFAULT,
-			unused: zeroBytes(4),
-			modeSelector: ModeSelector.DEFAULT,
-			modePayload: zeroBytes(22),
-		}
-		let { callType, execType, modeSelector, modePayload, unused } = {
-			...defaultExecutionMode,
-			...this._nexusConfig?.execMode,
-		}
-
-		// If there is only one execution, set callType to SIGNLE
-		if (executions.length === 1) {
-			callType = CallType.SIGNLE
-		}
-		/// |--------------------------------------------------------------------|
-		/// | CALLTYPE  | EXECTYPE  |   UNUSED   | ModeSelector  |  ModePayload  |
-		/// |--------------------------------------------------------------------|
-		/// | 1 byte    | 1 byte    |   4 bytes  | 4 bytes       |   22 bytes    |
-		/// |--------------------------------------------------------------------|
-		if (!isBytes(callType, 1)) throw new NexusError(`invalid callType ${callType}`)
-		if (!isBytes(execType, 1)) throw new NexusError(`invalid execType ${execType}`)
-		if (!isBytes(unused, 4)) throw new NexusError(`invalid unused ${unused}`)
-		if (!isBytes(modeSelector, 4)) throw new NexusError(`invalid modeSelector ${modeSelector}`)
-		if (!isBytes(modePayload, 22)) throw new NexusError(`invalid modePayload ${modePayload}`)
-		const execMode = concat([callType, execType, unused, modeSelector, modePayload])
-
-		switch (callType) {
-			case CallType.SIGNLE:
-				return this.interface.encodeFunctionData('execute', [
-					execMode,
-					// Nexus's decodeSingle is address (20) + value (32) + data (bytes)
-					concat([executions[0].to, toBytes32(executions[0].value), executions[0].data]),
-				])
-			case CallType.BATCH:
-				return this.interface.encodeFunctionData('execute', [execMode, encodeExecutions(executions)])
-			default:
-				throw new NexusError('unsupported call type')
-		}
-	}
-
 	/**
 	 * @dev Nexus.initializeAccount's initData = abi.encode(bootstrap address, bootstrap calldata)
 	 */
@@ -156,7 +92,7 @@ export class NexusAccount extends SmartAccount {
 		let bootstrapCalldata: string
 		switch (creationOptions.bootstrap) {
 			case 'initNexusWithSingleValidator':
-				bootstrapCalldata = this.bootstrapInterface.encodeFunctionData('initNexusWithSingleValidator', [
+				bootstrapCalldata = INTERFACES.NexusBootstrap.encodeFunctionData('initNexusWithSingleValidator', [
 					creationOptions.validatorAddress,
 					creationOptions.validatorInitData,
 					creationOptions.registryAddress,
@@ -164,35 +100,78 @@ export class NexusAccount extends SmartAccount {
 					creationOptions.threshold,
 				])
 				break
-			// TODO: add other bootstrap functions
+			// NICE-TO-HAVE: implement other bootstrap functions
 			default:
 				throw new NexusError('Unsupported bootstrap function')
 		}
 		return abiEncode(['address', 'bytes'], [ADDRESS.NexusBootstrap, bootstrapCalldata])
-
-		function sortAndUniquifyAddresses(addresses: string[]): string[] {
-			const uniqueAddresses = [...new Set(addresses.map(addr => addr.toLowerCase()))]
-
-			return uniqueAddresses.sort((a, b) => {
-				const addrA = a.startsWith('0x') ? a.slice(2) : a
-				const addrB = b.startsWith('0x') ? b.slice(2) : b
-
-				return addrA.localeCompare(addrB)
-			})
-		}
 	}
 
-	override encodeInstallModule(config: NexusInstallModuleConfig): string {
-		let initData: string
+	static override encodeInstallModule(config: NexusInstallModuleConfig): string {
+		if (!isHexString(config.initData)) {
+			throw new NexusError('Invalid NexusInstallModuleConfig.initData')
+		}
+		let moduleInitData: string
 		switch (config.moduleType) {
 			case ERC7579_MODULE_TYPE.VALIDATOR:
-				initData = config.initData
+				moduleInitData = config.initData
 				break
-			// TODO: add other module types
+			case ERC7579_MODULE_TYPE.EXECUTOR:
+				moduleInitData = config.initData
+				break
+			case ERC7579_MODULE_TYPE.FALLBACK:
+				if (dataLength(config.functionSig) !== 4) {
+					throw new NexusError('Invalid NexusInstallModuleConfig.functionSig')
+				}
+				if (dataLength(config.callType) !== 1) {
+					throw new NexusError('Invalid NexusInstallModuleConfig.callType')
+				}
+				moduleInitData = concat([config.functionSig, config.callType, config.initData])
+				break
+			case ERC7579_MODULE_TYPE.HOOK:
+				moduleInitData = config.initData
+				break
 			default:
-				throw new NexusError('Unsupported module type')
+				throw new NexusError('Invalid NexusInstallModuleConfig.moduleType')
 		}
-		return this.interface.encodeFunctionData('installModule', [config.moduleType, config.moduleAddress, initData])
+		return INTERFACES.Nexus.encodeFunctionData('installModule', [
+			config.moduleType,
+			config.moduleAddress,
+			moduleInitData,
+		])
+	}
+
+	static override encodeUninstallModule(config: NexusUninstallModuleConfig): string {
+		if (!isHexString(config.deInitData)) {
+			throw new NexusError('Invalid NexusUninstallModuleConfig.deInitData')
+		}
+
+		let moduleDeInitData: string
+
+		switch (config.moduleType) {
+			case ERC7579_MODULE_TYPE.VALIDATOR:
+				moduleDeInitData = abiEncode(['address', 'bytes'], [config.prev, config.deInitData])
+				break
+			case ERC7579_MODULE_TYPE.EXECUTOR:
+				moduleDeInitData = abiEncode(['address', 'bytes'], [config.prev, config.deInitData])
+				break
+			case ERC7579_MODULE_TYPE.FALLBACK:
+				moduleDeInitData = concat([config.selector, config.deInitData])
+				break
+			case ERC7579_MODULE_TYPE.HOOK:
+				moduleDeInitData = config.deInitData
+				break
+		}
+
+		return INTERFACES.Nexus.encodeFunctionData('uninstallModule', [
+			config.moduleType,
+			config.moduleAddress,
+			moduleDeInitData,
+		])
+	}
+
+	protected createError(message: string, cause?: Error) {
+		return new NexusError(message, cause)
 	}
 }
 
@@ -202,3 +181,24 @@ export class NexusError extends SendopError {
 		this.name = 'NexusError'
 	}
 }
+
+export type NexusInstallModuleConfig =
+	| SimpleInstallModuleConfig<ERC7579_MODULE_TYPE.VALIDATOR>
+	| SimpleInstallModuleConfig<ERC7579_MODULE_TYPE.EXECUTOR>
+	| (SimpleInstallModuleConfig<ERC7579_MODULE_TYPE.FALLBACK> & {
+			functionSig: string // 4 bytes
+			callType: CallType // 1 byte
+	  })
+	| SimpleInstallModuleConfig<ERC7579_MODULE_TYPE.HOOK>
+
+export type NexusUninstallModuleConfig =
+	| (SimpleUninstallModuleConfig<ERC7579_MODULE_TYPE.VALIDATOR> & {
+			prev: string // address
+	  })
+	| (SimpleUninstallModuleConfig<ERC7579_MODULE_TYPE.EXECUTOR> & {
+			prev: string // address
+	  })
+	| (SimpleUninstallModuleConfig<ERC7579_MODULE_TYPE.FALLBACK> & {
+			selector: string // 4 bytes
+	  })
+	| SimpleUninstallModuleConfig<ERC7579_MODULE_TYPE.HOOK>

@@ -8,7 +8,7 @@ import { setup } from '../utils'
 const kernelAddress = '0x1e1657CE5DDB70654707355f2c6fDA43Daf066De'
 const permissionId = '0xba06d407c8d9ddaaac3b680421283c1c424cd21e8205173dfef1840705aa9957'
 
-const { logger, chainId, CLIENT_URL, account1 } = await setup({ chainId: 'local' })
+const { logger, chainId, CLIENT_URL, account1 } = await setup({ chainId: 1337n })
 
 logger.info(`Chain ID: ${chainId}`)
 logger.info(`Kernel address: ${kernelAddress}`)
@@ -43,16 +43,16 @@ for (const event of events) {
 // const userOp = getEmptyUserOp()
 // userOp.nonce = randomBytes32()
 // userOp.sender = kernelAddress
-// const userOpHash = getUserOpHash(packUserOp(userOp), ADDRESS.EntryPointV7, chainId)
+// const userOpHash = getUserOpHash(packUserOp(userOp), ADDRESS.EntryPointV07, chainId)
 // userOp.signature = await account1.signMessage(getBytes(userOpHash))
 // const validateUserOp = await ownableValidator.validateUserOp(packUserOp(userOp), userOpHash)
 // logger.info('validateUserOp:', validateUserOp)
 
 // validateSignatureWithData (data == config of smartsession.getSessionValidatorAndConfig)
 const userOp = getEmptyUserOp()
-userOp.nonce = randomBytes32()
+userOp.nonce = BigInt(randomBytes32())
 userOp.sender = kernelAddress
-const userOpHash = getUserOpHash(packUserOp(userOp), ADDRESS.EntryPointV7, chainId)
+const userOpHash = getUserOpHash(packUserOp(userOp), 'v0.7', chainId)
 const signature = await account1.signMessage(getBytes(userOpHash))
 const smartsession = SmartSession__factory.connect(ADDRESS.SmartSession, client)
 const session = await smartsession.getSessionValidatorAndConfig(kernelAddress, permissionId)

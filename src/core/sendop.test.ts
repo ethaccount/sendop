@@ -4,10 +4,11 @@ import { KernelV3Account } from '@/smart-accounts'
 import { connectEntryPointV07 } from '@/utils/contract-helper'
 import { EOAValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, parseEther, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
-import { MyPaymaster, setup } from 'test/utils'
+import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import type { Bundler, ERC7579Validator, PaymasterGetter } from './interface'
 import { sendop } from './sendop'
+import { PublicPaymaster } from '@/paymasters'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, isLocal } = await setup()
 
@@ -30,35 +31,31 @@ describe('sendop', () => {
 		client = new JsonRpcProvider(CLIENT_URL)
 		signer = new Wallet(privateKey, client)
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL)
-		pmGetter = new MyPaymaster({
-			client,
-			paymasterAddress: ADDRESS.CharityPaymaster,
-		})
+		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 		validator = new EOAValidatorModule({
-			address: ADDRESS.K1Validator,
+			address: ADDRESS.ECDSAValidator,
 			signer,
 		})
 		creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ADDRESS.K1Validator,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			owner: signer.address,
 		}
 
 		logger.info(`Signer: ${signer.address}`)
 	})
 
-	// TODO: fix this test
-	it.skip('cannot pay prefund for kernel deployment when estimateUserOperationGas with reason: AA13 initCode failed or OOG', async () => {
+	it('pay prefund to computed address for kernel deployment', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ADDRESS.K1Validator,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			validatorInitData: await resolveAddress(signer),
 		}
 
-		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
+		const computedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
 
 		const kernel = new KernelV3Account({
-			address: deployedAddress,
+			address: computedAddress,
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 			validator,
@@ -66,11 +63,11 @@ describe('sendop', () => {
 
 		// deposit 1 eth to entrypoint for kernel deployment
 		const entrypoint = connectEntryPointV07(signer)
-		const tx = await entrypoint.depositTo(deployedAddress, { value: parseEther('1') })
+		const tx = await entrypoint.depositTo(computedAddress, { value: parseEther('1') })
 		await tx.wait()
 
 		// check balance of deployed address
-		const balance = await entrypoint.balanceOf(deployedAddress)
+		const balance = await entrypoint.balanceOf(computedAddress)
 		expect(balance).toBe(parseEther('1'))
 
 		const op = await sendop({
@@ -82,23 +79,54 @@ describe('sendop', () => {
 
 		logger.info(`hash: ${op.hash}`)
 		await op.wait()
-		logger.info('deployed address: ', deployedAddress)
+		logger.info('deployed address: ', computedAddress)
 
-		const code = await client.getCode(deployedAddress)
+		const code = await client.getCode(computedAddress)
 		expect(code).not.toBe('0x')
 	}, 100_000)
 
-	it('should deploy KernelV3Account with charity paymaster', async () => {
+	it('should deploy KernelV3Account with public paymaster', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ADDRESS.K1Validator,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			validatorInitData: await resolveAddress(signer),
 		}
 
-		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
+		const computedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
 
 		const kernel = new KernelV3Account({
-			address: deployedAddress,
+			address: computedAddress,
+			client: new JsonRpcProvider(CLIENT_URL),
+			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
+			validator,
+		})
+
+		const op = await sendop({
+			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
+			executions: [],
+			opGetter: kernel,
+			pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
+			initCode: kernel.getInitCode(creationOptions),
+		})
+		logger.info(`hash: ${op.hash}`)
+		await op.wait()
+		logger.info('deployed address: ', computedAddress)
+
+		const code = await client.getCode(computedAddress)
+		expect(code).not.toBe('0x')
+	}, 100_000)
+
+	it('should deploy KernelV3Account with public paymaster and set number without paymaster', async () => {
+		const creationOptions = {
+			salt: hexlify(randomBytes(32)),
+			validatorAddress: ADDRESS.ECDSAValidator,
+			validatorInitData: await resolveAddress(signer),
+		}
+
+		const computedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
+
+		const kernel = new KernelV3Account({
+			address: computedAddress,
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 			validator,
@@ -113,40 +141,9 @@ describe('sendop', () => {
 		})
 		logger.info(`hash: ${op.hash}`)
 		await op.wait()
-		logger.info('deployed address: ', deployedAddress)
+		logger.info('deployed address: ', computedAddress)
 
-		const code = await client.getCode(deployedAddress)
-		expect(code).not.toBe('0x')
-	}, 100_000)
-
-	it('should deploy KernelV3Account with charity paymaster and set number without paymaster', async () => {
-		const creationOptions = {
-			salt: hexlify(randomBytes(32)),
-			validatorAddress: ADDRESS.K1Validator,
-			validatorInitData: await resolveAddress(signer),
-		}
-
-		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
-
-		const kernel = new KernelV3Account({
-			address: deployedAddress,
-			client: new JsonRpcProvider(CLIENT_URL),
-			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
-			validator,
-		})
-
-		const op = await sendop({
-			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
-			executions: [],
-			opGetter: kernel,
-			pmGetter,
-			initCode: kernel.getInitCode(creationOptions),
-		})
-		logger.info(`hash: ${op.hash}`)
-		await op.wait()
-		logger.info('deployed address: ', deployedAddress)
-
-		const code = await client.getCode(deployedAddress)
+		const code = await client.getCode(computedAddress)
 		expect(code).not.toBe('0x')
 
 		// set number without paymaster
@@ -154,11 +151,11 @@ describe('sendop', () => {
 
 		// deposit 1 eth to entrypoint for kernel deployment
 		const entrypoint = connectEntryPointV07(signer)
-		const tx = await entrypoint.depositTo(deployedAddress, { value: parseEther('1') })
+		const tx = await entrypoint.depositTo(computedAddress, { value: parseEther('1') })
 		await tx.wait()
 
 		// check balance of deployed address
-		const balance = await entrypoint.balanceOf(deployedAddress)
+		const balance = await entrypoint.balanceOf(computedAddress)
 		expect(balance).toBe(parseEther('1'))
 
 		const op2 = await sendop({
@@ -175,7 +172,7 @@ describe('sendop', () => {
 
 		logger.info(`hash: ${op2.hash}`)
 		const receipt = await op2.wait()
-		logger.info('deployed address: ', deployedAddress)
+		logger.info('deployed address: ', computedAddress)
 
 		const log = receipt.logs[receipt.logs.length - 1]
 		expect(toNumber(log.data)).toBe(number)
@@ -184,13 +181,13 @@ describe('sendop', () => {
 	it('should deploy KernelV3Account and set number in one user operation', async () => {
 		const creationOptions = {
 			salt: hexlify(randomBytes(32)),
-			validatorAddress: ADDRESS.K1Validator,
+			validatorAddress: ADDRESS.ECDSAValidator,
 			validatorInitData: await resolveAddress(signer),
 		}
-		const deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
+		const computedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
 
 		const kernel = new KernelV3Account({
-			address: deployedAddress,
+			address: computedAddress,
 			client: new JsonRpcProvider(CLIENT_URL),
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 			validator,
@@ -208,18 +205,15 @@ describe('sendop', () => {
 				},
 			],
 			opGetter: kernel,
-			pmGetter: new MyPaymaster({
-				client,
-				paymasterAddress: ADDRESS.CharityPaymaster,
-			}),
+			pmGetter,
 			initCode: kernel.getInitCode(creationOptions),
 		})
 
 		logger.info(`hash: ${op.hash}`)
 		const receipt = await op.wait()
-		logger.info('deployed address: ', deployedAddress)
+		logger.info('deployed address: ', computedAddress)
 
-		const code = await client.getCode(deployedAddress)
+		const code = await client.getCode(computedAddress)
 		expect(code).not.toBe('0x')
 		const log = receipt.logs[receipt.logs.length - 1]
 		expect(toNumber(log.data)).toBe(number)

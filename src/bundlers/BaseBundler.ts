@@ -1,119 +1,182 @@
 import { ADDRESS } from '@/addresses'
-import { type Bundler, type UserOp, type UserOpReceipt } from '@/core'
+import { formatUserOpToHex, type Bundler, type GasValues, type UserOp, type UserOpReceipt } from '@/core'
 import { normalizeError, SendopError } from '@/error'
 import { RpcProvider } from '@/RpcProvider'
 import { encodeHandleOpsCalldata, parseContractError, randomAddress } from '@/utils'
-import { toBeHex } from 'ethers'
+import { type EntryPointVersion } from '@/utils/contract-helper'
+import { z } from 'zod'
 
-export type GasValues = {
-	maxFeePerGas: string
-	maxPriorityFeePerGas: string
-	preVerificationGas: string
-	verificationGasLimit: string
-	callGasLimit: string
-}
+// Schema for eth_estimateUserOperationGas RPC response. See ERC-7769.
+const estimateGasResponseSchema = z.object({
+	// Required fields
+	preVerificationGas: z.string(), // Hex string
+	verificationGasLimit: z.string(), // Hex string
+	callGasLimit: z.string(), // Hex string
+
+	// Optional fields
+	paymasterVerificationGasLimit: z.string().optional(), // Only returned if UserOperation specifies a Paymaster address
+	// bundler may return maxFeePerGas and maxPriorityFeePerGas (ex. Etherspot)
+	maxFeePerGas: z.string().optional(),
+	maxPriorityFeePerGas: z.string().optional(),
+})
 
 export type BundlerOptions = {
 	skipGasEstimation?: boolean
 	onBeforeEstimation?: (userOp: UserOp) => Promise<UserOp>
-	onGetGasValues?: (gasValues: GasValues) => Promise<GasValues>
+	onAfterEstimation?: (gasValues: GasValues) => Promise<GasValues>
 	onBeforeSendUserOp?: (userOp: UserOp) => Promise<UserOp>
 	debugSend?: boolean
 	debug?: boolean
 	parseError?: boolean
+	entryPointVersion?: EntryPointVersion
 }
 
 export abstract class BaseBundler implements Bundler {
-	public chainId: string
+	public chainId: bigint
 	public url: string
+	protected readonly _options: BundlerOptions
 	public rpcProvider: RpcProvider
-	protected skipGasEstimation: boolean
-	protected onGetGasValues?: (gasValues: GasValues) => Promise<GasValues>
-	protected onBeforeEstimation?: (userOp: UserOp) => Promise<UserOp>
-	protected onBeforeSendUserOp?: (userOp: UserOp) => Promise<UserOp>
-	protected debugSend?: boolean
-	protected debug?: boolean
-	protected parseError: boolean = false
+	public entryPointAddress: string
 
-	constructor(chainId: string, url: string, options?: BundlerOptions) {
+	constructor(chainId: bigint, url: string, options?: BundlerOptions) {
 		this.chainId = chainId
 		this.url = url
-		this.rpcProvider = new RpcProvider(url)
-		this.skipGasEstimation = options?.skipGasEstimation ?? false
-		this.onBeforeEstimation = options?.onBeforeEstimation
-		this.onGetGasValues = options?.onGetGasValues
-		this.onBeforeSendUserOp = options?.onBeforeSendUserOp
-		this.debugSend = options?.debugSend ?? false
-		this.debug = options?.debug ?? false
-		this.parseError = options?.parseError ?? false
 
-		if (this.debugSend) {
-			console.warn('debugSend is enabled. It will skip gas estimation.')
-			this.skipGasEstimation = true
+		this._options = {
+			skipGasEstimation: options?.skipGasEstimation ?? false,
+			onBeforeEstimation: options?.onBeforeEstimation,
+			onAfterEstimation: options?.onAfterEstimation,
+			onBeforeSendUserOp: options?.onBeforeSendUserOp,
+			debugSend: options?.debugSend ?? false,
+			debug: options?.debug ?? false,
+			parseError: options?.parseError ?? false,
+			entryPointVersion: options?.entryPointVersion,
 		}
 
-		if (this.debug) {
-			console.warn('debug is enabled.')
+		this.rpcProvider = new RpcProvider(this.url)
+		switch (this._options.entryPointVersion) {
+			case 'v0.8':
+				this.entryPointAddress = ADDRESS.EntryPointV08
+				break
+			case 'v0.7':
+				this.entryPointAddress = ADDRESS.EntryPointV07
+				break
+			default:
+				this.entryPointAddress = ADDRESS.EntryPointV07
+		}
+
+		if (this._options.debugSend) {
+			console.warn('Bundler debugSend is enabled. It will skip gas estimation.')
+			this._options.skipGasEstimation = true
+		}
+
+		if (this._options.debug) {
+			console.warn('Bundler debug is enabled.')
 		}
 	}
 
-	abstract getGasValues(userOp: UserOp): Promise<GasValues>
+	abstract _getGasValues(userOp: UserOp): Promise<GasValues>
+
+	async getGasValues(userOp: UserOp): Promise<GasValues> {
+		let gasValues = await this._getGasValues(userOp)
+		if (this._options.onAfterEstimation) {
+			gasValues = await this._options.onAfterEstimation(gasValues)
+		}
+		return gasValues
+	}
 
 	async sendUserOperation(userOp: UserOp): Promise<string> {
-		if (this.onBeforeSendUserOp) {
-			userOp = await this.onBeforeSendUserOp(userOp)
-		}
+		try {
+			if (this._options.onBeforeSendUserOp) {
+				userOp = await this._options.onBeforeSendUserOp(userOp)
+			}
 
-		if (this.debugSend) {
-			console.log('handleOpsCalldata:')
-			console.log(encodeHandleOpsCalldata([userOp], randomAddress()))
-			console.log('userOp:')
-			console.log(JSON.stringify(userOp, null, 2))
-		}
+			if (this._options.debugSend) {
+				console.log('handleOpsCalldata:')
+				console.log(encodeHandleOpsCalldata([userOp], randomAddress()))
+				console.log('userOp:')
+				console.log(JSON.stringify(formatUserOpToHex(userOp), null, 2))
+			}
 
-		return await this.rpcProvider.send({
-			method: 'eth_sendUserOperation',
-			params: [userOp, ADDRESS.EntryPointV7],
-		})
+			return await this.rpcProvider.send({
+				method: 'eth_sendUserOperation',
+				params: [formatUserOpToHex(userOp), this.entryPointAddress],
+			})
+		} catch (error: unknown) {
+			const err = normalizeError(error)
+
+			if (this._options.debug) {
+				console.log('handleOpsCalldata:')
+				console.log(encodeHandleOpsCalldata([userOp], randomAddress()))
+				console.log('userOp:')
+				console.log(JSON.stringify(formatUserOpToHex(userOp), null, 2))
+			}
+
+			throw new BaseBundlerError('Send user operation failed', { cause: err })
+		}
 	}
 
 	async getUserOperationReceipt(hash: string): Promise<UserOpReceipt> {
 		return await this.rpcProvider.send({ method: 'eth_getUserOperationReceipt', params: [hash] })
 	}
 
-	protected async estimateUserOperationGas(userOp: UserOp) {
-		if (this.skipGasEstimation) {
-			return this.getDefaultGasEstimation()
+	protected async estimateUserOperationGas(userOp: UserOp): Promise<GasValues> {
+		const hasPaymaster = !!userOp.paymaster
+
+		if (this._options.skipGasEstimation) {
+			return this.defaultGasValues(hasPaymaster)
 		}
 
-		if (this.onBeforeEstimation) {
-			userOp = await this.onBeforeEstimation(userOp)
+		if (this._options.onBeforeEstimation) {
+			userOp = await this._options.onBeforeEstimation(userOp)
 		}
 
-		let estimateGas
+		const formattedUserOp = formatUserOpToHex(userOp)
+
+		let gasValues: GasValues
 
 		try {
-			estimateGas = await this.rpcProvider.send({
+			const response = await this.rpcProvider.send({
 				method: 'eth_estimateUserOperationGas',
-				params: [userOp, ADDRESS.EntryPointV7],
+				params: [formattedUserOp, this.entryPointAddress],
 			})
+
+			const parsed = estimateGasResponseSchema.safeParse(response)
+			if (!parsed.success) {
+				throw new BaseBundlerError(`Invalid estimateGas response: ${parsed.error}`)
+			}
+			const estimateGas = parsed.data
+
+			// Convert hex string values to BigInt
+			gasValues = {
+				maxFeePerGas: estimateGas.maxFeePerGas ? BigInt(estimateGas.maxFeePerGas) : 0n,
+				maxPriorityFeePerGas: estimateGas.maxPriorityFeePerGas ? BigInt(estimateGas.maxPriorityFeePerGas) : 0n,
+				preVerificationGas: BigInt(estimateGas.preVerificationGas),
+				verificationGasLimit: BigInt(estimateGas.verificationGasLimit),
+				callGasLimit: BigInt(estimateGas.callGasLimit),
+				paymasterVerificationGasLimit: estimateGas.paymasterVerificationGasLimit
+					? BigInt(estimateGas.paymasterVerificationGasLimit)
+					: 0n,
+			}
 		} catch (error: unknown) {
 			const err = normalizeError(error)
 
-			if (this.debug) {
-				userOp.preVerificationGas = toBeHex(BigInt(99_999))
-				userOp.callGasLimit = toBeHex(BigInt(999_999))
-				userOp.verificationGasLimit = toBeHex(BigInt(999_999))
-				userOp.maxFeePerGas = toBeHex(BigInt(999_999))
-				userOp.maxPriorityFeePerGas = toBeHex(BigInt(999_999))
+			if (this._options.debug) {
+				const defaultGasValues = this.defaultGasValues(hasPaymaster)
+				userOp.maxFeePerGas = defaultGasValues.maxFeePerGas
+				userOp.maxPriorityFeePerGas = defaultGasValues.maxPriorityFeePerGas
+				userOp.preVerificationGas = defaultGasValues.preVerificationGas
+				userOp.verificationGasLimit = defaultGasValues.verificationGasLimit
+				userOp.callGasLimit = defaultGasValues.callGasLimit
+				userOp.paymasterVerificationGasLimit = defaultGasValues.paymasterVerificationGasLimit
 
 				console.log('handleOpsCalldata:')
 				console.log(encodeHandleOpsCalldata([userOp], randomAddress()))
 				console.log('userOp:')
-				console.log(JSON.stringify(userOp, null, 2))
+				console.log(JSON.stringify(formatUserOpToHex(userOp), null, 2))
 			}
 
-			if (this.parseError) {
+			if (this._options.parseError) {
 				const hexDataMatch = err.message.match(/(0x[a-fA-F0-9]+)(?![0-9a-fA-F])/)
 				const hasHexData = hexDataMatch?.[1]
 
@@ -127,33 +190,21 @@ export abstract class BaseBundler implements Bundler {
 				}
 			}
 
-			throw err
+			throw new BaseBundlerError('Gas estimation failed', { cause: err })
 		}
 
-		this.validateGasEstimation(estimateGas)
-		return estimateGas
+		return gasValues
 	}
 
-	protected getDefaultGasEstimation() {
+	protected defaultGasValues(hasPaymaster: boolean) {
 		return {
-			preVerificationGas: '0xf423f', // 999_999
-			verificationGasLimit: '0xf423f',
-			callGasLimit: '0xf423f',
+			maxFeePerGas: 999_999n,
+			maxPriorityFeePerGas: 999_999n,
+			preVerificationGas: 99_999n,
+			verificationGasLimit: 999_999n,
+			callGasLimit: 999_999n,
+			paymasterVerificationGasLimit: hasPaymaster ? 999_999n : 0n,
 		}
-	}
-
-	protected validateGasEstimation(estimateGas: any) {
-		if (!estimateGas) {
-			throw new BaseBundlerError('Empty response from gas estimation')
-		}
-
-		const requiredFields = ['preVerificationGas', 'verificationGasLimit', 'callGasLimit']
-		for (const field of requiredFields) {
-			if (!(field in estimateGas)) {
-				throw new BaseBundlerError(`Missing required gas estimation field: ${field}`)
-			}
-		}
-		return estimateGas
 	}
 }
 

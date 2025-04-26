@@ -21,8 +21,8 @@ async function main() {
 		.option('output', {
 			alias: 'o',
 			type: 'string',
-			description: 'Output file path or directory (default: src/abis)',
-			default: 'src/abis',
+			description: 'Output file path or directory (default: abis)',
+			default: 'abis',
 		})
 		.help().argv
 

@@ -1,5 +1,5 @@
 import { fetchABI, logger } from './common'
-import addresses from '../src/addresses.json'
+import addresses from './addresses.json'
 import fs from 'fs'
 import path from 'path'
 
@@ -8,9 +8,14 @@ async function main() {
 	logger.info(`Fetching ABIs for ${network}...`)
 
 	const noAbiAddresses: { name: string; address: string }[] = []
+	const { 'fetch-abi': contractAddresses, 'skip-fetch-abi': skipFetchAbi } = addresses
 
-	for (const address of Object.keys(addresses)) {
-		const name = addresses[address as keyof typeof addresses]
+	for (const [address, name] of Object.entries(contractAddresses)) {
+		// Skip if in skipFetchAbi array
+		if (skipFetchAbi.includes(name)) {
+			logger.info(`Skipping ABI fetch for ${name} as configured`)
+			continue
+		}
 
 		try {
 			await fetchABI(address, network, name)
@@ -21,15 +26,12 @@ async function main() {
 		}
 	}
 
-	// Save addresses without ABIs to file in the same format as addresses.ts
-	const addressEntries = noAbiAddresses.map(({ name, address }) => `\t${name}: '${address}'`).join(',\n')
-
-	const noAbiContent = `const NO_ABI_ADDRESS = {\n${addressEntries}\n}\n\nexport default NO_ABI_ADDRESS`
-	fs.writeFileSync(path.join(__dirname, '../src/no-abi-addresses.ts'), noAbiContent)
+	// Write failed fetches to a JSON file for gen-addresses.ts to use
+	fs.writeFileSync(path.join(__dirname, 'failed-fetches.json'), JSON.stringify(noAbiAddresses, null, 2))
 
 	logger.success('Done fetching ABIs')
 	if (noAbiAddresses.length > 0) {
-		logger.info(`${noAbiAddresses.length} addresses without ABIs saved to no-abi-addresses.ts`)
+		logger.info(`${noAbiAddresses.length} addresses failed to fetch ABIs`)
 	}
 }
 

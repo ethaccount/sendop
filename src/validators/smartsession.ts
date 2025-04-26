@@ -1,7 +1,7 @@
 import { ADDRESS } from '@/addresses'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
 import type { SessionStruct } from '@/contract-types/SmartSession'
-import { ERC7579Validator } from '@/core'
+import { ERC7579Validator, type SignatureData } from '@/core'
 import type { Signer } from 'ethers'
 import { concat, keccak256 } from 'ethers'
 import { abiEncode, concatBytesList } from '../utils/ethers-helper'
@@ -51,9 +51,23 @@ export class OwnableSmartSessionValidator extends ERC7579Validator {
 			concatBytesList(Array(threshold).fill(DUMMY_ECDSA_SIGNATURE)),
 		)
 	}
-	getSignature = async (userOpHash: Uint8Array) => {
+	getSignature = async (signatureData: SignatureData) => {
 		const threshold = 1
-		const signature = await this._options.signer.signMessage(userOpHash)
+
+		let signature: string
+		switch (signatureData.entryPointVersion) {
+			case 'v0.7':
+				signature = await this._options.signer.signMessage(signatureData.hash)
+				break
+			case 'v0.8':
+				signature = await this._options.signer.signTypedData(
+					signatureData.domain,
+					signatureData.types,
+					signatureData.values,
+				)
+				break
+		}
+
 		return getSmartSessionUseModeSignature(
 			this._options.permissionId,
 			concatBytesList(Array(threshold).fill(signature)),

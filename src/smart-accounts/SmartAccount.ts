@@ -1,33 +1,26 @@
-import type {
-	Bundler,
-	ERC7579Validator,
-	Execution,
-	OperationGetter,
-	PaymasterGetter,
-	SendOpResult,
-	UserOp,
-} from '@/core'
+import { ADDRESS } from '@/addresses'
+import type { Bundler, Execution, OperationGetter, PaymasterGetter, SendOpResult, SignatureData, UserOp } from '@/core'
 import { sendop } from '@/core'
-import { SendopError } from '@/error'
-import { connectEntryPointV07 } from '@/utils'
-import { toBeHex, type JsonRpcProvider } from 'ethers'
+import { SendopError, UnsupportedEntryPointError } from '@/error'
+import { connectEntryPointV07, connectEntryPointV08 } from '@/utils'
+import { type JsonRpcProvider } from 'ethers'
 
 export type SmartAccountOptions = {
 	address?: string
 	client: JsonRpcProvider
 	bundler: Bundler
-	validator: ERC7579Validator
 	pmGetter?: PaymasterGetter
 }
 
-export abstract class SmartAccount implements OperationGetter {
+export type SmartAccountCreationOptions = Record<string, any>
+
+export abstract class SmartAccount<TCreationOptions extends SmartAccountCreationOptions> implements OperationGetter {
 	protected readonly _options: SmartAccountOptions
 
 	constructor(options: SmartAccountOptions) {
 		this._options = options
 	}
 
-	// Common getters
 	get address(): string | undefined {
 		return this._options.address
 	}
@@ -40,84 +33,82 @@ export abstract class SmartAccount implements OperationGetter {
 		return this._options.bundler
 	}
 
-	get validator(): ERC7579Validator {
-		return this._options.validator
-	}
-
 	get pmGetter(): PaymasterGetter | undefined {
 		return this._options.pmGetter
 	}
 
 	async getSender(): Promise<string> {
 		if (!this.address) {
-			throw new NoAddressAccountError()
+			throw this.createError(
+				'SmartAccount.getSender failed. Account has no address, set it in the constructor options or call SmartAccount.connect(address) first',
+			)
 		}
 		return this.address
 	}
 
-	async getNonce(): Promise<string> {
-		const nonce = await connectEntryPointV07(this.client).getNonce(await this.getSender(), this.getNonceKey())
-		return toBeHex(nonce)
+	async getNonce(): Promise<bigint> {
+		switch (this.bundler.entryPointAddress) {
+			case ADDRESS.EntryPointV07:
+				return await connectEntryPointV07(this.client).getNonce(await this.getSender(), this.getNonceKey())
+			case ADDRESS.EntryPointV08:
+				return await connectEntryPointV08(this.client).getNonce(await this.getSender(), this.getNonceKey())
+			default:
+				throw this.createError(
+					'getNonce failed',
+					new UnsupportedEntryPointError(this.bundler.entryPointAddress),
+				)
+		}
 	}
 
-	async getDummySignature(userOp: UserOp): Promise<string> {
-		return this.validator.getDummySignature(userOp)
-	}
-
-	async getSignature(userOpHash: Uint8Array, userOp: UserOp): Promise<string> {
-		return this.validator.getSignature(userOpHash, userOp)
-	}
-
-	async send(executions: Execution[], pmGetter?: PaymasterGetter): Promise<SendOpResult> {
+	async send(executions: Execution[], options?: { pmGetter?: PaymasterGetter }): Promise<SendOpResult> {
 		return await sendop({
 			bundler: this.bundler,
 			executions,
 			opGetter: this,
-			pmGetter: pmGetter ?? this.pmGetter,
+			pmGetter: options?.pmGetter ?? this.pmGetter,
 		})
 	}
 
-	async deploy(creationOptions: any, pmGetter?: PaymasterGetter): Promise<SendOpResult> {
-		const computedAddress = await (this.constructor as typeof SmartAccount).getNewAddress(
+	async deploy(
+		creationOptions: TCreationOptions,
+		options?: {
+			pmGetter?: PaymasterGetter
+			executions?: Execution[]
+		},
+	): Promise<SendOpResult> {
+		const computedAddress = await (this.constructor as typeof SmartAccount).computeAccountAddress(
 			this.client,
 			creationOptions,
 		)
 		return await sendop({
 			bundler: this.bundler,
-			executions: [],
+			executions: options?.executions ?? [],
 			opGetter: this.connect(computedAddress),
-			pmGetter: pmGetter ?? this.pmGetter,
+			pmGetter: options?.pmGetter ?? this.pmGetter,
 			initCode: this.getInitCode(creationOptions),
 		})
 	}
 
 	// Abstract methods that need to be implemented by specific accounts
-	abstract getNonceKey(): string
+	abstract getNonceKey(): bigint
 	abstract getCallData(executions: Execution[]): Promise<string> | string
-	abstract connect(address: string): SmartAccount
-	abstract getInitCode(creationOptions: any): string
-	abstract encodeInstallModule(config: any): string
+	abstract connect(address: string): SmartAccount<TCreationOptions>
+	abstract getInitCode(creationOptions: TCreationOptions): string
+	abstract getDummySignature(userOp: UserOp): Promise<string> | string
+	abstract getSignature(signatureData: SignatureData): Promise<string> | string
 
 	// Static methods
 	static accountId(): string {
-		throw new NoImplementationError('accountId')
+		throw new SendopError('SmartAccount.accountId is not implemented')
 	}
 
-	static async getNewAddress(client: JsonRpcProvider, creationOptions: any): Promise<string> {
-		throw new NoImplementationError('getNewAddress')
+	static async computeAccountAddress(client: JsonRpcProvider, creationOptions: any): Promise<string> {
+		throw new SendopError('SmartAccount.computeAccountAddress is not implemented')
 	}
-}
 
-export class NoImplementationError extends SendopError {
-	constructor(functionName: string) {
-		super(`static method - ${functionName} is not implemented`)
-		this.name = 'NoImplementationError'
+	static getInitCode(creationOptions: any): string {
+		throw new SendopError('SmartAccount.getInitCode is not implemented')
 	}
-}
 
-export class NoAddressAccountError extends SendopError {
-	constructor(cause?: Error) {
-		super('account has no address, set it in the constructor options or call connect(address) first', cause)
-		this.name = 'NoAddressAccountError'
-	}
+	protected abstract createError(message: string, cause?: Error): Error
 }

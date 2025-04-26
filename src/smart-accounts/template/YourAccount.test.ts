@@ -1,13 +1,13 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
+import { PublicPaymaster } from '@/paymasters'
 import { randomBytes32 } from '@/utils'
 import { EOAValidatorModule } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
-import { MyPaymaster, setup } from 'test/utils'
+import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { YourAccount } from './YourAccount'
-import type { YourCreationOptions } from './types'
+import { YourAccount, type YourCreationOptions } from './YourAccount'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup()
 logger.info(`Chain ID: ${chainId}`)
@@ -27,13 +27,10 @@ describe.skip('YourAccount', () => {
 			parseError: true,
 		})
 		validator = new EOAValidatorModule({
-			address: ADDRESS.K1Validator,
+			address: ADDRESS.ECDSAValidator,
 			signer: new Wallet(privateKey),
 		})
-		pmGetter = new MyPaymaster({
-			client,
-			paymasterAddress: ADDRESS.CharityPaymaster,
-		})
+		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 
 		account = new YourAccount({
 			client,
@@ -52,13 +49,13 @@ describe.skip('YourAccount', () => {
 		beforeAll(async () => {
 			creationOptions = {
 				salt: hexlify(randomBytes(32)),
-				validatorAddress: ADDRESS.K1Validator,
+				validatorAddress: ADDRESS.ECDSAValidator,
 				validatorInitData: await resolveAddress(signer),
 			}
 		})
 
-		it('should getNewAddress', async () => {
-			deployedAddress = await YourAccount.getNewAddress(client, creationOptions)
+		it('should computeAccountAddress', async () => {
+			deployedAddress = await YourAccount.computeAccountAddress(client, creationOptions)
 			expect(deployedAddress).not.toBe('0x0000000000000000000000000000000000000000')
 		})
 
@@ -87,8 +84,8 @@ describe.skip('YourAccount', () => {
 				},
 			])
 			const receipt = await op.wait()
-			const log = receipt.logs[receipt.logs.length - 1]
-			expect(toNumber(log.data)).toBe(number)
+			const log = receipt.logs.find(log => log.address === ADDRESS.Counter)
+			expect(toNumber(log?.data ?? 0)).toBe(number)
 		}, 100_000)
 
 		it('should deploy and setNumber in one transaction', async () => {
@@ -96,10 +93,10 @@ describe.skip('YourAccount', () => {
 
 			const creationOptions = {
 				salt: randomBytes32(),
-				validatorAddress: ADDRESS.K1Validator,
+				validatorAddress: ADDRESS.ECDSAValidator,
 				validatorInitData: signer.address,
 			}
-			const computedAddress = await YourAccount.getNewAddress(client, creationOptions)
+			const computedAddress = await YourAccount.computeAccountAddress(client, creationOptions)
 			const account = new YourAccount({
 				address: computedAddress,
 				client,
@@ -122,8 +119,8 @@ describe.skip('YourAccount', () => {
 				],
 			})
 			const receipt = await op.wait()
-			const log = receipt.logs[receipt.logs.length - 1]
-			expect(toNumber(log.data)).toBe(number)
+			const log = receipt.logs.find(log => log.address === ADDRESS.Counter)
+			expect(toNumber(log?.data ?? 0)).toBe(number)
 		}, 100_000)
 	})
 })

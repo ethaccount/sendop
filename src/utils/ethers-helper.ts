@@ -14,7 +14,7 @@ export function concatBytesList(bytesList: string[]) {
  * @returns hex string
  */
 export function toBytes32(value: bigint): string {
-	return zeroPadValue(toBeHex(value), 32)
+	return toBeHex(value, 32)
 }
 
 /**

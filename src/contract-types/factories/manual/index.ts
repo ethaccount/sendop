@@ -3,6 +3,11 @@
 /* eslint-disable */
 export * as ierc7579AccountSol from "./IERC7579Account.sol";
 export * as ierc7579ModulesSol from "./IERC7579Modules.sol";
+export * as safe from "./safe";
+export { IERC1271__factory } from "./IERC1271__factory";
+export { IERC20__factory } from "./IERC20__factory";
+export { IERC2612__factory } from "./IERC2612__factory";
 export { OwnableValidator__factory } from "./OwnableValidator__factory";
 export { ScheduledOrders__factory } from "./ScheduledOrders__factory";
 export { ScheduledTransfers__factory } from "./ScheduledTransfers__factory";
+export { SimpleAccountV08__factory } from "./SimpleAccountV08__factory";

@@ -1,4 +1,5 @@
 import type { ERC7579_MODULE_TYPE } from '@/core'
+import type { BaseModuleConfig, SimpleInstallModuleConfig, SimpleUninstallModuleConfig } from '../ModularSmartAccount'
 
 export enum KernelValidationMode {
 	DEFAULT = '0x00',
@@ -21,37 +22,30 @@ export type KernelCreationOptions = {
 	initConfig?: string[]
 }
 
-export type BaseKernelInstallModuleConfig<T extends ERC7579_MODULE_TYPE> = {
-	moduleType: T
-	moduleAddress: string
-}
-
-export type ValidatorKernelInstallModuleConfig = BaseKernelInstallModuleConfig<ERC7579_MODULE_TYPE.VALIDATOR> & {
+export type ValidatorKernelInstallModuleConfig = SimpleInstallModuleConfig<ERC7579_MODULE_TYPE.VALIDATOR> & {
 	hookAddress?: string
-	validatorData: string
 	hookData?: string
 	selectorData?: string // 4 bytes
 }
 
-export type ExecutorKernelInstallModuleConfig = BaseKernelInstallModuleConfig<ERC7579_MODULE_TYPE.EXECUTOR> & {
+export type ExecutorKernelInstallModuleConfig = SimpleInstallModuleConfig<ERC7579_MODULE_TYPE.EXECUTOR> & {
 	hookAddress?: string
-	executorData: string
 	hookData?: string
 }
 
-export type FallbackKernelInstallModuleConfig = BaseKernelInstallModuleConfig<ERC7579_MODULE_TYPE.FALLBACK> & {
+export type FallbackKernelInstallModuleConfig = BaseModuleConfig<ERC7579_MODULE_TYPE.FALLBACK> & {
 	selector: string // 4 bytes
 	hookAddress: string
 	selectorData: string
 	hookData: string
 }
 
-export type SimpleKernelInstallModuleConfig<T extends ERC7579_MODULE_TYPE.HOOK> = BaseKernelInstallModuleConfig<T> & {
-	initData: string
-}
-
 export type KernelInstallModuleConfig =
 	| ValidatorKernelInstallModuleConfig
 	| ExecutorKernelInstallModuleConfig
 	| FallbackKernelInstallModuleConfig
-	| SimpleKernelInstallModuleConfig<ERC7579_MODULE_TYPE.HOOK>
+	| SimpleInstallModuleConfig<ERC7579_MODULE_TYPE.HOOK>
+
+export type KernelUninstallModuleConfig =
+	| SimpleUninstallModuleConfig<ERC7579_MODULE_TYPE.VALIDATOR>
+	| SimpleUninstallModuleConfig<ERC7579_MODULE_TYPE.EXECUTOR>

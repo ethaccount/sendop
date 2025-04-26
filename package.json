@@ -1,11 +1,11 @@
 {
 	"name": "sendop",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"description": "A TypeScript library for sending user operations for ERC-4337 contracts.",
 	"author": "Johnson Chen <johnson86tw@gmail.com>",
-	"repository": "https://github.com/johnson86tw/sendop",
-	"bugs": "https://github.com/johnson86tw/sendop/issues",
-	"homepage": "https://github.com/johnson86tw/sendop#readme",
+	"repository": "https://github.com/ethaccount/sendop",
+	"bugs": "https://github.com/ethaccount/sendop/issues",
+	"homepage": "https://github.com/ethaccount/sendop#readme",
 	"license": "MIT",
 	"keywords": [
 		"account abstraction",
@@ -16,13 +16,15 @@
 	},
 	"scripts": {
 		"build": "vite build",
-		"build:address": "bun run script/gen-addresses.ts && bun run fetch-abis && bun run typechain && bun run script/gen-interfaces.ts",
+		"build:contract-types": "bun run script/gen-addresses.ts && bun run fetch-abis && bun run typechain && bun run script/gen-interfaces.ts",
 		"test": "vitest --run",
 		"deploy-contracts:local": "forge script --root contracts contracts/script/deploy-contracts.s.sol --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --rpc-url http://localhost:8545 --broadcast",
 		"deploy-contracts:sepolia": "forge script --root contracts contracts/script/deploy-contracts.s.sol --account dev --rpc-url $sepolia --broadcast",
-		"fetch-abis": "rm -rf src/abis/*.json && bun run script/fetch-abis.ts",
-		"typechain": "rm -rf src/contract-types && typechain --target ethers-v6 --out-dir src/contract-types src/abis/**/*.json",
-		"typecheck": "tsc -p tsconfig.json --noEmit"
+		"fetch-abis": "rm -rf abis/*.json && bun run script/fetch-abis.ts",
+		"typechain": "rm -rf src/contract-types && typechain --target ethers-v6 --out-dir src/contract-types 'abis/**/*.json' 'abis/manual/**/*.json'",
+		"gen-interfaces": "bun run script/gen-interfaces.ts",
+		"typecheck": "tsc -p tsconfig.json --noEmit",
+		"prepare": "bun husky"
 	},
 	"type": "module",
 	"files": [
@@ -36,9 +38,11 @@
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",
-			"source": "./src/index.ts",
-			"import": "./dist/index.js",
-			"require": "./dist/index.umd.cjs"
+			"import": "./dist/index.js"
+		},
+		"./contract-types": {
+			"types": "./dist/contract-types.d.ts",
+			"import": "./dist/contract-types.js"
 		}
 	},
 	"peerDependencies": {
@@ -49,10 +53,17 @@
 		"@types/yargs": "^17.0.33",
 		"consola": "^3.2.3",
 		"dotenv": "^16.4.7",
+		"evm-providers": "^0.5.7",
+		"husky": "^9.1.7",
+		"rollup-plugin-visualizer": "^5.14.0",
 		"typechain": "^8.3.2",
 		"vite": "^6.2.0",
 		"vite-plugin-dts": "^4.4.0",
 		"vitest": "^2.1.8",
 		"yargs": "^17.7.2"
-	}
+	},
+	"dependencies": {
+		"zod": "^3.24.3"
+	},
+	"packageManager": "pnpm@9.15.9+sha512.68046141893c66fad01c079231128e9afb89ef87e2691d69e4d40eee228988295fd4682181bae55b58418c3a253bde65a505ec7c5f9403ece5cc3cd37dcf2531"
 }

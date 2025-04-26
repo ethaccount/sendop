@@ -1,8 +1,8 @@
 import { ADDRESS } from '@/addresses'
 import { ScheduledTransfers__factory } from '@/contract-types'
-import { PimlicoBundler } from '@/index'
-import { ethers, JsonRpcProvider } from 'ethers'
-import { MyPaymaster, setup } from 'test/utils'
+import { PimlicoBundler, PublicPaymaster } from '@/index'
+import { JsonRpcProvider } from 'ethers'
+import { setup } from 'test/utils'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { executeScheduledTransfer } from './executeScheduledTransfer'
@@ -22,8 +22,13 @@ const argv = await yargs(hideBin(process.argv))
 		demandOption: true,
 	})
 	.help().argv
-const network = argv.network === 'sepolia' ? '11155111' : 'local'
-const { logger, chainId, CLIENT_URL, BUNDLER_URL, account1 } = await setup({ chainId: network })
+
+const CHAIN_IDS = {
+	local: 1337n,
+	sepolia: 11155111n,
+} as const
+const chainId = CHAIN_IDS[argv.network]
+const { logger, CLIENT_URL, BUNDLER_URL, account1 } = await setup({ chainId })
 logger.info(`Chain ID: ${chainId}`)
 
 const client = new JsonRpcProvider(CLIENT_URL, undefined, {
@@ -33,10 +38,7 @@ const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 	parseError: true,
 })
 
-const pmGetter = new MyPaymaster({
-	client,
-	paymasterAddress: ADDRESS.CharityPaymaster,
-})
+const pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 
 const scheduledTransfers = ScheduledTransfers__factory.connect(ADDRESS.ScheduledTransfers, client)
 
@@ -82,7 +84,7 @@ async function main() {
 main().catch(console.error)
 
 async function actualExecution(account: string, permissionId: string, jobId: bigint) {
-	if (network === 'local') {
+	if (chainId === 1337n) {
 		await setBlockTimestampToNow()
 	}
 

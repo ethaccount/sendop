@@ -4,9 +4,10 @@ import { sendop } from '@/core'
 import { KernelV3Account } from '@/smart-accounts'
 import { EOAValidatorModule } from '@/validators/EOAValidatorModule'
 import { getAddress, Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
-import { MyPaymaster, setup } from './utils'
+import { setup } from './utils'
+import { PublicPaymaster } from '@/paymasters'
 
-const { logger, chainId, CLIENT_URL, ALCHEMY_BUNDLER_URL, privateKey } = await setup({ chainId: '11155111' })
+const { logger, chainId, CLIENT_URL, ALCHEMY_BUNDLER_URL, privateKey } = await setup({ chainId: 11155111n })
 logger.info(`Chain ID: ${chainId}`)
 
 const FROM = '0x69F062dA4F6e200e235F66e151E2733E5ed306b9' // kernel on sepolia
@@ -33,14 +34,11 @@ const op = await sendop({
 		client,
 		bundler,
 		validator: new EOAValidatorModule({
-			address: ADDRESS.K1Validator,
+			address: ADDRESS.ECDSAValidator,
 			signer,
 		}),
 	}),
-	pmGetter: new MyPaymaster({
-		client,
-		paymasterAddress: ADDRESS.CharityPaymaster,
-	}),
+	pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
 })
 
 const startTime = Date.now()

@@ -1,23 +1,56 @@
-import { abiEncode, isBytes } from '@/utils'
-import type { Execution, PackedUserOp, UserOp } from './types'
-import { concat, zeroPadValue, toBeHex, keccak256, AbiCoder, isAddress } from 'ethers'
-import { SendopError } from '@/error'
+import { ADDRESS } from '@/addresses'
+import { SendopError, UnsupportedEntryPointError } from '@/error'
+import { abiEncode, getBytesLength, isBytes } from '@/utils'
+import {
+	AbiCoder,
+	concat,
+	dataSlice,
+	isAddress,
+	keccak256,
+	toBeHex,
+	TypedDataEncoder,
+	zeroPadValue,
+	type TypedDataDomain,
+	type TypedDataField,
+} from 'ethers'
+import type { Execution, FormattedUserOp, PackedUserOp, UserOp } from './types'
+import type { JsonRpcProvider } from 'ethers'
+
+export function formatUserOpToHex(userOp: UserOp): FormattedUserOp {
+	return {
+		sender: userOp.sender,
+		nonce: toBeHex(userOp.nonce),
+		factory: userOp.factory,
+		factoryData: userOp.factoryData,
+		callData: userOp.callData,
+		callGasLimit: toBeHex(userOp.callGasLimit),
+		verificationGasLimit: toBeHex(userOp.verificationGasLimit),
+		preVerificationGas: toBeHex(userOp.preVerificationGas),
+		maxFeePerGas: toBeHex(userOp.maxFeePerGas),
+		maxPriorityFeePerGas: toBeHex(userOp.maxPriorityFeePerGas),
+		paymaster: userOp.paymaster,
+		paymasterVerificationGasLimit: toBeHex(userOp.paymasterVerificationGasLimit),
+		paymasterPostOpGasLimit: toBeHex(userOp.paymasterPostOpGasLimit),
+		paymasterData: userOp.paymasterData,
+		signature: userOp.signature,
+	}
+}
 
 export function getEmptyUserOp(): UserOp {
 	return {
 		sender: '',
-		nonce: '0x0',
+		nonce: 0n,
 		factory: null,
 		factoryData: '0x',
 		callData: '0x',
-		callGasLimit: '0x0',
-		verificationGasLimit: '0x0',
-		preVerificationGas: '0x0',
-		maxFeePerGas: '0x0',
-		maxPriorityFeePerGas: '0x0',
+		callGasLimit: 0n,
+		verificationGasLimit: 0n,
+		preVerificationGas: 0n,
+		maxFeePerGas: 0n,
+		maxPriorityFeePerGas: 0n,
 		paymaster: null,
-		paymasterVerificationGasLimit: '0x0',
-		paymasterPostOpGasLimit: '0x0',
+		paymasterVerificationGasLimit: 0n,
+		paymasterPostOpGasLimit: 0n,
 		paymasterData: '0x',
 		signature: '0x',
 	}
@@ -26,7 +59,7 @@ export function getEmptyUserOp(): UserOp {
 export function packUserOp(userOp: UserOp): PackedUserOp {
 	return {
 		sender: userOp.sender,
-		nonce: userOp.nonce,
+		nonce: toBeHex(userOp.nonce),
 		initCode: userOp.factory && userOp.factoryData ? concat([userOp.factory, userOp.factoryData]) : '0x',
 		callData: userOp.callData,
 		accountGasLimits: concat([
@@ -51,7 +84,18 @@ export function packUserOp(userOp: UserOp): PackedUserOp {
 	}
 }
 
-export function getUserOpHash(op: PackedUserOp, entryPointAddress: string, chainId: string): string {
+export function getUserOpHash(op: PackedUserOp, entryPointAddress: string, chainId: bigint): string {
+	switch (entryPointAddress) {
+		case ADDRESS.EntryPointV07:
+			return getUserOpHashV07(op, chainId)
+		case ADDRESS.EntryPointV08:
+			return getUserOpHashV08(op, chainId)
+		default:
+			throw new UnsupportedEntryPointError(entryPointAddress)
+	}
+}
+
+export function getUserOpHashV07(op: PackedUserOp, chainId: bigint): string {
 	const hashedInitCode = keccak256(op.initCode)
 	const hashedCallData = keccak256(op.callData)
 	const hashedPaymasterAndData = keccak256(op.paymasterAndData)
@@ -74,11 +118,43 @@ export function getUserOpHash(op: PackedUserOp, entryPointAddress: string, chain
 					],
 				),
 			),
-			entryPointAddress,
-			BigInt(chainId),
+			ADDRESS.EntryPointV07,
+			chainId,
 		],
 	)
 	return keccak256(encoded)
+}
+
+export function getUserOpHashV08(op: PackedUserOp, chainId: bigint): string {
+	const { domain, types } = getV08DomainAndTypes(chainId)
+	return TypedDataEncoder.hash(domain, types, op)
+}
+
+export function getV08DomainAndTypes(chainId: bigint): {
+	domain: TypedDataDomain
+	types: Record<string, Array<TypedDataField>>
+} {
+	const domain: TypedDataDomain = {
+		name: 'ERC4337',
+		version: '1',
+		chainId: chainId.toString(),
+		verifyingContract: ADDRESS.EntryPointV08,
+	}
+
+	const types = {
+		PackedUserOperation: [
+			{ name: 'sender', type: 'address' },
+			{ name: 'nonce', type: 'uint256' },
+			{ name: 'initCode', type: 'bytes' },
+			{ name: 'callData', type: 'bytes' },
+			{ name: 'accountGasLimits', type: 'bytes32' },
+			{ name: 'preVerificationGas', type: 'uint256' },
+			{ name: 'gasFees', type: 'bytes32' },
+			{ name: 'paymasterAndData', type: 'bytes' },
+		],
+	}
+
+	return { domain, types }
 }
 
 export function encodeExecution(execution: Execution) {
@@ -107,4 +183,12 @@ export function assertExecutions(executions: Execution[]) {
 	for (const execution of executions) {
 		assertExecution(execution)
 	}
+}
+
+export async function isEip7702(client: JsonRpcProvider, address: string) {
+	const code = await client.getCode(address)
+	if (code.startsWith('0xef0100') && isAddress(dataSlice(code, 3, 23)) && getBytesLength(code) === 23) {
+		return true
+	}
+	return false
 }

@@ -1,38 +1,43 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
+import { IERC1271__factory } from '@/contract-types'
 import { Registry__factory, SmartSession__factory } from '@/contract-types/factories'
 import type { SessionStruct } from '@/contract-types/SmartSession'
 import { ERC7579_MODULE_TYPE, sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
 import { INTERFACES } from '@/interfaces'
-import { getScheduledTransferInitData } from '@/modules/scheduledTransfer'
+import { getScheduledTransferDeInitData, getScheduledTransferInitData } from '@/modules/scheduledTransfer'
+import { PublicPaymaster } from '@/paymasters'
+import { ERC1271_MAGIC_VALUE, type TypedData } from '@/utils'
 import { abiEncode, getEncodedFunctionParams, randomBytes32 } from '@/utils/ethers-helper'
 import {
 	EOAValidatorModule,
 	getPermissionId,
 	OwnableSmartSessionValidator,
 	SMART_SESSIONS_ENABLE_MODE,
+	WebAuthnValidatorModule,
 } from '@/validators'
 import {
 	concat,
+	getBytes,
 	hexlify,
 	Interface,
 	JsonRpcProvider,
+	keccak256,
 	parseEther,
 	randomBytes,
-	resolveAddress,
 	toNumber,
+	TypedDataEncoder,
 	Wallet,
 	ZeroAddress,
 } from 'ethers'
-import { MyPaymaster, setup } from 'test/utils'
+import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { KernelV3Account } from './KernelV3Account'
 import { KernelValidationType, type KernelCreationOptions } from './types'
+import { OwnableValidator } from '@/validators/OwnableValidator'
 
-const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, account1 } = await setup()
-
-logger.info(`Chain ID: ${chainId}`)
+const { chainId, CLIENT_URL, BUNDLER_URL, privateKey, account1 } = await setup()
 
 describe('KernelV3Account', () => {
 	let signer: Wallet
@@ -48,60 +53,249 @@ describe('KernelV3Account', () => {
 			parseError: true,
 		})
 		validator = new EOAValidatorModule({
-			address: ADDRESS.K1Validator,
+			address: ADDRESS.ECDSAValidator,
 			signer: new Wallet(privateKey),
 		})
-		pmGetter = new MyPaymaster({
-			client,
-			paymasterAddress: ADDRESS.CharityPaymaster,
-		})
+		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 	})
 
 	describe('Kerenl deploy and setNumber', () => {
-		let kernel: KernelV3Account
+		let account: KernelV3Account
 		let creationOptions: KernelCreationOptions
-		let deployedAddress: string
+		let computedAddress: string
 
 		beforeAll(async () => {
 			creationOptions = {
 				salt: hexlify(randomBytes(32)),
-				validatorAddress: ADDRESS.K1Validator,
-				validatorInitData: await resolveAddress(signer),
+				validatorAddress: ADDRESS.ECDSAValidator,
+				validatorInitData: EOAValidatorModule.getInitData(signer.address),
 			}
 		})
 
-		it('should getNewAddress', async () => {
-			deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
-			expect(deployedAddress).not.toBe('0x0000000000000000000000000000000000000000')
+		it('should computeAccountAddress', async () => {
+			computedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
+			expect(computedAddress).not.toBe('0x0000000000000000000000000000000000000000')
 		})
 
 		it('should deploy the contract', async () => {
-			kernel = new KernelV3Account({
-				address: deployedAddress,
+			account = new KernelV3Account({
+				address: computedAddress,
 				client,
 				bundler,
 				validator,
 				pmGetter,
 			})
 
-			const op = await kernel.deploy(creationOptions)
-			await op.wait()
-			const code = await client.getCode(deployedAddress)
-			expect(code).not.toBe('0x')
+			const op = await account.deploy(creationOptions)
+			const receipt = await op.wait()
+			expect(receipt.success).toBe(true)
 		}, 100_000)
 
 		it('should setNumber', async () => {
-			const number = Math.floor(Math.random() * 1000000)
-			const op = await kernel.send([
+			const op = await account.send([
 				{
 					to: ADDRESS.Counter,
-					data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [number]),
+					data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [
+						Math.floor(Math.random() * 1000000),
+					]),
 					value: 0n,
 				},
 			])
 			const receipt = await op.wait()
-			const log = receipt.logs[receipt.logs.length - 1]
-			expect(toNumber(log.data)).toBe(number)
+			expect(receipt.success).toBe(true)
+		}, 100_000)
+
+		// ================================ ERC-1271 ================================
+
+		it('should validate signature using ERC-1271 for ECDSAValidator', async () => {
+			const dataHash = keccak256('0x1271')
+
+			const typedData: TypedData = [
+				{
+					name: 'Kernel',
+					version: '0.3.1',
+					chainId,
+					verifyingContract: computedAddress,
+				},
+				{
+					Kernel: [{ name: 'hash', type: 'bytes32' }],
+				},
+				{
+					hash: dataHash,
+				},
+			]
+
+			const signature = await signer.signTypedData(...typedData)
+
+			const kernelSignature = concat([
+				'0x01', // validation type validator
+				ADDRESS.ECDSAValidator,
+				signature,
+			])
+
+			const isValid = await IERC1271__factory.connect(computedAddress, client).isValidSignature(
+				dataHash,
+				kernelSignature,
+			)
+
+			expect(isValid).toBe(ERC1271_MAGIC_VALUE)
+		})
+
+		it('should validate signature using ERC-1271 for OwnableValidator', async () => {
+			const creationOptions = {
+				salt: randomBytes32(),
+				validatorAddress: ADDRESS.OwnableValidator,
+				validatorInitData: OwnableValidator.getInitData([signer.address], 1),
+			}
+			const computedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
+			const account = new KernelV3Account({
+				address: computedAddress,
+				client,
+				bundler,
+				validator,
+			})
+
+			const op = await sendop({
+				bundler,
+				opGetter: account,
+				pmGetter,
+				initCode: KernelV3Account.getInitCode(creationOptions),
+				executions: [],
+			})
+
+			const receipt = await op.wait()
+			expect(receipt.success).toBe(true)
+
+			const dataHash = keccak256('0x1271')
+
+			const typedData: TypedData = [
+				{
+					name: 'Kernel',
+					version: '0.3.1',
+					chainId,
+					verifyingContract: computedAddress,
+				},
+				{
+					Kernel: [{ name: 'hash', type: 'bytes32' }],
+				},
+				{
+					hash: dataHash,
+				},
+			]
+
+			const typedDataHash = TypedDataEncoder.hash(...typedData)
+			const signature = await signer.signMessage(getBytes(typedDataHash))
+
+			const kernelSignature = concat([
+				'0x01', // validation type: validator
+				ADDRESS.OwnableValidator,
+				signature,
+			])
+
+			const isValid = await IERC1271__factory.connect(computedAddress, client).isValidSignature(
+				dataHash,
+				kernelSignature,
+			)
+
+			expect(isValid).toBe(ERC1271_MAGIC_VALUE)
+		}, 100_000)
+
+		// ================================ Batch execution ================================
+
+		it('should setNumber with batch execution', async () => {
+			const op = await account.send([
+				{
+					to: ADDRESS.Counter,
+					data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [
+						Math.floor(Math.random() * 1000000),
+					]),
+					value: 0n,
+				},
+				{
+					to: ADDRESS.Counter,
+					data: new Interface(['function setNumber(uint256)']).encodeFunctionData('setNumber', [
+						Math.floor(Math.random() * 1000000),
+					]),
+					value: 0n,
+				},
+			])
+			const receipt = await op.wait()
+			expect(receipt.success).toBe(true)
+		}, 100_000)
+
+		it('should install validator module', async () => {
+			const op = await account.send([
+				{
+					to: computedAddress,
+					data: KernelV3Account.encodeInstallModule({
+						moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
+						moduleAddress: ADDRESS.WebAuthnValidator,
+						initData: WebAuthnValidatorModule.getInitData({
+							pubKeyX: BigInt(randomBytes32()),
+							pubKeyY: BigInt(randomBytes32()),
+							authenticatorIdHash: randomBytes32(),
+						}),
+					}),
+					value: 0n,
+				},
+			])
+			const receipt = await op.wait()
+			expect(receipt.success).toBe(true)
+		}, 100_000)
+
+		it('should uninstall validator module', async () => {
+			const op = await account.send([
+				{
+					to: computedAddress,
+					data: KernelV3Account.encodeUninstallModule({
+						moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
+						moduleAddress: ADDRESS.WebAuthnValidator,
+						deInitData: WebAuthnValidatorModule.getDeInitData(),
+					}),
+					value: 0n,
+				},
+			])
+			const receipt = await op.wait()
+			expect(receipt.success).toBe(true)
+		}, 100_000)
+
+		it('should install and uninstall executor module', async () => {
+			// install ScheduledTransfers
+			const op = await account.send([
+				{
+					to: computedAddress,
+					value: 0n,
+					data: KernelV3Account.encodeInstallModule({
+						moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
+						moduleAddress: ADDRESS.ScheduledTransfers,
+						initData: getScheduledTransferInitData({
+							executeInterval: 10,
+							numOfExecutions: 3,
+							startDate: 1,
+							recipient: account1.address,
+							token: ZeroAddress,
+							amount: parseEther('0.001'),
+						}),
+					}),
+				},
+			])
+			const receipt = await op.wait()
+			expect(receipt.success).toBe(true)
+
+			// uninstall ScheduledTransfers
+			const op2 = await account.send([
+				{
+					to: computedAddress,
+					data: KernelV3Account.encodeUninstallModule({
+						moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
+						moduleAddress: ADDRESS.ScheduledTransfers,
+						deInitData: getScheduledTransferDeInitData(),
+					}),
+					value: 0n,
+				},
+			])
+			const receipt2 = await op2.wait()
+			expect(receipt2.success).toBe(true)
 		}, 100_000)
 
 		it('should deploy and setNumber in one transaction', async () => {
@@ -109,11 +303,11 @@ describe('KernelV3Account', () => {
 
 			const creationOptions = {
 				salt: randomBytes32(),
-				validatorAddress: ADDRESS.K1Validator,
-				validatorInitData: signer.address,
+				validatorAddress: ADDRESS.ECDSAValidator,
+				validatorInitData: EOAValidatorModule.getInitData(signer.address),
 			}
-			const computedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
-			const kernel = new KernelV3Account({
+			const computedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
+			const account = new KernelV3Account({
 				address: computedAddress,
 				client,
 				bundler,
@@ -123,7 +317,7 @@ describe('KernelV3Account', () => {
 
 			const op = await sendop({
 				bundler,
-				opGetter: kernel,
+				opGetter: account,
 				pmGetter,
 				initCode: KernelV3Account.getInitCode(creationOptions),
 				executions: [
@@ -135,23 +329,23 @@ describe('KernelV3Account', () => {
 				],
 			})
 			const receipt = await op.wait()
-			const log = receipt.logs[receipt.logs.length - 1]
-			expect(toNumber(log.data)).toBe(number)
+			const log = receipt.logs.find(log => log.address === ADDRESS.Counter)
+			expect(toNumber(log?.data ?? 0)).toBe(number)
 		}, 100_000)
 	})
 
 	describe('Kerenl schedule transfers and execute', () => {
 		const creationOptions: KernelCreationOptions = {
 			salt: randomBytes32(),
-			validatorAddress: ADDRESS.K1Validator,
-			validatorInitData: signer.address,
+			validatorAddress: ADDRESS.ECDSAValidator,
+			validatorInitData: EOAValidatorModule.getInitData(signer.address),
 		}
 		const sessionSalt = randomBytes32()
 		const sessionOwner = account1
 		const sessionOwnerAddress = account1.address
 		const transferRecipient = account1.address
 
-		let deployedAddress: string
+		let computedAddress: string
 		let permissionId: string
 
 		const session: SessionStruct = {
@@ -193,21 +387,21 @@ describe('KernelV3Account', () => {
 		const smartSessionInitData = concat([SMART_SESSIONS_ENABLE_MODE, encodedSessions])
 
 		beforeAll(async () => {
-			deployedAddress = await KernelV3Account.getNewAddress(client, creationOptions)
+			computedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
 			await signer.sendTransaction({
-				to: deployedAddress,
+				to: computedAddress,
 				value: parseEther('0.003'),
 			})
-			expect(await client.getBalance(deployedAddress)).toBe(parseEther('0.003'))
+			expect(await client.getBalance(computedAddress)).toBe(parseEther('0.003'))
 		})
 
 		it('should schedule transfers', async () => {
-			const kernel = new KernelV3Account({
-				address: deployedAddress,
+			const account = new KernelV3Account({
+				address: computedAddress,
 				client,
 				bundler,
 				validator: new EOAValidatorModule({
-					address: ADDRESS.K1Validator,
+					address: ADDRESS.ECDSAValidator,
 					signer,
 				}),
 			})
@@ -226,23 +420,23 @@ describe('KernelV3Account', () => {
 					},
 					// install smart session module and enable the session
 					{
-						to: deployedAddress,
+						to: computedAddress,
 						value: 0n,
 						data: KernelV3Account.encodeInstallModule({
 							moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 							moduleAddress: ADDRESS.SmartSession,
-							validatorData: smartSessionInitData,
+							initData: smartSessionInitData,
 							selectorData: INTERFACES.KernelV3.getFunction('execute').selector,
 						}),
 					},
 					// install scheduled transfers module
 					{
-						to: deployedAddress,
+						to: computedAddress,
 						value: 0n,
 						data: KernelV3Account.encodeInstallModule({
 							moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
 							moduleAddress: ADDRESS.ScheduledTransfers,
-							executorData: getScheduledTransferInitData({
+							initData: getScheduledTransferInitData({
 								executeInterval: 10,
 								numOfExecutions: 3,
 								startDate: 1,
@@ -253,8 +447,8 @@ describe('KernelV3Account', () => {
 						}),
 					},
 				],
-				opGetter: kernel,
-				initCode: kernel.getInitCode(creationOptions), // create account
+				opGetter: account,
+				initCode: account.getInitCode(creationOptions), // create account
 				pmGetter,
 			})
 			const receipt = await op.wait()
@@ -262,8 +456,8 @@ describe('KernelV3Account', () => {
 		}, 100_000)
 
 		it('should execute the scheduled transfers', async () => {
-			const kernel = new KernelV3Account({
-				address: deployedAddress,
+			const account = new KernelV3Account({
+				address: computedAddress,
 				client,
 				bundler,
 				nonce: {
@@ -277,7 +471,7 @@ describe('KernelV3Account', () => {
 			})
 
 			const jobId = 1
-			const op = await kernel.send([
+			const op = await account.send([
 				{
 					to: ADDRESS.ScheduledTransfers,
 					value: 0n,

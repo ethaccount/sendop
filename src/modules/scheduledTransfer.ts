@@ -28,3 +28,7 @@ export function getScheduledTransferInitData({
 		abiEncode(['address', 'address', 'uint256'], [recipient, token, toBeHex(amount)]),
 	])
 }
+
+export function getScheduledTransferDeInitData(): string {
+	return '0x'
+}

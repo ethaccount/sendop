@@ -1,12 +1,27 @@
 import { ADDRESS } from '@/addresses'
-import { EntryPointV7__factory, Registry__factory } from '@/contract-types'
+import { EntryPointV07__factory, EntryPointV08__factory, Registry__factory } from '@/contract-types'
 import type { UserOp } from '@/core'
 import { packUserOp } from '@/core'
 import { INTERFACES } from '@/interfaces'
 import type { ContractRunner } from 'ethers'
 
+export type EntryPointVersion = 'v0.7' | 'v0.8'
+
 export function connectEntryPointV07(runner: ContractRunner) {
-	return EntryPointV7__factory.connect(ADDRESS.EntryPointV7, runner)
+	return EntryPointV07__factory.connect(ADDRESS.EntryPointV07, runner)
+}
+
+export function connectEntryPointV08(runner: ContractRunner) {
+	return EntryPointV08__factory.connect(ADDRESS.EntryPointV08, runner)
+}
+
+export function connectEntryPoint(version: EntryPointVersion, runner: ContractRunner) {
+	switch (version) {
+		case 'v0.7':
+			return connectEntryPointV07(runner)
+		case 'v0.8':
+			return connectEntryPointV08(runner)
+	}
 }
 
 export function connectRegistry(runner: ContractRunner) {
@@ -14,7 +29,7 @@ export function connectRegistry(runner: ContractRunner) {
 }
 
 export function encodeHandleOpsCalldata(userOps: UserOp[], beneficiary: string) {
-	return EntryPointV7__factory.createInterface().encodeFunctionData('handleOps', [
+	return EntryPointV07__factory.createInterface().encodeFunctionData('handleOps', [
 		userOps.map(op => packUserOp(op)),
 		beneficiary,
 	])
@@ -28,7 +43,7 @@ export function parseContractError(revert: string): string {
 			const decodedError = iface.parseError(revert)
 			if (decodedError) {
 				const errorArgs = decodedError.args.length > 0 ? `(${decodedError.args.join(', ')})` : ''
-				return `${name}.${decodedError.name}${errorArgs} (The contract name might be incorrect and is for reference only)`
+				return `${name}.${decodedError.name}${errorArgs} (Note: The prefix "${name}" may not correspond to the actual contract that triggered the revert.)`
 			}
 		} catch {
 			// Continue to next interface if parsing fails

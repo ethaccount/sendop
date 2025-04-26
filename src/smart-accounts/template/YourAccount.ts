@@ -1,11 +1,16 @@
-import type { Bundler, ERC7579Validator, Execution, PaymasterGetter, SendOpResult, UserOp } from '@/core'
+import { SendopError } from '@/error'
 import type { JsonRpcProvider } from 'ethers'
-import { SmartAccount, type SmartAccountOptions } from '../SmartAccount'
-import type { YourCreationOptions } from './types'
+import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
 
-export type YourAccountOptions = SmartAccountOptions
+export type YourCreationOptions = {
+	salt: string
+	validatorAddress: string
+	validatorInitData: string
+}
 
-export class YourAccount extends SmartAccount {
+export type YourAccountOptions = ModularSmartAccountOptions
+
+export class YourAccount extends ModularSmartAccount<YourCreationOptions> {
 	static override accountId() {
 		return ''
 	}
@@ -14,33 +19,45 @@ export class YourAccount extends SmartAccount {
 		super(options)
 	}
 
-	override connect(address: string): SmartAccount {
-		return this as any
+	override connect(address: string): YourAccount {
+		return new YourAccount({
+			...this._options,
+			address,
+		})
 	}
 
-	static override async getNewAddress(client: JsonRpcProvider, creationOptions: YourCreationOptions) {
-		return ''
+	override getNonceKey(): bigint {
+		return 0n
 	}
 
-	getNonceKey() {
+	static override async computeAccountAddress(client: JsonRpcProvider, creationOptions: YourCreationOptions) {
 		return ''
-	}
-	override getCallData(executions: Execution[]): Promise<string> | string {
-		return ''
-	}
-
-	override async deploy(creationOptions: any, pmGetter?: PaymasterGetter): Promise<SendOpResult> {
-		return '' as any
-	}
-	override send(executions: Execution[], pmGetter?: PaymasterGetter): Promise<SendOpResult> {
-		return '' as any
 	}
 
 	override getInitCode(creationOptions: any): string {
 		return ''
 	}
 
-	override encodeInstallModule(config: any): string {
+	static override getInitCode(creationOptions: any): string {
 		return ''
+	}
+
+	static override encodeInstallModule(config: any): string {
+		return ''
+	}
+
+	static override encodeUninstallModule(config: any): string {
+		return ''
+	}
+
+	protected createError(message: string, cause?: Error): Error {
+		return new YourAccountError(message, cause)
+	}
+}
+
+export class YourAccountError extends SendopError {
+	constructor(message: string, cause?: Error) {
+		super(message, cause)
+		this.name = 'YourAccountError'
 	}
 }

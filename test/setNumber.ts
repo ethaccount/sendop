@@ -1,12 +1,13 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { sendop } from '@/core'
+import { PublicPaymaster } from '@/paymasters'
 import { NexusAccount } from '@/smart-accounts/nexus/NexusAccount'
 import { EOAValidatorModule } from '@/validators/EOAValidatorModule'
 import { getAddress, Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { MyPaymaster, setup } from './utils'
+import { setup } from './utils'
 
 const argv = await yargs(hideBin(process.argv))
 	.option('network', {
@@ -23,8 +24,13 @@ const argv = await yargs(hideBin(process.argv))
 		demandOption: true,
 	})
 	.help().argv
-const network = argv.network === 'sepolia' ? '11155111' : 'local'
-const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey } = await setup({ chainId: network })
+
+const CHAIN_IDS = {
+	local: 1337n,
+	sepolia: 11155111n,
+} as const
+const chainId = CHAIN_IDS[argv.network]
+const { logger, CLIENT_URL, BUNDLER_URL, privateKey } = await setup({ chainId })
 logger.info(`Chain ID: ${chainId}`)
 
 const signer = new Wallet(privateKey)
@@ -57,14 +63,11 @@ const op = await sendop({
 		client,
 		bundler,
 		validator: new EOAValidatorModule({
-			address: ADDRESS.K1Validator,
+			address: ADDRESS.ECDSAValidator,
 			signer,
 		}),
 	}),
-	pmGetter: new MyPaymaster({
-		client,
-		paymasterAddress: ADDRESS.CharityPaymaster,
-	}),
+	pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
 })
 
 const startTime = Date.now()

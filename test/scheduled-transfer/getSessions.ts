@@ -21,8 +21,14 @@ const argv = await yargs(hideBin(process.argv))
 		demandOption: true,
 	})
 	.help().argv
-const network = argv.network === 'sepolia' ? '11155111' : 'local'
-const { logger, chainId, CLIENT_URL } = await setup({ chainId: network })
+
+const CHAIN_IDS = {
+	local: 1337n,
+	sepolia: 11155111n,
+} as const
+
+const chainId = CHAIN_IDS[argv.network]
+const { logger, CLIENT_URL } = await setup({ chainId })
 logger.info(`Chain ID: ${chainId}`)
 
 const client = new JsonRpcProvider(CLIENT_URL, undefined, {
