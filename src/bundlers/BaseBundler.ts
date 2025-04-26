@@ -73,6 +73,12 @@ export abstract class BaseBundler implements Bundler {
 		if (this._options.debug) {
 			console.warn('Bundler "debug" mode is enabled')
 		}
+
+		if (this._options.skipGasEstimation) {
+			console.warn(
+				'Bundler "skipGasEstimation" mode is enabled. It will skip gas estimation and directly send the user operation with default gas values',
+			)
+		}
 	}
 
 	abstract _getGasValues(userOp: UserOp): Promise<GasValues>
