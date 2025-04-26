@@ -15,7 +15,6 @@ describe('SimpleAccount', () => {
 	const CHAIN_ID = 1337n
 	const CLIENT_URL = 'http://localhost:8545'
 	const BUNDLER_URL = 'http://localhost:4337'
-	const PUBLIC_PAYMASTER_ADDRESS = '0xcb04730b8aA92B8fC0d1482A0a7BD3420104556D'
 
 	let signer: Wallet
 	let client: JsonRpcProvider
@@ -23,7 +22,7 @@ describe('SimpleAccount', () => {
 	let account: SimpleAccount
 	let computedAddress: string
 	const salt = randomBytes32()
-	const pmGetter = new PublicPaymaster(PUBLIC_PAYMASTER_ADDRESS)
+	const pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 
 	beforeAll(async () => {
 		signer = new Wallet(privateKey)
@@ -104,7 +103,7 @@ describe('SimpleAccount', () => {
 				},
 			],
 			opGetter: account,
-			pmGetter: new PublicPaymaster(PUBLIC_PAYMASTER_ADDRESS),
+			pmGetter,
 		})
 
 		const receipt = await op.wait()
@@ -131,7 +130,7 @@ describe('SimpleAccount', () => {
 				},
 			],
 			opGetter: account,
-			pmGetter: new PublicPaymaster(PUBLIC_PAYMASTER_ADDRESS),
+			pmGetter,
 		})
 
 		const receipt = await op.wait()

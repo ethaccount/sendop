@@ -21,7 +21,7 @@ bun run build
 bun run build:contract-types
 ```
 
-### Usage (v0.4.0-beta.8)
+### Usage (v0.4.1)
 
 For more details, please refer to the *.test.ts files or the test folder.
 
@@ -48,12 +48,18 @@ const signer = new Wallet(PRIVATE_KEY, client)
 const bundler = new PimlicoBundler(chainId, `https://api.pimlico.io/v2/${chainId}/rpc?apikey=${PIMLICO_API_KEY}`, {
 	entryPointVersion: 'v0.8',
 	parseError: true,
+	debug: true,
 })
+
+console.log('signer.address:', signer.address)
 
 const creationOptions: SimpleAccountCreationOptions = {
 	owner: signer.address,
 	salt: randomBytes32(),
 }
+
+const accountAddress = await SimpleAccount.computeAccountAddress(client, creationOptions)
+console.log('accountAddress:', accountAddress)
 
 console.log('sending user operation...')
 
@@ -70,7 +76,7 @@ const op = await sendop({
 		},
 	],
 	opGetter: new SimpleAccount({
-		address: await SimpleAccount.computeAccountAddress(client, creationOptions),
+		address: accountAddress,
 		client,
 		bundler,
 		signer,
@@ -89,8 +95,11 @@ console.log('receipt.success', receipt.success)
 Output
 
 ```
+Bundler "debug" mode is enabled
+signer.address: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+accountAddress: 0x1Eb4aACB9b99FF0C0d560E7e04974F8368C757c0
 sending user operation...
 waiting for user operation...
-opHash: 0xe17b7a3fd30c89dbbf55bba82122f7e44b2ef832248a584a795c4247a3bf3573
+opHash: 0xf3613dceb7b68446f199501112740c854144ba642c40686eb2d301449fe4c150
 receipt.success true
 ```
