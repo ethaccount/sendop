@@ -2,13 +2,11 @@ import { ADDRESS } from '@/addresses'
 import { ERC7579_MODULE_TYPE } from '@/core'
 import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
-import { abiEncode, connectEntryPointV07, isBytes, isBytes32, zeroBytes } from '@/utils'
+import { abiEncode, connectEntryPointV07, isBytes, isBytes32, zeroBytes, type TypedData } from '@/utils'
+import type { BytesLike } from 'ethers'
 import { concat, Contract, hexlify, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
-import {
-	ModularSmartAccount,
-	type ModularSmartAccountOptions,
-	type SimpleInstallModuleConfig,
-} from '../ModularSmartAccount'
+import type { IERC1271Interface } from '../IERC1271Interface'
+import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
 import type { KernelCreationOptions, KernelInstallModuleConfig, KernelUninstallModuleConfig } from './types'
 import { KernelValidationMode, KernelValidationType } from './types'
 
@@ -23,7 +21,7 @@ export type KernelV3AccountConfig = {
 	}
 }
 
-export class KernelV3Account extends ModularSmartAccount<KernelCreationOptions> {
+export class KernelV3Account extends ModularSmartAccount<KernelCreationOptions> implements IERC1271Interface {
 	private readonly _kernelConfig: KernelV3AccountConfig | undefined
 
 	static override accountId() {
@@ -202,6 +200,33 @@ export class KernelV3Account extends ModularSmartAccount<KernelCreationOptions> 
 			config.moduleType,
 			config.moduleAddress,
 			deInitData,
+		])
+	}
+
+	async signERC1271(dataHash: BytesLike): Promise<string> {
+		const chainId = (await this.client.getNetwork()).chainId
+
+		const typedData: TypedData = [
+			{
+				name: 'Kernel',
+				version: '0.3.1',
+				chainId,
+				verifyingContract: await this.getSender(),
+			},
+			{
+				Kernel: [{ name: 'hash', type: 'bytes32' }],
+			},
+			{
+				hash: hexlify(dataHash),
+			},
+		]
+
+		const signature = await this.validator.signTypedData(...typedData)
+
+		return concat([
+			'0x01', // validation type: validator
+			this.validator.address(),
+			signature,
 		])
 	}
 
