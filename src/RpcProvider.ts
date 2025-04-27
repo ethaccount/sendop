@@ -13,17 +13,23 @@ type BatchResponse = {
 	method: string
 }
 
+export type RpcProviderOptions = {
+	debug?: boolean
+}
+
 export class RpcProvider {
 	readonly url: string
+	protected readonly _options: RpcProviderOptions
 
-	constructor(url: string) {
+	constructor(url: string, options?: RpcProviderOptions) {
 		this.url = url
+		this._options = options ?? {}
 	}
 
 	async send(request: RpcRequest) {
 		let response
 		try {
-			response = await fetch(this.url, {
+			const payload = {
 				method: 'post',
 				headers: {
 					'Content-Type': 'application/json',
@@ -34,7 +40,21 @@ export class RpcProvider {
 					id: 1,
 					params: request.params,
 				}),
-			})
+			}
+			if (this._options.debug) {
+				console.log(this.url)
+				console.log(
+					JSON.stringify(
+						{
+							...payload,
+							body: JSON.parse(payload.body),
+						},
+						null,
+						2,
+					),
+				)
+			}
+			response = await fetch(this.url, payload)
 		} catch (error: unknown) {
 			const err = normalizeError(error)
 			throw new SendopError(err.message, { cause: err })
