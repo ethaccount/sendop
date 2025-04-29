@@ -4,11 +4,7 @@ import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
 import { abiEncode, connectEntryPointV07, isBytes, isBytes32, zeroBytes } from '@/utils'
 import { concat, Contract, hexlify, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
-import {
-	ModularSmartAccount,
-	type ModularSmartAccountOptions,
-	type SimpleInstallModuleConfig,
-} from '../ModularSmartAccount'
+import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
 import type { KernelCreationOptions, KernelInstallModuleConfig, KernelUninstallModuleConfig } from './types'
 import { KernelValidationMode, KernelValidationType } from './types'
 
@@ -54,7 +50,7 @@ export class KernelV3Account extends ModularSmartAccount<KernelCreationOptions> 
 		}
 		return concat([
 			ADDRESS.KernelV3Factory,
-			INTERFACES.KernelV3Factory.encodeFunctionData('createAccount', [
+			INTERFACES.TKernelV3Factory.encodeFunctionData('createAccount', [
 				KernelV3Account.encodeInitialize(creationOptions),
 				salt,
 			]),
@@ -66,7 +62,7 @@ export class KernelV3Account extends ModularSmartAccount<KernelCreationOptions> 
 		if (!isBytes32(salt)) {
 			throw new KernelError('Invalid salt')
 		}
-		const kernelFactory = new Contract(ADDRESS.KernelV3Factory, INTERFACES.KernelV3Factory, client)
+		const kernelFactory = new Contract(ADDRESS.KernelV3Factory, INTERFACES.TKernelV3Factory, client)
 		return (await kernelFactory['getAddress(bytes,bytes32)'](
 			KernelV3Account.encodeInitialize(creationOptions),
 			salt,
@@ -127,7 +123,7 @@ export class KernelV3Account extends ModularSmartAccount<KernelCreationOptions> 
 		if (!isBytes(rootValidator, 21)) {
 			throw new KernelError('Invalid rootValidator')
 		}
-		return INTERFACES.KernelV3.encodeFunctionData('initialize', [
+		return INTERFACES.TKernelV3.encodeFunctionData('initialize', [
 			rootValidator,
 			hookAddress ?? ZeroAddress,
 			validatorInitData,
@@ -179,7 +175,7 @@ export class KernelV3Account extends ModularSmartAccount<KernelCreationOptions> 
 				throw new KernelError('Unsupported module type')
 		}
 
-		return INTERFACES.KernelV3.encodeFunctionData('installModule', [
+		return INTERFACES.TKernelV3.encodeFunctionData('installModule', [
 			config.moduleType,
 			config.moduleAddress,
 			initData,
@@ -198,7 +194,7 @@ export class KernelV3Account extends ModularSmartAccount<KernelCreationOptions> 
 				break
 		}
 
-		return INTERFACES.KernelV3.encodeFunctionData('uninstallModule', [
+		return INTERFACES.TKernelV3.encodeFunctionData('uninstallModule', [
 			config.moduleType,
 			config.moduleAddress,
 			deInitData,

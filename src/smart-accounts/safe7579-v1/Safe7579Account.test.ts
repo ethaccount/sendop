@@ -1,7 +1,7 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
-import { IERC1271__factory, ISafe7579__factory } from '@/contract-types'
+import { TIERC1271__factory, TISafe7579__factory } from '@/contract-types'
 import { ERC7579_MODULE_TYPE, sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
 import { WebAuthnValidatorModule } from '@/index'
 import { getScheduledTransferDeInitData, getScheduledTransferInitData } from '@/modules/scheduledTransfer'
@@ -107,7 +107,7 @@ describe('Safe7579Account', () => {
 			const dataHash = keccak256('0x1271')
 			const signature = await signer.signMessage(getBytes(dataHash))
 			const encodedSignature = concat([ADDRESS.OwnableValidator, signature])
-			const isValid = await IERC1271__factory.connect(computedAddress, client).isValidSignature(
+			const isValid = await TIERC1271__factory.connect(computedAddress, client).isValidSignature(
 				dataHash,
 				encodedSignature,
 			)
@@ -154,7 +154,7 @@ describe('Safe7579Account', () => {
 			const receipt = await op.wait()
 			expect(receipt.success).toBe(true)
 
-			const safe = ISafe7579__factory.connect(computedAddress, client)
+			const safe = TISafe7579__factory.connect(computedAddress, client)
 			const validators = await safe.getValidatorsPaginated(zeroPadLeft('0x01', 20), 10)
 			const prev = findPrevious(validators.array, ADDRESS.WebAuthnValidator)
 
@@ -196,7 +196,7 @@ describe('Safe7579Account', () => {
 			const receipt = await op.wait()
 			expect(receipt.success).toBe(true)
 
-			const safe = ISafe7579__factory.connect(computedAddress, client)
+			const safe = TISafe7579__factory.connect(computedAddress, client)
 			const validators = await safe.getExecutorsPaginated(zeroPadLeft('0x01', 20), 10)
 			const prev = findPrevious(validators.array, ADDRESS.ScheduledTransfers)
 

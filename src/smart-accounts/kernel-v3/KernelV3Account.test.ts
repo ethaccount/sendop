@@ -1,9 +1,9 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
-import { IERC1271__factory } from '@/contract-types'
-import { Registry__factory, SmartSession__factory } from '@/contract-types/factories'
-import type { SessionStruct } from '@/contract-types/SmartSession'
+import { TIERC1271__factory } from '@/contract-types'
+import { TRegistry__factory, TSmartSession__factory } from '@/contract-types/factories'
+import type { SessionStruct } from '@/contract-types/TSmartSession'
 import { ERC7579_MODULE_TYPE, sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
 import { INTERFACES } from '@/interfaces'
 import { getScheduledTransferDeInitData, getScheduledTransferInitData } from '@/modules/scheduledTransfer'
@@ -133,7 +133,7 @@ describe('KernelV3Account', () => {
 				signature,
 			])
 
-			const isValid = await IERC1271__factory.connect(computedAddress, client).isValidSignature(
+			const isValid = await TIERC1271__factory.connect(computedAddress, client).isValidSignature(
 				dataHash,
 				kernelSignature,
 			)
@@ -192,7 +192,7 @@ describe('KernelV3Account', () => {
 				signature,
 			])
 
-			const isValid = await IERC1271__factory.connect(computedAddress, client).isValidSignature(
+			const isValid = await TIERC1271__factory.connect(computedAddress, client).isValidSignature(
 				dataHash,
 				kernelSignature,
 			)
@@ -364,7 +364,7 @@ describe('KernelV3Account', () => {
 			},
 			actions: [
 				{
-					actionTargetSelector: INTERFACES.ScheduledTransfers.getFunction('executeOrder').selector,
+					actionTargetSelector: INTERFACES.TScheduledTransfers.getFunction('executeOrder').selector,
 					actionTarget: ADDRESS.ScheduledTransfers,
 					actionPolicies: [
 						{
@@ -381,7 +381,7 @@ describe('KernelV3Account', () => {
 
 		const sessions: SessionStruct[] = [session]
 		const encodedSessions = getEncodedFunctionParams(
-			SmartSession__factory.createInterface().encodeFunctionData('enableSessions', [sessions]),
+			TSmartSession__factory.createInterface().encodeFunctionData('enableSessions', [sessions]),
 		)
 
 		const smartSessionInitData = concat([SMART_SESSIONS_ENABLE_MODE, encodedSessions])
@@ -413,7 +413,7 @@ describe('KernelV3Account', () => {
 					{
 						to: ADDRESS.Registry,
 						value: 0n,
-						data: Registry__factory.createInterface().encodeFunctionData('trustAttesters', [
+						data: TRegistry__factory.createInterface().encodeFunctionData('trustAttesters', [
 							1,
 							[RHINESTONE_ATTESTER_ADDRESS],
 						]),
@@ -426,7 +426,7 @@ describe('KernelV3Account', () => {
 							moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 							moduleAddress: ADDRESS.SmartSession,
 							initData: smartSessionInitData,
-							selectorData: INTERFACES.KernelV3.getFunction('execute').selector,
+							selectorData: INTERFACES.TKernelV3.getFunction('execute').selector,
 						}),
 					},
 					// install scheduled transfers module
@@ -475,7 +475,7 @@ describe('KernelV3Account', () => {
 				{
 					to: ADDRESS.ScheduledTransfers,
 					value: 0n,
-					data: INTERFACES.ScheduledTransfers.encodeFunctionData('executeOrder', [jobId]),
+					data: INTERFACES.TScheduledTransfers.encodeFunctionData('executeOrder', [jobId]),
 				},
 			])
 			const receipt = await op.wait()

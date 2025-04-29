@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { SmartSession__factory } from '@/contract-types'
+import { TSmartSession__factory } from '@/contract-types'
 import { INTERFACES } from '@/interfaces'
 import { concat, JsonRpcProvider, keccak256 } from 'ethers'
 import yargs from 'yargs'
@@ -34,9 +34,9 @@ logger.info(`Chain ID: ${chainId}`)
 const client = new JsonRpcProvider(CLIENT_URL, undefined, {
 	batchMaxCount: 1,
 })
-const smartsession = SmartSession__factory.connect(ADDRESS.SmartSession, client)
+const smartsession = TSmartSession__factory.connect(ADDRESS.SmartSession, client)
 
-const actionTargetSelector = INTERFACES.ScheduledTransfers.getFunction('executeOrder').selector
+const actionTargetSelector = INTERFACES.TScheduledTransfers.getFunction('executeOrder').selector
 const actionTarget = ADDRESS.ScheduledTransfers
 logger.info('actionTargetSelector', actionTargetSelector)
 logger.info('actionTarget', actionTarget)

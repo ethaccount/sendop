@@ -1,79 +1,79 @@
-import { ERC20SpendingLimitPolicy__factory } from '@/contract-types/factories/ERC20SpendingLimitPolicy__factory';
-import { NexusBootstrap__factory } from '@/contract-types/factories/NexusBootstrap__factory';
-import { SudoPolicy__factory } from '@/contract-types/factories/SudoPolicy__factory';
-import { Nexus__factory } from '@/contract-types/factories/Nexus__factory';
-import { ECDSAValidator__factory } from '@/contract-types/factories/ECDSAValidator__factory';
-import { Registry__factory } from '@/contract-types/factories/Registry__factory';
-import { WebAuthnValidator__factory } from '@/contract-types/factories/WebAuthnValidator__factory';
-import { Simple7702AccountV08__factory } from '@/contract-types/factories/Simple7702AccountV08__factory';
-import { ISafe__factory } from '@/contract-types/factories/manual/safe/ISafe__factory';
-import { SafeProxyFactory__factory } from '@/contract-types/factories/manual/safe/SafeProxyFactory__factory';
-import { Safe7579Launchpad__factory } from '@/contract-types/factories/manual/safe/Safe7579Launchpad__factory';
-import { ISafe7579__factory } from '@/contract-types/factories/manual/safe/ISafe7579__factory';
-import { IValidator__factory } from '@/contract-types/factories/manual/IERC7579Modules.sol/IValidator__factory';
-import { IPolicy__factory } from '@/contract-types/factories/manual/IERC7579Modules.sol/IPolicy__factory';
-import { ISigner__factory } from '@/contract-types/factories/manual/IERC7579Modules.sol/ISigner__factory';
-import { IModule__factory } from '@/contract-types/factories/manual/IERC7579Modules.sol/IModule__factory';
-import { IFallback__factory } from '@/contract-types/factories/manual/IERC7579Modules.sol/IFallback__factory';
-import { IHook__factory } from '@/contract-types/factories/manual/IERC7579Modules.sol/IHook__factory';
-import { IExecutor__factory } from '@/contract-types/factories/manual/IERC7579Modules.sol/IExecutor__factory';
-import { ScheduledOrders__factory } from '@/contract-types/factories/manual/ScheduledOrders__factory';
-import { ScheduledTransfers__factory } from '@/contract-types/factories/manual/ScheduledTransfers__factory';
-import { IERC20__factory } from '@/contract-types/factories/manual/IERC20__factory';
-import { OwnableValidator__factory } from '@/contract-types/factories/manual/OwnableValidator__factory';
-import { IERC2612__factory } from '@/contract-types/factories/manual/IERC2612__factory';
-import { IERC1271__factory } from '@/contract-types/factories/manual/IERC1271__factory';
-import { SimpleAccountV08__factory } from '@/contract-types/factories/manual/SimpleAccountV08__factory';
-import { IERC7579Account__factory } from '@/contract-types/factories/manual/IERC7579Account.sol/IERC7579Account__factory';
-import { IERC7579AccountEvents__factory } from '@/contract-types/factories/manual/IERC7579Account.sol/IERC7579AccountEvents__factory';
-import { IERC7579AccountView__factory } from '@/contract-types/factories/manual/IERC7579Account.sol/IERC7579AccountView__factory';
-import { SimpleAccountFactoryV08__factory } from '@/contract-types/factories/SimpleAccountFactoryV08__factory';
-import { KernelV3__factory } from '@/contract-types/factories/KernelV3__factory';
-import { UniActionPolicy__factory } from '@/contract-types/factories/UniActionPolicy__factory';
-import { EntryPointV08__factory } from '@/contract-types/factories/EntryPointV08__factory';
-import { NexusFactory__factory } from '@/contract-types/factories/NexusFactory__factory';
-import { KernelV3Factory__factory } from '@/contract-types/factories/KernelV3Factory__factory';
-import { SmartSession__factory } from '@/contract-types/factories/SmartSession__factory';
-import { Counter__factory } from '@/contract-types/factories/Counter__factory';
-import { EntryPointV07__factory } from '@/contract-types/factories/EntryPointV07__factory';
+import { TSimple7702AccountV08__factory } from '@/contract-types/factories/TSimple7702AccountV08__factory';
+import { TWebAuthnValidator__factory } from '@/contract-types/factories/TWebAuthnValidator__factory';
+import { TEntryPointV07__factory } from '@/contract-types/factories/TEntryPointV07__factory';
+import { TKernelV3__factory } from '@/contract-types/factories/TKernelV3__factory';
+import { TCounter__factory } from '@/contract-types/factories/TCounter__factory';
+import { TERC20SpendingLimitPolicy__factory } from '@/contract-types/factories/TERC20SpendingLimitPolicy__factory';
+import { TEntryPointV08__factory } from '@/contract-types/factories/TEntryPointV08__factory';
+import { TRegistry__factory } from '@/contract-types/factories/TRegistry__factory';
+import { TSafe7579Launchpad__factory } from '@/contract-types/factories/manual/safe/Safe7579Launchpad.sol/TSafe7579Launchpad__factory';
+import { TISafe7579__factory } from '@/contract-types/factories/manual/safe/ISafe7579.sol/TISafe7579__factory';
+import { TSafeProxyFactory__factory } from '@/contract-types/factories/manual/safe/SafeProxyFactory.sol/TSafeProxyFactory__factory';
+import { TISafe__factory } from '@/contract-types/factories/manual/safe/ISafe.sol/TISafe__factory';
+import { TIERC20__factory } from '@/contract-types/factories/manual/TIERC20__factory';
+import { TIHook__factory } from '@/contract-types/factories/manual/IERC7579Modules.sol/TIHook__factory';
+import { TIValidator__factory } from '@/contract-types/factories/manual/IERC7579Modules.sol/TIValidator__factory';
+import { TIExecutor__factory } from '@/contract-types/factories/manual/IERC7579Modules.sol/TIExecutor__factory';
+import { TIModule__factory } from '@/contract-types/factories/manual/IERC7579Modules.sol/TIModule__factory';
+import { TISigner__factory } from '@/contract-types/factories/manual/IERC7579Modules.sol/TISigner__factory';
+import { TIFallback__factory } from '@/contract-types/factories/manual/IERC7579Modules.sol/TIFallback__factory';
+import { TIPolicy__factory } from '@/contract-types/factories/manual/IERC7579Modules.sol/TIPolicy__factory';
+import { TIERC1271__factory } from '@/contract-types/factories/manual/TIERC1271__factory';
+import { TIERC2612__factory } from '@/contract-types/factories/manual/TIERC2612__factory';
+import { TScheduledOrders__factory } from '@/contract-types/factories/manual/ScheduledOrders.sol/TScheduledOrders__factory';
+import { TScheduledTransfers__factory } from '@/contract-types/factories/manual/ScheduledTransfers.sol/TScheduledTransfers__factory';
+import { TIERC7579Account__factory } from '@/contract-types/factories/manual/IERC7579Account.sol/TIERC7579Account__factory';
+import { TIERC7579AccountView__factory } from '@/contract-types/factories/manual/IERC7579Account.sol/TIERC7579AccountView__factory';
+import { TIERC7579AccountEvents__factory } from '@/contract-types/factories/manual/IERC7579Account.sol/TIERC7579AccountEvents__factory';
+import { TSimpleAccountV08__factory } from '@/contract-types/factories/manual/TSimpleAccountV08__factory';
+import { TOwnableValidator__factory } from '@/contract-types/factories/manual/OwnableValidator.sol/TOwnableValidator__factory';
+import { TSimpleAccountFactoryV08__factory } from '@/contract-types/factories/TSimpleAccountFactoryV08__factory';
+import { TKernelV3Factory__factory } from '@/contract-types/factories/TKernelV3Factory__factory';
+import { TSmartSession__factory } from '@/contract-types/factories/TSmartSession__factory';
+import { TSudoPolicy__factory } from '@/contract-types/factories/TSudoPolicy__factory';
+import { TECDSAValidator__factory } from '@/contract-types/factories/TECDSAValidator__factory';
+import { TNexus__factory } from '@/contract-types/factories/TNexus__factory';
+import { TNexusBootstrap__factory } from '@/contract-types/factories/TNexusBootstrap__factory';
+import { TUniActionPolicy__factory } from '@/contract-types/factories/TUniActionPolicy__factory';
+import { TNexusFactory__factory } from '@/contract-types/factories/TNexusFactory__factory';
 
 export const INTERFACES = {
-    ERC20SpendingLimitPolicy: ERC20SpendingLimitPolicy__factory.createInterface(),
-    NexusBootstrap: NexusBootstrap__factory.createInterface(),
-    SudoPolicy: SudoPolicy__factory.createInterface(),
-    Nexus: Nexus__factory.createInterface(),
-    ECDSAValidator: ECDSAValidator__factory.createInterface(),
-    Registry: Registry__factory.createInterface(),
-    WebAuthnValidator: WebAuthnValidator__factory.createInterface(),
-    Simple7702AccountV08: Simple7702AccountV08__factory.createInterface(),
-    ISafe: ISafe__factory.createInterface(),
-    SafeProxyFactory: SafeProxyFactory__factory.createInterface(),
-    Safe7579Launchpad: Safe7579Launchpad__factory.createInterface(),
-    ISafe7579: ISafe7579__factory.createInterface(),
-    IValidator: IValidator__factory.createInterface(),
-    IPolicy: IPolicy__factory.createInterface(),
-    ISigner: ISigner__factory.createInterface(),
-    IModule: IModule__factory.createInterface(),
-    IFallback: IFallback__factory.createInterface(),
-    IHook: IHook__factory.createInterface(),
-    IExecutor: IExecutor__factory.createInterface(),
-    ScheduledOrders: ScheduledOrders__factory.createInterface(),
-    ScheduledTransfers: ScheduledTransfers__factory.createInterface(),
-    IERC20: IERC20__factory.createInterface(),
-    OwnableValidator: OwnableValidator__factory.createInterface(),
-    IERC2612: IERC2612__factory.createInterface(),
-    IERC1271: IERC1271__factory.createInterface(),
-    SimpleAccountV08: SimpleAccountV08__factory.createInterface(),
-    IERC7579Account: IERC7579Account__factory.createInterface(),
-    IERC7579AccountEvents: IERC7579AccountEvents__factory.createInterface(),
-    IERC7579AccountView: IERC7579AccountView__factory.createInterface(),
-    SimpleAccountFactoryV08: SimpleAccountFactoryV08__factory.createInterface(),
-    KernelV3: KernelV3__factory.createInterface(),
-    UniActionPolicy: UniActionPolicy__factory.createInterface(),
-    EntryPointV08: EntryPointV08__factory.createInterface(),
-    NexusFactory: NexusFactory__factory.createInterface(),
-    KernelV3Factory: KernelV3Factory__factory.createInterface(),
-    SmartSession: SmartSession__factory.createInterface(),
-    Counter: Counter__factory.createInterface(),
-    EntryPointV07: EntryPointV07__factory.createInterface()
+    TSimple7702AccountV08: TSimple7702AccountV08__factory.createInterface(),
+    TWebAuthnValidator: TWebAuthnValidator__factory.createInterface(),
+    TEntryPointV07: TEntryPointV07__factory.createInterface(),
+    TKernelV3: TKernelV3__factory.createInterface(),
+    TCounter: TCounter__factory.createInterface(),
+    TERC20SpendingLimitPolicy: TERC20SpendingLimitPolicy__factory.createInterface(),
+    TEntryPointV08: TEntryPointV08__factory.createInterface(),
+    TRegistry: TRegistry__factory.createInterface(),
+    TSafe7579Launchpad: TSafe7579Launchpad__factory.createInterface(),
+    TISafe7579: TISafe7579__factory.createInterface(),
+    TSafeProxyFactory: TSafeProxyFactory__factory.createInterface(),
+    TISafe: TISafe__factory.createInterface(),
+    TIERC20: TIERC20__factory.createInterface(),
+    TIHook: TIHook__factory.createInterface(),
+    TIValidator: TIValidator__factory.createInterface(),
+    TIExecutor: TIExecutor__factory.createInterface(),
+    TIModule: TIModule__factory.createInterface(),
+    TISigner: TISigner__factory.createInterface(),
+    TIFallback: TIFallback__factory.createInterface(),
+    TIPolicy: TIPolicy__factory.createInterface(),
+    TIERC1271: TIERC1271__factory.createInterface(),
+    TIERC2612: TIERC2612__factory.createInterface(),
+    TScheduledOrders: TScheduledOrders__factory.createInterface(),
+    TScheduledTransfers: TScheduledTransfers__factory.createInterface(),
+    TIERC7579Account: TIERC7579Account__factory.createInterface(),
+    TIERC7579AccountView: TIERC7579AccountView__factory.createInterface(),
+    TIERC7579AccountEvents: TIERC7579AccountEvents__factory.createInterface(),
+    TSimpleAccountV08: TSimpleAccountV08__factory.createInterface(),
+    TOwnableValidator: TOwnableValidator__factory.createInterface(),
+    TSimpleAccountFactoryV08: TSimpleAccountFactoryV08__factory.createInterface(),
+    TKernelV3Factory: TKernelV3Factory__factory.createInterface(),
+    TSmartSession: TSmartSession__factory.createInterface(),
+    TSudoPolicy: TSudoPolicy__factory.createInterface(),
+    TECDSAValidator: TECDSAValidator__factory.createInterface(),
+    TNexus: TNexus__factory.createInterface(),
+    TNexusBootstrap: TNexusBootstrap__factory.createInterface(),
+    TUniActionPolicy: TUniActionPolicy__factory.createInterface(),
+    TNexusFactory: TNexusFactory__factory.createInterface()
 };

@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { NexusFactory__factory } from '@/contract-types'
+import { TNexusFactory__factory } from '@/contract-types'
 import { CallType, ERC7579_MODULE_TYPE } from '@/core'
 import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
@@ -46,7 +46,7 @@ export class NexusAccount extends ModularSmartAccount<NexusCreationOptions> {
 	}
 
 	static override getInitCode(creationOptions: NexusCreationOptions): string {
-		const factoryCalldata = INTERFACES.NexusFactory.encodeFunctionData('createAccount', [
+		const factoryCalldata = INTERFACES.TNexusFactory.encodeFunctionData('createAccount', [
 			NexusAccount.getInitializeData(creationOptions),
 			creationOptions.salt,
 		])
@@ -58,7 +58,7 @@ export class NexusAccount extends ModularSmartAccount<NexusCreationOptions> {
 	}
 
 	static override async computeAccountAddress(client: JsonRpcProvider, creationOptions: NexusCreationOptions) {
-		const factory = NexusFactory__factory.connect(ADDRESS.NexusFactory, client)
+		const factory = TNexusFactory__factory.connect(ADDRESS.NexusFactory, client)
 		const address = await factory.computeAccountAddress(
 			this.getInitializeData(creationOptions),
 			creationOptions.salt,
@@ -92,7 +92,7 @@ export class NexusAccount extends ModularSmartAccount<NexusCreationOptions> {
 		let bootstrapCalldata: string
 		switch (creationOptions.bootstrap) {
 			case 'initNexusWithSingleValidator':
-				bootstrapCalldata = INTERFACES.NexusBootstrap.encodeFunctionData('initNexusWithSingleValidator', [
+				bootstrapCalldata = INTERFACES.TNexusBootstrap.encodeFunctionData('initNexusWithSingleValidator', [
 					creationOptions.validatorAddress,
 					creationOptions.validatorInitData,
 					creationOptions.registryAddress,
@@ -134,7 +134,7 @@ export class NexusAccount extends ModularSmartAccount<NexusCreationOptions> {
 			default:
 				throw new NexusError('Invalid NexusInstallModuleConfig.moduleType')
 		}
-		return INTERFACES.Nexus.encodeFunctionData('installModule', [
+		return INTERFACES.TNexus.encodeFunctionData('installModule', [
 			config.moduleType,
 			config.moduleAddress,
 			moduleInitData,
@@ -163,7 +163,7 @@ export class NexusAccount extends ModularSmartAccount<NexusCreationOptions> {
 				break
 		}
 
-		return INTERFACES.Nexus.encodeFunctionData('uninstallModule', [
+		return INTERFACES.TNexus.encodeFunctionData('uninstallModule', [
 			config.moduleType,
 			config.moduleAddress,
 			moduleDeInitData,

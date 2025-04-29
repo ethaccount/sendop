@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { IERC1271__factory } from '@/contract-types'
+import { TIERC1271__factory } from '@/contract-types'
 import { INTERFACES } from '@/interfaces'
 import { type TypedData } from '@/utils'
 import { concat, getBytes, TypedDataEncoder } from 'ethers'
@@ -46,9 +46,9 @@ const kernelSignature = concat([
 ])
 console.log('kernelSignature', kernelSignature)
 
-const isValid = await IERC1271__factory.connect(KERNEL_ADDRESS, client).isValidSignature(dataHash, kernelSignature)
+const isValid = await TIERC1271__factory.connect(KERNEL_ADDRESS, client).isValidSignature(dataHash, kernelSignature)
 
-const calldata = INTERFACES.IERC1271.encodeFunctionData('isValidSignature', [dataHash, kernelSignature])
+const calldata = INTERFACES.TIERC1271.encodeFunctionData('isValidSignature', [dataHash, kernelSignature])
 
 console.log(isValid)
 console.log(calldata)

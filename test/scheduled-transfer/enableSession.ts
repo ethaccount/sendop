@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import type { SessionStruct } from '@/contract-types/SmartSession'
+import type { SessionStruct } from '@/contract-types/TSmartSession'
 import {
 	abiEncode,
 	EOAValidatorModule,
@@ -70,7 +70,7 @@ const session: SessionStruct = {
 	},
 	actions: [
 		{
-			actionTargetSelector: INTERFACES.ScheduledTransfers.getFunction('executeOrder').selector,
+			actionTargetSelector: INTERFACES.TScheduledTransfers.getFunction('executeOrder').selector,
 			actionTarget: ADDRESS.ScheduledTransfers,
 			actionPolicies: [
 				{
@@ -93,7 +93,7 @@ const op = await sendop({
 		{
 			to: ADDRESS.SmartSession,
 			value: 0n,
-			data: INTERFACES.SmartSession.encodeFunctionData('enableSessions', [sessions]),
+			data: INTERFACES.TSmartSession.encodeFunctionData('enableSessions', [sessions]),
 		},
 	],
 	opGetter: new KernelV3Account({

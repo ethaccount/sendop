@@ -1,6 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import { RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
-import type { SessionStruct } from '@/contract-types/SmartSession'
+import type { SessionStruct } from '@/contract-types/TSmartSession'
 import {
 	abiEncode,
 	EOAValidatorModule,
@@ -11,10 +11,10 @@ import {
 	zeroPadLeft,
 	PimlicoBundler,
 	randomBytes32,
-	Registry__factory,
+	TRegistry__factory,
 	sendop,
 	SMART_SESSIONS_ENABLE_MODE,
-	SmartSession__factory,
+	TSmartSession__factory,
 } from '@/index'
 import { INTERFACES } from '@/interfaces'
 import { concat, JsonRpcProvider, parseEther, toBeHex, Wallet, ZeroAddress } from 'ethers'
@@ -90,7 +90,7 @@ const session: SessionStruct = {
 	},
 	actions: [
 		{
-			actionTargetSelector: INTERFACES.ScheduledTransfers.getFunction('executeOrder').selector,
+			actionTargetSelector: INTERFACES.TScheduledTransfers.getFunction('executeOrder').selector,
 			actionTarget: ADDRESS.ScheduledTransfers,
 			actionPolicies: [
 				{
@@ -107,7 +107,7 @@ logger.info(`Permission ID: ${permissionId}`)
 
 const sessions: SessionStruct[] = [session]
 const encodedSessions = getEncodedFunctionParams(
-	SmartSession__factory.createInterface().encodeFunctionData('enableSessions', [sessions]),
+	TSmartSession__factory.createInterface().encodeFunctionData('enableSessions', [sessions]),
 )
 
 const smartSessionInitData = concat([SMART_SESSIONS_ENABLE_MODE, encodedSessions])
@@ -149,7 +149,7 @@ const op = await sendop({
 		{
 			to: ADDRESS.Registry,
 			value: 0n,
-			data: Registry__factory.createInterface().encodeFunctionData('trustAttesters', [
+			data: TRegistry__factory.createInterface().encodeFunctionData('trustAttesters', [
 				1,
 				[RHINESTONE_ATTESTER_ADDRESS],
 			]),
@@ -162,7 +162,7 @@ const op = await sendop({
 				moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 				moduleAddress: ADDRESS.SmartSession,
 				initData: smartSessionInitData,
-				selectorData: INTERFACES.KernelV3.getFunction('execute').selector,
+				selectorData: INTERFACES.TKernelV3.getFunction('execute').selector,
 			}),
 		},
 		// install scheduled transfers module

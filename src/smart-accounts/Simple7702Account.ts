@@ -53,7 +53,7 @@ export class Simple7702Account extends SmartAccount<any> {
 
 		if (executions.length === 1) {
 			const execution = executions[0]
-			return INTERFACES.Simple7702AccountV08.encodeFunctionData('execute', [
+			return INTERFACES.TSimple7702AccountV08.encodeFunctionData('execute', [
 				execution.to,
 				execution.value,
 				execution.data,
@@ -61,7 +61,7 @@ export class Simple7702Account extends SmartAccount<any> {
 		}
 
 		if (executions.length > 1) {
-			return INTERFACES.Simple7702AccountV08.encodeFunctionData('executeBatch', [
+			return INTERFACES.TSimple7702AccountV08.encodeFunctionData('executeBatch', [
 				executions.map(execution => ({
 					target: execution.to,
 					value: execution.value,

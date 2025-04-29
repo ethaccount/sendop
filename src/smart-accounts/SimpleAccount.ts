@@ -40,7 +40,7 @@ export class SimpleAccount extends SmartAccount<SimpleAccountCreationOptions> {
 		client: JsonRpcProvider,
 		creationOptions: SimpleAccountCreationOptions,
 	): Promise<string> {
-		const factory = new Contract(ADDRESS.SimpleAccountFactoryV08, INTERFACES.SimpleAccountFactoryV08, client)
+		const factory = new Contract(ADDRESS.SimpleAccountFactoryV08, INTERFACES.TSimpleAccountFactoryV08, client)
 		return await factory.getFunction('getAddress(address,uint256)')(
 			creationOptions.owner,
 			BigInt(creationOptions.salt),
@@ -50,7 +50,7 @@ export class SimpleAccount extends SmartAccount<SimpleAccountCreationOptions> {
 	static override getInitCode(creationOptions: SimpleAccountCreationOptions): string {
 		return concat([
 			ADDRESS.SimpleAccountFactoryV08,
-			INTERFACES.SimpleAccountFactoryV08.encodeFunctionData('createAccount', [
+			INTERFACES.TSimpleAccountFactoryV08.encodeFunctionData('createAccount', [
 				creationOptions.owner,
 				BigInt(creationOptions.salt),
 			]),
@@ -76,7 +76,7 @@ export class SimpleAccount extends SmartAccount<SimpleAccountCreationOptions> {
 
 		if (executions.length === 1) {
 			const execution = executions[0]
-			return INTERFACES.SimpleAccountV08.encodeFunctionData('execute', [
+			return INTERFACES.TSimpleAccountV08.encodeFunctionData('execute', [
 				execution.to,
 				execution.value,
 				execution.data,
@@ -84,7 +84,7 @@ export class SimpleAccount extends SmartAccount<SimpleAccountCreationOptions> {
 		}
 
 		if (executions.length > 1) {
-			return INTERFACES.SimpleAccountV08.encodeFunctionData('executeBatch', [
+			return INTERFACES.TSimpleAccountV08.encodeFunctionData('executeBatch', [
 				executions.map(execution => ({
 					target: execution.to,
 					value: execution.value,

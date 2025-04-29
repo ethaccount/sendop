@@ -75,12 +75,12 @@ export abstract class ModularSmartAccount<
 
 		switch (callType) {
 			case CallType.SIGNLE:
-				return INTERFACES.IERC7579Account.encodeFunctionData('execute', [
+				return INTERFACES.TIERC7579Account.encodeFunctionData('execute', [
 					execMode,
 					concat([executions[0].to, toBytes32(executions[0].value), executions[0].data]),
 				])
 			case CallType.BATCH:
-				return INTERFACES.IERC7579Account.encodeFunctionData('execute', [
+				return INTERFACES.TIERC7579Account.encodeFunctionData('execute', [
 					execMode,
 					encodeExecutions(executions),
 				])

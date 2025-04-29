@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { OwnableValidator__factory, SmartSession__factory } from '@/contract-types'
+import { TOwnableValidator__factory, TSmartSession__factory } from '@/contract-types'
 import { getEmptyUserOp, getUserOpHash, packUserOp } from '@/core'
 import { randomBytes32 } from '@/utils'
 import { getBytes, JsonRpcProvider } from 'ethers'
@@ -14,7 +14,7 @@ logger.info(`Chain ID: ${chainId}`)
 logger.info(`Kernel address: ${kernelAddress}`)
 
 const client = new JsonRpcProvider(CLIENT_URL)
-const ownableValidator = OwnableValidator__factory.connect(ADDRESS.OwnableValidator, client)
+const ownableValidator = TOwnableValidator__factory.connect(ADDRESS.OwnableValidator, client)
 
 // smartsession only uses ownableValidator's validateSignatureWithData, no state is stored in ownableValidator
 
@@ -54,7 +54,7 @@ userOp.nonce = BigInt(randomBytes32())
 userOp.sender = kernelAddress
 const userOpHash = getUserOpHash(packUserOp(userOp), 'v0.7', chainId)
 const signature = await account1.signMessage(getBytes(userOpHash))
-const smartsession = SmartSession__factory.connect(ADDRESS.SmartSession, client)
+const smartsession = TSmartSession__factory.connect(ADDRESS.SmartSession, client)
 const session = await smartsession.getSessionValidatorAndConfig(kernelAddress, permissionId)
 
 const validateSignatureWithData = await ownableValidator.validateSignatureWithData(

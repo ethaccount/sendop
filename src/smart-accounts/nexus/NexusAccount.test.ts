@@ -2,7 +2,7 @@ import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 import { ERC7579_MODULE_TYPE, sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
-import { IERC1271__factory, Nexus__factory, PublicPaymaster, WebAuthnValidatorModule } from '@/index'
+import { TIERC1271__factory, TNexus__factory, PublicPaymaster, WebAuthnValidatorModule } from '@/index'
 import { getScheduledTransferDeInitData, getScheduledTransferInitData } from '@/modules/scheduledTransfer'
 import { ERC1271_MAGIC_VALUE, findPrevious, randomBytes32, zeroPadLeft } from '@/utils'
 import { OwnableValidator } from '@/validators/OwnableValidator'
@@ -99,7 +99,7 @@ describe('NexusAccount', () => {
 			const dataHash = keccak256('0x1271')
 			const signature = await signer.signMessage(getBytes(dataHash))
 			const encodedSignature = concat([ADDRESS.OwnableValidator, signature])
-			const isValid = await IERC1271__factory.connect(computedAddress, client).isValidSignature(
+			const isValid = await TIERC1271__factory.connect(computedAddress, client).isValidSignature(
 				dataHash,
 				encodedSignature,
 			)
@@ -146,7 +146,7 @@ describe('NexusAccount', () => {
 			const receipt = await op.wait()
 			expect(receipt.success).toBe(true)
 
-			const nexus = Nexus__factory.connect(computedAddress, client)
+			const nexus = TNexus__factory.connect(computedAddress, client)
 			const validators = await nexus.getValidatorsPaginated(zeroPadLeft('0x01', 20), 10)
 			const prev = findPrevious(validators.array, ADDRESS.WebAuthnValidator)
 
@@ -188,7 +188,7 @@ describe('NexusAccount', () => {
 			const receipt = await op.wait()
 			expect(receipt.success).toBe(true)
 
-			const nexus = Nexus__factory.connect(computedAddress, client)
+			const nexus = TNexus__factory.connect(computedAddress, client)
 			const validators = await nexus.getExecutorsPaginated(zeroPadLeft('0x01', 20), 10)
 			const prev = findPrevious(validators.array, ADDRESS.ScheduledTransfers)
 

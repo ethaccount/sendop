@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { IERC20__factory } from '@/contract-types'
+import { TIERC20__factory } from '@/contract-types'
 import { PublicPaymaster } from '@/paymasters'
 import { CircleUSDCPaymaster } from '@/paymasters/CircleUSDCPaymaster'
 import type { TypedData } from '@/utils'
@@ -33,7 +33,7 @@ const creationOptions = {
 
 const computedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
 
-const usdc = IERC20__factory.connect(USDC_ADDRESS, client)
+const usdc = TIERC20__factory.connect(USDC_ADDRESS, client)
 
 const balance = await usdc.balanceOf(computedAddress)
 console.log('balance', formatUnits(balance, 6))

@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { ScheduledTransfers__factory } from '@/contract-types'
+import { TScheduledTransfers__factory } from '@/contract-types'
 import { JsonRpcProvider } from 'ethers'
 import fs from 'fs'
 import path from 'path'
@@ -30,7 +30,7 @@ logger.info(`Chain ID: ${chainId}`)
 logger.info(`Kernel address: ${kernelAddress}`)
 
 const client = new JsonRpcProvider(CLIENT_URL)
-const scheduledTransfers = ScheduledTransfers__factory.connect(ADDRESS.ScheduledTransfers, client)
+const scheduledTransfers = TScheduledTransfers__factory.connect(ADDRESS.ScheduledTransfers, client)
 
 const jobCount = await scheduledTransfers.accountJobCount(kernelAddress)
 logger.info(`Job count: ${jobCount}`)
