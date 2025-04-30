@@ -1,6 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
-import { isEip7702, sendop } from '@/core'
+import { isSmartEOA, sendop } from '@/core'
 import { PublicPaymaster } from '@/paymasters'
 import { JsonRpcProvider, keccak256, Wallet } from 'ethers'
 import { Interface } from 'ethers/abi'
@@ -35,7 +35,7 @@ describe('Simple7702Account', () => {
 			signer,
 		})
 
-		expect(await isEip7702(client, signer.address)).toBe(true)
+		expect(await isSmartEOA(client, signer.address)).toBe(true)
 	})
 
 	it('should validate signature using ERC-1271', async () => {

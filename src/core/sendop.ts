@@ -35,10 +35,10 @@ export async function createUserOp(options: SendopOptions): Promise<UserOp> {
 
 	function parseInitCode(initCode: string, entryPointAddress: string): { factory: string; factoryData: string } {
 		// TODO: what's the situation to use 7702 initCode?
-		const isEIP7702InitCode =
+		const isSmartEOAInitCode =
 			entryPointAddress === ADDRESS.EntryPointV08 && dataSlice(initCode, 0, 20) === zeroPadRight('0x7702', 20)
 
-		if (!isEIP7702InitCode) {
+		if (!isSmartEOAInitCode) {
 			// Standard initCode format: 0x + address + selector + data
 			const minLength = 2 + 40 + 8 + 2
 			if (getBytesLength(initCode) < minLength) {
