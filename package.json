@@ -6,7 +6,7 @@
 	"repository": "https://github.com/ethaccount/sendop",
 	"bugs": "https://github.com/ethaccount/sendop/issues",
 	"homepage": "https://github.com/ethaccount/sendop#readme",
-	"license": "MIT",
+	"license": "AGPL-3.0-only",
 	"keywords": [
 		"account abstraction",
 		"ethers"
