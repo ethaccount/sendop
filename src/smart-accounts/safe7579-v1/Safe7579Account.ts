@@ -48,11 +48,11 @@ export class Safe7579Account extends ModularSmartAccount<Safe7579CreationOptions
 		const { validatorAddress, validatorInitData, owners, ownersThreshold, attesters, attestersThreshold } =
 			creationOptions
 
-		return INTERFACES.TISafe.encodeFunctionData('setup', [
+		return INTERFACES.ISafe.encodeFunctionData('setup', [
 			owners, // address[] calldata _owners
 			ownersThreshold, // uint256 _threshold
 			ADDRESS.Safe7579Launchpad,
-			INTERFACES.TSafe7579Launchpad.encodeFunctionData('addSafe7579', [
+			INTERFACES.Safe7579Launchpad.encodeFunctionData('addSafe7579', [
 				ADDRESS.Safe7579,
 				[
 					{
@@ -100,7 +100,7 @@ export class Safe7579Account extends ModularSmartAccount<Safe7579CreationOptions
 	static override getInitCode(creationOptions: Safe7579CreationOptions): string {
 		return concat([
 			ADDRESS.SafeProxyFactory,
-			INTERFACES.TSafeProxyFactory.encodeFunctionData('createProxyWithNonce', [
+			INTERFACES.SafeProxyFactory.encodeFunctionData('createProxyWithNonce', [
 				ADDRESS.Safe,
 				Safe7579Account.getInitializer(creationOptions),
 				creationOptions.salt,
@@ -155,7 +155,7 @@ export class Safe7579Account extends ModularSmartAccount<Safe7579CreationOptions
 				)
 				break
 		}
-		return INTERFACES.TNexus.encodeFunctionData('installModule', [
+		return INTERFACES.ISafe7579.encodeFunctionData('installModule', [
 			config.moduleType,
 			config.moduleAddress,
 			moduleInitData,
@@ -184,7 +184,7 @@ export class Safe7579Account extends ModularSmartAccount<Safe7579CreationOptions
 				break
 		}
 
-		return INTERFACES.TISafe7579.encodeFunctionData('uninstallModule', [
+		return INTERFACES.ISafe7579.encodeFunctionData('uninstallModule', [
 			config.moduleType,
 			config.moduleAddress,
 			moduleDeInitData,

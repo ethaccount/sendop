@@ -70,7 +70,7 @@ export async function executeScheduledTransfer({
 			{
 				to: ADDRESS.ScheduledTransfers,
 				value: 0n,
-				data: INTERFACES.TScheduledTransfers.encodeFunctionData('executeOrder', [jobId]),
+				data: INTERFACES.ScheduledTransfers.encodeFunctionData('executeOrder', [jobId]),
 			},
 		],
 		opGetter: kernel,

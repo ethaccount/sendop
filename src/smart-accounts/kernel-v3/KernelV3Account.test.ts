@@ -364,7 +364,7 @@ describe('KernelV3Account', () => {
 			},
 			actions: [
 				{
-					actionTargetSelector: INTERFACES.TScheduledTransfers.getFunction('executeOrder').selector,
+					actionTargetSelector: INTERFACES.ScheduledTransfers.getFunction('executeOrder').selector,
 					actionTarget: ADDRESS.ScheduledTransfers,
 					actionPolicies: [
 						{
@@ -426,7 +426,7 @@ describe('KernelV3Account', () => {
 							moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 							moduleAddress: ADDRESS.SmartSession,
 							initData: smartSessionInitData,
-							selectorData: INTERFACES.TKernelV3.getFunction('execute').selector,
+							selectorData: INTERFACES.KernelV3.getFunction('execute').selector,
 						}),
 					},
 					// install scheduled transfers module
@@ -475,7 +475,7 @@ describe('KernelV3Account', () => {
 				{
 					to: ADDRESS.ScheduledTransfers,
 					value: 0n,
-					data: INTERFACES.TScheduledTransfers.encodeFunctionData('executeOrder', [jobId]),
+					data: INTERFACES.ScheduledTransfers.encodeFunctionData('executeOrder', [jobId]),
 				},
 			])
 			const receipt = await op.wait()

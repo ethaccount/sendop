@@ -36,7 +36,7 @@ const client = new JsonRpcProvider(CLIENT_URL, undefined, {
 })
 const smartsession = TSmartSession__factory.connect(ADDRESS.SmartSession, client)
 
-const actionTargetSelector = INTERFACES.TScheduledTransfers.getFunction('executeOrder').selector
+const actionTargetSelector = INTERFACES.ScheduledTransfers.getFunction('executeOrder').selector
 const actionTarget = ADDRESS.ScheduledTransfers
 logger.info('actionTargetSelector', actionTargetSelector)
 logger.info('actionTarget', actionTarget)

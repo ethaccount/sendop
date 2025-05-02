@@ -90,7 +90,7 @@ const session: SessionStruct = {
 	},
 	actions: [
 		{
-			actionTargetSelector: INTERFACES.TScheduledTransfers.getFunction('executeOrder').selector,
+			actionTargetSelector: INTERFACES.ScheduledTransfers.getFunction('executeOrder').selector,
 			actionTarget: ADDRESS.ScheduledTransfers,
 			actionPolicies: [
 				{
@@ -162,7 +162,7 @@ const op = await sendop({
 				moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 				moduleAddress: ADDRESS.SmartSession,
 				initData: smartSessionInitData,
-				selectorData: INTERFACES.TKernelV3.getFunction('execute').selector,
+				selectorData: INTERFACES.KernelV3.getFunction('execute').selector,
 			}),
 		},
 		// install scheduled transfers module

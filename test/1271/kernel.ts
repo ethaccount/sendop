@@ -48,7 +48,7 @@ console.log('kernelSignature', kernelSignature)
 
 const isValid = await TIERC1271__factory.connect(KERNEL_ADDRESS, client).isValidSignature(dataHash, kernelSignature)
 
-const calldata = INTERFACES.TIERC1271.encodeFunctionData('isValidSignature', [dataHash, kernelSignature])
+const calldata = INTERFACES.IERC1271.encodeFunctionData('isValidSignature', [dataHash, kernelSignature])
 
 console.log(isValid)
 console.log(calldata)

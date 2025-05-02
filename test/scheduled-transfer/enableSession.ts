@@ -70,7 +70,7 @@ const session: SessionStruct = {
 	},
 	actions: [
 		{
-			actionTargetSelector: INTERFACES.TScheduledTransfers.getFunction('executeOrder').selector,
+			actionTargetSelector: INTERFACES.ScheduledTransfers.getFunction('executeOrder').selector,
 			actionTarget: ADDRESS.ScheduledTransfers,
 			actionPolicies: [
 				{
@@ -93,7 +93,7 @@ const op = await sendop({
 		{
 			to: ADDRESS.SmartSession,
 			value: 0n,
-			data: INTERFACES.TSmartSession.encodeFunctionData('enableSessions', [sessions]),
+			data: INTERFACES.SmartSession.encodeFunctionData('enableSessions', [sessions]),
 		},
 	],
 	opGetter: new KernelV3Account({

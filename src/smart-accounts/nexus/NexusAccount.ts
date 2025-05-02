@@ -46,7 +46,7 @@ export class NexusAccount extends ModularSmartAccount<NexusCreationOptions> {
 	}
 
 	static override getInitCode(creationOptions: NexusCreationOptions): string {
-		const factoryCalldata = INTERFACES.TNexusFactory.encodeFunctionData('createAccount', [
+		const factoryCalldata = INTERFACES.NexusFactory.encodeFunctionData('createAccount', [
 			NexusAccount.getInitializeData(creationOptions),
 			creationOptions.salt,
 		])
@@ -92,7 +92,7 @@ export class NexusAccount extends ModularSmartAccount<NexusCreationOptions> {
 		let bootstrapCalldata: string
 		switch (creationOptions.bootstrap) {
 			case 'initNexusWithSingleValidator':
-				bootstrapCalldata = INTERFACES.TNexusBootstrap.encodeFunctionData('initNexusWithSingleValidator', [
+				bootstrapCalldata = INTERFACES.NexusBootstrap.encodeFunctionData('initNexusWithSingleValidator', [
 					creationOptions.validatorAddress,
 					creationOptions.validatorInitData,
 					creationOptions.registryAddress,
@@ -134,7 +134,7 @@ export class NexusAccount extends ModularSmartAccount<NexusCreationOptions> {
 			default:
 				throw new NexusError('Invalid NexusInstallModuleConfig.moduleType')
 		}
-		return INTERFACES.TNexus.encodeFunctionData('installModule', [
+		return INTERFACES.Nexus.encodeFunctionData('installModule', [
 			config.moduleType,
 			config.moduleAddress,
 			moduleInitData,
@@ -163,7 +163,7 @@ export class NexusAccount extends ModularSmartAccount<NexusCreationOptions> {
 				break
 		}
 
-		return INTERFACES.TNexus.encodeFunctionData('uninstallModule', [
+		return INTERFACES.Nexus.encodeFunctionData('uninstallModule', [
 			config.moduleType,
 			config.moduleAddress,
 			moduleDeInitData,
