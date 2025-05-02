@@ -2,14 +2,14 @@ import { ADDRESS } from '@/addresses'
 import { SendopError, UnsupportedEntryPointError } from '@/error'
 import { getBytesLength, zeroPadRight } from '@/utils'
 import { dataSlice, getBytes } from 'ethers'
-import type { Bundler, PaymasterGetter, SignatureGetter } from './interface'
-import type { SendopOptions, SendOpResult, UserOp, UserOpReceipt } from './types'
+import type { Bundler, OperationGetter, PaymasterGetter, SignatureGetter } from './interface'
+import type { Execution, SendopOptions, SendOpResult, UserOp, UserOpReceipt } from './types'
 import { getEmptyUserOp, getUserOpHashV07, getUserOpHashV08, getV08DomainAndTypes, packUserOp } from './utils'
 
 export async function sendop(options: SendopOptions): Promise<SendOpResult> {
-	const { bundler, opGetter, pmGetter } = options
+	const { bundler, executions, opGetter, pmGetter, initCode, nonce } = options
 
-	let userOp = await createUserOp(options)
+	let userOp = await createUserOp(bundler, executions, opGetter, initCode, nonce)
 	const estimation = await estimateUserOp(userOp, bundler, opGetter, pmGetter)
 	userOp = estimation.userOp
 
@@ -21,9 +21,13 @@ export async function sendop(options: SendopOptions): Promise<SendOpResult> {
 	return sendUserOp(bundler, userOp)
 }
 
-export async function createUserOp(options: SendopOptions): Promise<UserOp> {
-	const { bundler, executions, opGetter, pmGetter, initCode, nonce } = options
-
+export async function createUserOp(
+	bundler: Bundler,
+	executions: Execution[],
+	opGetter: OperationGetter,
+	initCode?: string,
+	nonce?: bigint,
+): Promise<UserOp> {
 	const userOp = getEmptyUserOp()
 
 	// Parse initCode in options
