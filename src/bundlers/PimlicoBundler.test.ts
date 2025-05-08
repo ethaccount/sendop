@@ -3,7 +3,7 @@ import { sendop, type Bundler } from '@/core'
 import { PublicPaymaster } from '@/paymasters'
 import { KernelV3Account } from '@/smart-accounts'
 import { randomBytes32 } from '@/utils'
-import { EOAValidatorModule } from '@/validators'
+import { EOAValidator } from '@/validators'
 import { JsonRpcProvider, Wallet } from 'ethers'
 import { setup } from 'test/utils'
 import { beforeAll, describe, it } from 'vitest'
@@ -45,7 +45,7 @@ describe('PimlicoBundler', () => {
 				address: computedAddress,
 				client,
 				bundler,
-				validator: new EOAValidatorModule({
+				validator: new EOAValidator({
 					address: ADDRESS.ECDSAValidator,
 					signer,
 				}),

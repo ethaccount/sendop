@@ -2,7 +2,7 @@ import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 import { ERC7579_MODULE_TYPE, sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
-import { TIERC1271__factory, TNexus__factory, PublicPaymaster, WebAuthnValidatorModule } from '@/index'
+import { TIERC1271__factory, TNexus__factory, PublicPaymaster, WebAuthnValidator } from '@/index'
 import { getScheduledTransferDeInitData, getScheduledTransferInitData } from '@/modules/scheduledTransfer'
 import { ERC1271_MAGIC_VALUE, findPrevious, randomBytes32, zeroPadLeft } from '@/utils'
 import { OwnableValidator } from '@/validators/OwnableValidator'
@@ -134,7 +134,7 @@ describe('NexusAccount', () => {
 					data: NexusAccount.encodeInstallModule({
 						moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 						moduleAddress: ADDRESS.WebAuthnValidator,
-						initData: WebAuthnValidatorModule.getInitData({
+						initData: WebAuthnValidator.getInitData({
 							pubKeyX: BigInt(randomBytes32()),
 							pubKeyY: BigInt(randomBytes32()),
 							authenticatorIdHash: randomBytes32(),
@@ -156,7 +156,7 @@ describe('NexusAccount', () => {
 					data: NexusAccount.encodeUninstallModule({
 						moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 						moduleAddress: ADDRESS.WebAuthnValidator,
-						deInitData: WebAuthnValidatorModule.getDeInitData(),
+						deInitData: WebAuthnValidator.getDeInitData(),
 						prev,
 					}),
 					value: 0n,

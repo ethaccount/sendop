@@ -1,11 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import {
-	BICONOMY_ATTESTER_ADDRESS,
-	EOAValidatorModule,
-	PublicPaymaster,
-	RHINESTONE_ATTESTER_ADDRESS,
-	sendop,
-} from '@/index'
+import { BICONOMY_ATTESTER_ADDRESS, EOAValidator, PublicPaymaster, RHINESTONE_ATTESTER_ADDRESS, sendop } from '@/index'
 import { NexusAccount } from '@/smart-accounts/nexus/NexusAccount'
 import type { NexusCreationOptions } from '@/smart-accounts/nexus/types'
 import { hexlify, randomBytes } from 'ethers'
@@ -36,7 +30,7 @@ const nexus = new NexusAccount({
 	address: computedAddress,
 	client,
 	bundler,
-	validator: new EOAValidatorModule({
+	validator: new EOAValidator({
 		address: ADDRESS.ECDSAValidator,
 		signer,
 	}),

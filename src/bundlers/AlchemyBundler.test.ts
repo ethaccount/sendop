@@ -3,7 +3,7 @@ import { sendop, type Bundler } from '@/core'
 import { PublicPaymaster } from '@/paymasters'
 import { RpcProvider } from '@/RpcProvider'
 import { KernelV3Account } from '@/smart-accounts'
-import { EOAValidatorModule } from '@/validators'
+import { EOAValidator } from '@/validators'
 import { hexlify, JsonRpcProvider, randomBytes, resolveAddress, Wallet } from 'ethers'
 import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -69,7 +69,7 @@ describe.skip('AlchemyBundler', () => {
 			address: deployedAddress,
 			client,
 			bundler: alchemyBundler,
-			validator: new EOAValidatorModule({
+			validator: new EOAValidator({
 				address: ADDRESS.ECDSAValidator,
 				signer,
 			}),

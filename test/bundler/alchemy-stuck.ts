@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { EOAValidatorModule, KernelV3Account, PublicPaymaster, RpcProvider, sendop } from '@/index'
+import { EOAValidator, KernelV3Account, PublicPaymaster, RpcProvider, sendop } from '@/index'
 import { Interface } from 'ethers'
 import { logger, setupCLI } from '../utils'
 
@@ -35,7 +35,7 @@ const op = await sendop({
 		address: accountAddress,
 		client,
 		bundler,
-		validator: new EOAValidatorModule({
+		validator: new EOAValidator({
 			address: ADDRESS.ECDSAValidator,
 			signer,
 		}),

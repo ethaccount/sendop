@@ -7,7 +7,7 @@ type EOAValidatorModuleOptions = {
 	signer: Signer
 }
 
-export class EOAValidatorModule extends ERC7579Validator {
+export class EOAValidator extends ERC7579Validator {
 	private readonly _options: EOAValidatorModuleOptions
 
 	constructor(options: EOAValidatorModuleOptions) {

@@ -3,7 +3,7 @@ import { PimlicoBundler } from '@/bundlers'
 import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 import { TIERC1271__factory, TISafe7579__factory } from '@/contract-types'
 import { ERC7579_MODULE_TYPE, sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
-import { WebAuthnValidatorModule } from '@/index'
+import { WebAuthnValidator } from '@/index'
 import { getScheduledTransferDeInitData, getScheduledTransferInitData } from '@/modules/scheduledTransfer'
 import { PublicPaymaster } from '@/paymasters'
 import { ERC1271_MAGIC_VALUE, findPrevious, randomBytes32, zeroPadLeft } from '@/utils'
@@ -142,7 +142,7 @@ describe('Safe7579Account', () => {
 					data: Safe7579Account.encodeInstallModule({
 						moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 						moduleAddress: ADDRESS.WebAuthnValidator,
-						initData: WebAuthnValidatorModule.getInitData({
+						initData: WebAuthnValidator.getInitData({
 							pubKeyX: BigInt(randomBytes32()),
 							pubKeyY: BigInt(randomBytes32()),
 							authenticatorIdHash: randomBytes32(),
@@ -164,7 +164,7 @@ describe('Safe7579Account', () => {
 					data: Safe7579Account.encodeUninstallModule({
 						moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 						moduleAddress: ADDRESS.WebAuthnValidator,
-						deInitData: WebAuthnValidatorModule.getDeInitData(),
+						deInitData: WebAuthnValidator.getDeInitData(),
 						prev,
 					}),
 					value: 0n,

@@ -3,16 +3,15 @@ import { SendopError } from '@/error'
 import { abiEncode } from '@/utils/ethers-helper'
 import type { BytesLike } from 'ethers'
 import { hexlify } from 'ethers'
-import type { DataHexString } from 'node_modules/ethers/lib.esm/utils/data'
 
 type ConstructorOptions = {
 	address: string
-	signMessage: (userOpHash: DataHexString) => Promise<DataHexString>
+	signMessage: (userOpHash: string) => Promise<string>
 }
 
-export class WebAuthnValidatorModule extends ERC7579Validator {
+export class WebAuthnValidator extends ERC7579Validator {
 	#address: string
-	#signMessage: (userOpHash: DataHexString) => Promise<DataHexString>
+	#signMessage: (userOpHash: string) => Promise<string>
 
 	constructor(options: ConstructorOptions) {
 		super()

@@ -2,7 +2,7 @@ import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { KernelV3Account } from '@/smart-accounts'
 import { connectEntryPointV07 } from '@/utils/contract-helper'
-import { EOAValidatorModule } from '@/validators'
+import { EOAValidator } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, parseEther, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
 import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -32,7 +32,7 @@ describe('sendop', () => {
 		signer = new Wallet(privateKey, client)
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL)
 		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
-		validator = new EOAValidatorModule({
+		validator = new EOAValidator({
 			address: ADDRESS.ECDSAValidator,
 			signer,
 		})

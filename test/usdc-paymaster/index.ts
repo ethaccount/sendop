@@ -5,7 +5,7 @@ import { CircleUSDCPaymaster } from '@/paymasters/CircleUSDCPaymaster'
 import type { TypedData } from '@/utils'
 import { KernelV3Account } from '@/smart-accounts'
 import { zeroPadLeft } from '@/utils'
-import { EOAValidatorModule } from '@/validators'
+import { EOAValidator } from '@/validators'
 import { concat, formatUnits, Interface, parseUnits, toBeHex } from 'ethers'
 import { setupCLI } from 'test/utils'
 
@@ -80,7 +80,7 @@ const usdcPaymaster = new CircleUSDCPaymaster({
 const kernel = new KernelV3Account({
 	client,
 	bundler,
-	validator: new EOAValidatorModule({
+	validator: new EOAValidator({
 		address: ADDRESS.ECDSAValidator,
 		signer,
 	}),

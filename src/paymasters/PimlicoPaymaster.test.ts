@@ -2,7 +2,7 @@ import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
 import { KernelV3Account } from '@/smart-accounts'
-import { EOAValidatorModule } from '@/validators'
+import { EOAValidator } from '@/validators'
 import { hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
 import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -31,7 +31,7 @@ describe.skip('PimlicoPaymaster', () => {
 		signer = new Wallet(privateKey, client)
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL)
 		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
-		validator = new EOAValidatorModule({
+		validator = new EOAValidator({
 			address: ADDRESS.ECDSAValidator,
 			signer,
 		})
