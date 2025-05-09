@@ -1,10 +1,15 @@
 import { ADDRESS } from '@/addresses'
-import { BICONOMY_ATTESTER_ADDRESS, EOAValidator, PublicPaymaster, RHINESTONE_ATTESTER_ADDRESS, sendop } from '@/index'
+import {
+	BICONOMY_ATTESTER_ADDRESS,
+	OwnableValidator,
+	PublicPaymaster,
+	RHINESTONE_ATTESTER_ADDRESS,
+	sendop,
+} from '@/index'
 import { NexusAccount } from '@/smart-accounts/nexus/NexusAccount'
 import type { NexusCreationOptions } from '@/smart-accounts/nexus/types'
 import { hexlify, randomBytes } from 'ethers'
-import { logger } from './utils'
-import { setupCLI } from './utils/cli'
+import { logger, setupCLI } from './utils'
 
 const { signer, bundler, client } = await setupCLI(['r', 'p', 'b'], {
 	bundlerOptions: {
@@ -15,8 +20,8 @@ const { signer, bundler, client } = await setupCLI(['r', 'p', 'b'], {
 const creationOptions: NexusCreationOptions = {
 	bootstrap: 'initNexusWithSingleValidator',
 	salt: hexlify(randomBytes(32)),
-	validatorAddress: ADDRESS.ECDSAValidator,
-	validatorInitData: await signer.getAddress(),
+	validatorAddress: ADDRESS.OwnableValidator,
+	validatorInitData: OwnableValidator.getInitData([signer.address], 1),
 	registryAddress: ADDRESS.Registry,
 	attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS],
 	threshold: 1,
@@ -30,9 +35,8 @@ const nexus = new NexusAccount({
 	address: computedAddress,
 	client,
 	bundler,
-	validator: new EOAValidator({
-		address: ADDRESS.ECDSAValidator,
-		signer,
+	validator: new OwnableValidator({
+		signers: [signer],
 	}),
 })
 
