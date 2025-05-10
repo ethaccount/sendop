@@ -1,7 +1,7 @@
 import { ADDRESS } from '@/addresses'
 import {
 	BICONOMY_ATTESTER_ADDRESS,
-	EOAValidatorModule,
+	EOAValidator,
 	RHINESTONE_ATTESTER_ADDRESS,
 	sendop,
 	EtherspotBundler,
@@ -60,7 +60,7 @@ const nexus = new NexusAccount({
 	address: computedAddress,
 	client,
 	bundler,
-	validator: new EOAValidatorModule({
+	validator: new EOAValidator({
 		address: ADDRESS.ECDSAValidator,
 		signer,
 	}),

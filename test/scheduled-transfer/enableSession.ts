@@ -1,8 +1,8 @@
 import { ADDRESS } from '@/addresses'
-import type { SessionStruct } from '@/contract-types/SmartSession'
+import type { SessionStruct } from '@/contract-types/TSmartSession'
 import {
 	abiEncode,
-	EOAValidatorModule,
+	EOAValidator,
 	getPermissionId,
 	KernelV3Account,
 	PimlicoBundler,
@@ -100,7 +100,7 @@ const op = await sendop({
 		address: argv.address,
 		client,
 		bundler,
-		validator: new EOAValidatorModule({
+		validator: new EOAValidator({
 			address: ADDRESS.ECDSAValidator,
 			signer,
 		}),

@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { IERC20__factory } from '@/contract-types'
+import { TIERC20__factory } from '@/contract-types'
 import { KernelV3Account } from '@/smart-accounts'
 import { zeroPadLeft } from '@/utils'
 import { formatUnits } from 'ethers'
@@ -20,7 +20,7 @@ const { client, signer } = await setupCLI(['r', 'p'], {
 	},
 })
 
-const usdc = IERC20__factory.connect(USDC_ADDRESS, signer)
+const usdc = TIERC20__factory.connect(USDC_ADDRESS, signer)
 
 const creationOptions = {
 	salt: zeroPadLeft(toBeHex(123n)),

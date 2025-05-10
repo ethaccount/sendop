@@ -2,7 +2,7 @@ import { ADDRESS } from '@/addresses'
 import { AlchemyBundler } from '@/bundlers/AlchemyBundler'
 import { sendop } from '@/core'
 import { KernelV3Account } from '@/smart-accounts'
-import { EOAValidatorModule } from '@/validators/EOAValidatorModule'
+import { EOAValidator } from '@/validators/EOAValidator'
 import { getAddress, Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import { setup } from './utils'
 import { PublicPaymaster } from '@/paymasters'
@@ -33,7 +33,7 @@ const op = await sendop({
 		address: FROM,
 		client,
 		bundler,
-		validator: new EOAValidatorModule({
+		validator: new EOAValidator({
 			address: ADDRESS.ECDSAValidator,
 			signer,
 		}),

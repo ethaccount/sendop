@@ -32,10 +32,11 @@ const imports = factoryFiles
 
 // Create interface mappings
 const interfaceEntries = factoryFiles
-	.map(
-		factory =>
-			`    ${path.basename(factory).replace('__factory', '')}: ${path.basename(factory)}.createInterface()`,
-	)
+	.map(factory => {
+		const interfaceName = path.basename(factory).replace('__factory', '')
+		const keyName = interfaceName.startsWith('T') ? interfaceName.slice(1) : interfaceName
+		return `    ${keyName}: ${path.basename(factory)}.createInterface()`
+	})
 	.join(',\n')
 
 // Create the output string

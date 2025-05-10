@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { NexusFactory__factory } from '@/contract-types'
+import { TNexusFactory__factory } from '@/contract-types'
 import { CallType, ERC7579_MODULE_TYPE } from '@/core'
 import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
@@ -58,7 +58,7 @@ export class NexusAccount extends ModularSmartAccount<NexusCreationOptions> {
 	}
 
 	static override async computeAccountAddress(client: JsonRpcProvider, creationOptions: NexusCreationOptions) {
-		const factory = NexusFactory__factory.connect(ADDRESS.NexusFactory, client)
+		const factory = TNexusFactory__factory.connect(ADDRESS.NexusFactory, client)
 		const address = await factory.computeAccountAddress(
 			this.getInitializeData(creationOptions),
 			creationOptions.salt,

@@ -3,7 +3,7 @@ import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { sendop } from '@/core'
 import { PublicPaymaster } from '@/paymasters'
 import { NexusAccount } from '@/smart-accounts/nexus/NexusAccount'
-import { EOAValidatorModule } from '@/validators/EOAValidatorModule'
+import { EOAValidator } from '@/validators/EOAValidator'
 import { getAddress, Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
@@ -62,7 +62,7 @@ const op = await sendop({
 		address: argv.address,
 		client,
 		bundler,
-		validator: new EOAValidatorModule({
+		validator: new EOAValidator({
 			address: ADDRESS.ECDSAValidator,
 			signer,
 		}),

@@ -1,9 +1,9 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
-import { IERC1271__factory } from '@/contract-types'
-import { Registry__factory, SmartSession__factory } from '@/contract-types/factories'
-import type { SessionStruct } from '@/contract-types/SmartSession'
+import { TIERC1271__factory } from '@/contract-types'
+import { TRegistry__factory, TSmartSession__factory } from '@/contract-types/factories'
+import type { SessionStruct } from '@/contract-types/TSmartSession'
 import { ERC7579_MODULE_TYPE, sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
 import { INTERFACES } from '@/interfaces'
 import { getScheduledTransferDeInitData, getScheduledTransferInitData } from '@/modules/scheduledTransfer'
@@ -11,11 +11,11 @@ import { PublicPaymaster } from '@/paymasters'
 import { ERC1271_MAGIC_VALUE, type TypedData } from '@/utils'
 import { abiEncode, getEncodedFunctionParams, randomBytes32 } from '@/utils/ethers-helper'
 import {
-	EOAValidatorModule,
+	EOAValidator,
 	getPermissionId,
 	OwnableSmartSessionValidator,
 	SMART_SESSIONS_ENABLE_MODE,
-	WebAuthnValidatorModule,
+	WebAuthnValidator,
 } from '@/validators'
 import {
 	concat,
@@ -52,7 +52,7 @@ describe('KernelV3Account', () => {
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 			parseError: true,
 		})
-		validator = new EOAValidatorModule({
+		validator = new EOAValidator({
 			address: ADDRESS.ECDSAValidator,
 			signer: new Wallet(privateKey),
 		})
@@ -68,7 +68,7 @@ describe('KernelV3Account', () => {
 			creationOptions = {
 				salt: hexlify(randomBytes(32)),
 				validatorAddress: ADDRESS.ECDSAValidator,
-				validatorInitData: EOAValidatorModule.getInitData(signer.address),
+				validatorInitData: EOAValidator.getInitData(signer.address),
 			}
 		})
 
@@ -133,7 +133,7 @@ describe('KernelV3Account', () => {
 				signature,
 			])
 
-			const isValid = await IERC1271__factory.connect(computedAddress, client).isValidSignature(
+			const isValid = await TIERC1271__factory.connect(computedAddress, client).isValidSignature(
 				dataHash,
 				kernelSignature,
 			)
@@ -192,7 +192,7 @@ describe('KernelV3Account', () => {
 				signature,
 			])
 
-			const isValid = await IERC1271__factory.connect(computedAddress, client).isValidSignature(
+			const isValid = await TIERC1271__factory.connect(computedAddress, client).isValidSignature(
 				dataHash,
 				kernelSignature,
 			)
@@ -230,7 +230,7 @@ describe('KernelV3Account', () => {
 					data: KernelV3Account.encodeInstallModule({
 						moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 						moduleAddress: ADDRESS.WebAuthnValidator,
-						initData: WebAuthnValidatorModule.getInitData({
+						initData: WebAuthnValidator.getInitData({
 							pubKeyX: BigInt(randomBytes32()),
 							pubKeyY: BigInt(randomBytes32()),
 							authenticatorIdHash: randomBytes32(),
@@ -250,7 +250,7 @@ describe('KernelV3Account', () => {
 					data: KernelV3Account.encodeUninstallModule({
 						moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 						moduleAddress: ADDRESS.WebAuthnValidator,
-						deInitData: WebAuthnValidatorModule.getDeInitData(),
+						deInitData: WebAuthnValidator.getDeInitData(),
 					}),
 					value: 0n,
 				},
@@ -304,7 +304,7 @@ describe('KernelV3Account', () => {
 			const creationOptions = {
 				salt: randomBytes32(),
 				validatorAddress: ADDRESS.ECDSAValidator,
-				validatorInitData: EOAValidatorModule.getInitData(signer.address),
+				validatorInitData: EOAValidator.getInitData(signer.address),
 			}
 			const computedAddress = await KernelV3Account.computeAccountAddress(client, creationOptions)
 			const account = new KernelV3Account({
@@ -338,7 +338,7 @@ describe('KernelV3Account', () => {
 		const creationOptions: KernelCreationOptions = {
 			salt: randomBytes32(),
 			validatorAddress: ADDRESS.ECDSAValidator,
-			validatorInitData: EOAValidatorModule.getInitData(signer.address),
+			validatorInitData: EOAValidator.getInitData(signer.address),
 		}
 		const sessionSalt = randomBytes32()
 		const sessionOwner = account1
@@ -381,7 +381,7 @@ describe('KernelV3Account', () => {
 
 		const sessions: SessionStruct[] = [session]
 		const encodedSessions = getEncodedFunctionParams(
-			SmartSession__factory.createInterface().encodeFunctionData('enableSessions', [sessions]),
+			TSmartSession__factory.createInterface().encodeFunctionData('enableSessions', [sessions]),
 		)
 
 		const smartSessionInitData = concat([SMART_SESSIONS_ENABLE_MODE, encodedSessions])
@@ -400,7 +400,7 @@ describe('KernelV3Account', () => {
 				address: computedAddress,
 				client,
 				bundler,
-				validator: new EOAValidatorModule({
+				validator: new EOAValidator({
 					address: ADDRESS.ECDSAValidator,
 					signer,
 				}),
@@ -413,7 +413,7 @@ describe('KernelV3Account', () => {
 					{
 						to: ADDRESS.Registry,
 						value: 0n,
-						data: Registry__factory.createInterface().encodeFunctionData('trustAttesters', [
+						data: TRegistry__factory.createInterface().encodeFunctionData('trustAttesters', [
 							1,
 							[RHINESTONE_ATTESTER_ADDRESS],
 						]),

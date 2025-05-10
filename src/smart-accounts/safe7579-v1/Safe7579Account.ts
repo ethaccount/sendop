@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { Safe7579Launchpad__factory, SafeProxyFactory__factory } from '@/contract-types'
+import { TSafe7579Launchpad__factory, TSafeProxyFactory__factory } from '@/contract-types'
 import type { CallType } from '@/core/erc7579'
 import { ERC7579_MODULE_TYPE } from '@/core/erc7579'
 import { SendopError } from '@/error'
@@ -75,19 +75,19 @@ export class Safe7579Account extends ModularSmartAccount<Safe7579CreationOptions
 
 	static override async computeAccountAddress(client: JsonRpcProvider, creationOptions: Safe7579CreationOptions) {
 		const initializer = Safe7579Account.getInitializer(creationOptions)
-		const launchpad = Safe7579Launchpad__factory.connect(ADDRESS.Safe7579Launchpad, client)
+		const launchpad = TSafe7579Launchpad__factory.connect(ADDRESS.Safe7579Launchpad, client)
 
 		return await launchpad.predictSafeAddress(
 			ADDRESS.Safe,
 			ADDRESS.SafeProxyFactory,
-			await SafeProxyFactory__factory.connect(ADDRESS.SafeProxyFactory, client).proxyCreationCode(),
+			await TSafeProxyFactory__factory.connect(ADDRESS.SafeProxyFactory, client).proxyCreationCode(),
 			creationOptions.salt,
 			initializer,
 		)
 
 		// ===================== compute address without calling predictSafeAddress function =====================
 
-		// const proxyCreationCode = await SafeProxyFactory__factory.connect(
+		// const proxyCreationCode = await TSafeProxyFactory__factory.connect(
 		// 	ADDRESS.SafeProxyFactory,
 		// 	client,
 		// ).proxyCreationCode()
@@ -155,7 +155,7 @@ export class Safe7579Account extends ModularSmartAccount<Safe7579CreationOptions
 				)
 				break
 		}
-		return INTERFACES.Nexus.encodeFunctionData('installModule', [
+		return INTERFACES.ISafe7579.encodeFunctionData('installModule', [
 			config.moduleType,
 			config.moduleAddress,
 			moduleInitData,

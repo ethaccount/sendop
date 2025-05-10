@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { ScheduledTransfers__factory } from '@/contract-types'
+import { TScheduledTransfers__factory } from '@/contract-types'
 import { PimlicoBundler, PublicPaymaster } from '@/index'
 import { JsonRpcProvider } from 'ethers'
 import { setup } from 'test/utils'
@@ -40,7 +40,7 @@ const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 
 const pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
 
-const scheduledTransfers = ScheduledTransfers__factory.connect(ADDRESS.ScheduledTransfers, client)
+const scheduledTransfers = TScheduledTransfers__factory.connect(ADDRESS.ScheduledTransfers, client)
 
 const permissionId = '0xba06d407c8d9ddaaac3b680421283c1c424cd21e8205173dfef1840705aa9957'
 let done = false

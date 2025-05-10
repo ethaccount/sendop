@@ -3,7 +3,7 @@ import { sendop } from '@/core'
 import { PimlicoPaymaster } from '@/paymasters'
 import { KernelV3Account } from '@/smart-accounts'
 import { randomBytes32 } from '@/utils'
-import { EOAValidatorModule } from '@/validators/EOAValidatorModule'
+import { EOAValidator } from '@/validators/EOAValidator'
 import { getAddress, Interface, toNumber } from 'ethers'
 import { getBundlerUrl, logger, setupCLI } from './utils'
 
@@ -61,7 +61,7 @@ const op = await sendop({
 		address: computedAddress,
 		client,
 		bundler,
-		validator: new EOAValidatorModule({
+		validator: new EOAValidator({
 			address: ADDRESS.ECDSAValidator,
 			signer,
 		}),

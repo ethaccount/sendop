@@ -1,21 +1,17 @@
 import { ADDRESS } from '@/addresses'
-import { EOAValidatorModule, KernelV3Account, PublicPaymaster, randomBytes32, sendop } from '@/index'
-import { logger } from './utils'
-import { setupCLI } from './utils/cli'
+import { KernelV3Account, OwnableValidator, PublicPaymaster, randomBytes32, sendop } from '@/index'
+import { logger, setupCLI } from './utils'
 
 const { signer, bundler, client } = await setupCLI(['r', 'p', 'b'], {
 	bundlerOptions: {
 		debug: true,
-		async onBeforeEstimation(userOp) {
-			return userOp
-		},
 	},
 })
 
 const creationOptions = {
 	salt: randomBytes32(),
-	validatorAddress: ADDRESS.ECDSAValidator,
-	validatorInitData: signer.address,
+	validatorAddress: ADDRESS.OwnableValidator,
+	validatorInitData: OwnableValidator.getInitData([signer.address], 1),
 }
 
 logger.info(`salt: ${creationOptions.salt}`)
@@ -30,9 +26,8 @@ const op = await sendop({
 		address: computedAddress,
 		client,
 		bundler,
-		validator: new EOAValidatorModule({
-			address: ADDRESS.ECDSAValidator,
-			signer,
+		validator: new OwnableValidator({
+			signers: [signer],
 		}),
 	}),
 	initCode: KernelV3Account.getInitCode(creationOptions),

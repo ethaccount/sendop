@@ -1,6 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import type { SessionStruct } from '@/contract-types/SmartSession'
+import type { SessionStruct } from '@/contract-types/TSmartSession'
 import { ERC7579Validator, type SignatureData } from '@/core'
 import type { Signer } from 'ethers'
 import { concat, keccak256 } from 'ethers'

@@ -1,9 +1,9 @@
 import { ADDRESS } from '@/addresses'
 import { RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
-import type { SessionStruct } from '@/contract-types/SmartSession'
+import type { SessionStruct } from '@/contract-types/TSmartSession'
 import {
 	abiEncode,
-	EOAValidatorModule,
+	EOAValidator,
 	ERC7579_MODULE_TYPE,
 	getEncodedFunctionParams,
 	getPermissionId,
@@ -11,10 +11,10 @@ import {
 	zeroPadLeft,
 	PimlicoBundler,
 	randomBytes32,
-	Registry__factory,
+	TRegistry__factory,
 	sendop,
 	SMART_SESSIONS_ENABLE_MODE,
-	SmartSession__factory,
+	TSmartSession__factory,
 } from '@/index'
 import { INTERFACES } from '@/interfaces'
 import { concat, JsonRpcProvider, parseEther, toBeHex, Wallet, ZeroAddress } from 'ethers'
@@ -107,7 +107,7 @@ logger.info(`Permission ID: ${permissionId}`)
 
 const sessions: SessionStruct[] = [session]
 const encodedSessions = getEncodedFunctionParams(
-	SmartSession__factory.createInterface().encodeFunctionData('enableSessions', [sessions]),
+	TSmartSession__factory.createInterface().encodeFunctionData('enableSessions', [sessions]),
 )
 
 const smartSessionInitData = concat([SMART_SESSIONS_ENABLE_MODE, encodedSessions])
@@ -136,7 +136,7 @@ const kernel = new KernelV3Account({
 	address: computedAddress,
 	client,
 	bundler,
-	validator: new EOAValidatorModule({
+	validator: new EOAValidator({
 		address: ADDRESS.ECDSAValidator,
 		signer,
 	}),
@@ -149,7 +149,7 @@ const op = await sendop({
 		{
 			to: ADDRESS.Registry,
 			value: 0n,
-			data: Registry__factory.createInterface().encodeFunctionData('trustAttesters', [
+			data: TRegistry__factory.createInterface().encodeFunctionData('trustAttesters', [
 				1,
 				[RHINESTONE_ATTESTER_ADDRESS],
 			]),

@@ -4,11 +4,7 @@ import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
 import { abiEncode, connectEntryPointV07, isBytes, isBytes32, zeroBytes } from '@/utils'
 import { concat, Contract, hexlify, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
-import {
-	ModularSmartAccount,
-	type ModularSmartAccountOptions,
-	type SimpleInstallModuleConfig,
-} from '../ModularSmartAccount'
+import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
 import type { KernelCreationOptions, KernelInstallModuleConfig, KernelUninstallModuleConfig } from './types'
 import { KernelValidationMode, KernelValidationType } from './types'
 
@@ -120,6 +116,7 @@ export class KernelV3Account extends ModularSmartAccount<KernelCreationOptions> 
 	encodeInitialize(creationOptions: KernelCreationOptions) {
 		return KernelV3Account.encodeInitialize(creationOptions)
 	}
+
 	static encodeInitialize(creationOptions: KernelCreationOptions) {
 		const { validatorAddress, validatorInitData, hookAddress, hookData, initConfig } = creationOptions
 
@@ -196,6 +193,9 @@ export class KernelV3Account extends ModularSmartAccount<KernelCreationOptions> 
 			case ERC7579_MODULE_TYPE.EXECUTOR:
 				deInitData = config.deInitData
 				break
+			default:
+				// TODO: implement other module types
+				throw new KernelError('Unsupported module type')
 		}
 
 		return INTERFACES.KernelV3.encodeFunctionData('uninstallModule', [

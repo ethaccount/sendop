@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { EOAValidatorModule, KernelV3Account, sendop, EtherspotBundler, PublicPaymaster } from '@/index'
+import { EOAValidator, KernelV3Account, sendop, EtherspotBundler, PublicPaymaster } from '@/index'
 import { hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
 import { setup } from '../utils'
 
@@ -34,7 +34,7 @@ const kernel = new KernelV3Account({
 	address: computedAddress,
 	client,
 	bundler,
-	validator: new EOAValidatorModule({
+	validator: new EOAValidator({
 		address: ADDRESS.ECDSAValidator,
 		signer,
 	}),

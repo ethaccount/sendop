@@ -27,6 +27,7 @@ export type BundlerOptions = {
 	onBeforeSendUserOp?: (userOp: UserOp) => Promise<UserOp>
 	debugSend?: boolean
 	debug?: boolean
+	debugRpc?: boolean
 	parseError?: boolean
 	entryPointVersion?: EntryPointVersion
 }
@@ -49,11 +50,15 @@ export abstract class BaseBundler implements Bundler {
 			onBeforeSendUserOp: options?.onBeforeSendUserOp,
 			debugSend: options?.debugSend ?? false,
 			debug: options?.debug ?? false,
+			debugRpc: options?.debugRpc ?? false,
 			parseError: options?.parseError ?? false,
 			entryPointVersion: options?.entryPointVersion,
 		}
 
-		this.rpcProvider = new RpcProvider(this.url)
+		this.rpcProvider = new RpcProvider(this.url, {
+			debug: this._options.debugRpc,
+		})
+
 		switch (this._options.entryPointVersion) {
 			case 'v0.8':
 				this.entryPointAddress = ADDRESS.EntryPointV08
@@ -72,6 +77,12 @@ export abstract class BaseBundler implements Bundler {
 
 		if (this._options.debug) {
 			console.warn('Bundler "debug" mode is enabled')
+		}
+
+		if (this._options.skipGasEstimation) {
+			console.warn(
+				'Bundler "skipGasEstimation" mode is enabled. It will skip gas estimation and directly send the user operation with default gas values',
+			)
 		}
 	}
 

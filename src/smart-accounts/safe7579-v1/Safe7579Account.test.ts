@@ -1,9 +1,9 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
-import { IERC1271__factory, ISafe7579__factory } from '@/contract-types'
+import { TIERC1271__factory, TISafe7579__factory } from '@/contract-types'
 import { ERC7579_MODULE_TYPE, sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
-import { WebAuthnValidatorModule } from '@/index'
+import { WebAuthnValidator } from '@/index'
 import { getScheduledTransferDeInitData, getScheduledTransferInitData } from '@/modules/scheduledTransfer'
 import { PublicPaymaster } from '@/paymasters'
 import { ERC1271_MAGIC_VALUE, findPrevious, randomBytes32, zeroPadLeft } from '@/utils'
@@ -107,7 +107,7 @@ describe('Safe7579Account', () => {
 			const dataHash = keccak256('0x1271')
 			const signature = await signer.signMessage(getBytes(dataHash))
 			const encodedSignature = concat([ADDRESS.OwnableValidator, signature])
-			const isValid = await IERC1271__factory.connect(computedAddress, client).isValidSignature(
+			const isValid = await TIERC1271__factory.connect(computedAddress, client).isValidSignature(
 				dataHash,
 				encodedSignature,
 			)
@@ -142,7 +142,7 @@ describe('Safe7579Account', () => {
 					data: Safe7579Account.encodeInstallModule({
 						moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 						moduleAddress: ADDRESS.WebAuthnValidator,
-						initData: WebAuthnValidatorModule.getInitData({
+						initData: WebAuthnValidator.getInitData({
 							pubKeyX: BigInt(randomBytes32()),
 							pubKeyY: BigInt(randomBytes32()),
 							authenticatorIdHash: randomBytes32(),
@@ -154,7 +154,7 @@ describe('Safe7579Account', () => {
 			const receipt = await op.wait()
 			expect(receipt.success).toBe(true)
 
-			const safe = ISafe7579__factory.connect(computedAddress, client)
+			const safe = TISafe7579__factory.connect(computedAddress, client)
 			const validators = await safe.getValidatorsPaginated(zeroPadLeft('0x01', 20), 10)
 			const prev = findPrevious(validators.array, ADDRESS.WebAuthnValidator)
 
@@ -164,7 +164,7 @@ describe('Safe7579Account', () => {
 					data: Safe7579Account.encodeUninstallModule({
 						moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 						moduleAddress: ADDRESS.WebAuthnValidator,
-						deInitData: WebAuthnValidatorModule.getDeInitData(),
+						deInitData: WebAuthnValidator.getDeInitData(),
 						prev,
 					}),
 					value: 0n,
@@ -196,7 +196,7 @@ describe('Safe7579Account', () => {
 			const receipt = await op.wait()
 			expect(receipt.success).toBe(true)
 
-			const safe = ISafe7579__factory.connect(computedAddress, client)
+			const safe = TISafe7579__factory.connect(computedAddress, client)
 			const validators = await safe.getExecutorsPaginated(zeroPadLeft('0x01', 20), 10)
 			const prev = findPrevious(validators.array, ADDRESS.ScheduledTransfers)
 
