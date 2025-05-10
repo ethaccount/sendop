@@ -107,3 +107,11 @@ bun run build:contract-types
 ### Dev Notes
 
 - Use SendopError to handle all errors thrown by this library
+
+## License
+
+Copyright (C) 2024-2025 Johnson Chen
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License version 3
+as published by the Free Software Foundation.
