@@ -6,7 +6,7 @@
 npm install ethers sendop
 ```
 
-### Usage (v0.4.1)
+### Usage (v0.4.2)
 
 For more details, please refer to the *.test.ts files or the test folder.
 
@@ -22,7 +22,7 @@ import {
 	SimpleAccountCreationOptions,
 } from 'sendop'
 
-const PRIVATE_KEY = process.env.PRIVATE_KEY as string
+const PRIVATE_KEY = process.env.acc0pk as string
 const CLIENT_URL = process.env.sepolia as string
 const PIMLICO_API_KEY = process.env.PIMLICO_API_KEY as string
 
@@ -33,7 +33,6 @@ const signer = new Wallet(PRIVATE_KEY, client)
 const bundler = new PimlicoBundler(chainId, `https://api.pimlico.io/v2/${chainId}/rpc?apikey=${PIMLICO_API_KEY}`, {
 	entryPointVersion: 'v0.8',
 	parseError: true,
-	debug: true,
 })
 
 console.log('signer.address:', signer.address)
@@ -74,18 +73,16 @@ console.log('opHash:', op.hash)
 
 const receipt = await op.wait()
 console.log('receipt.success', receipt.success)
-
 ```
 
 Output
 
 ```
-Bundler "debug" mode is enabled
 signer.address: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
-accountAddress: 0x1Eb4aACB9b99FF0C0d560E7e04974F8368C757c0
+accountAddress: 0x88E4c727400acDc9848562a7467b6621A6669Be7
 sending user operation...
 waiting for user operation...
-opHash: 0xf3613dceb7b68446f199501112740c854144ba642c40686eb2d301449fe4c150
+opHash: 0xc78aeac067179f710a5e7c0cf9cfe778d397ab1bf9d6c4d8986429995eea2420
 receipt.success true
 ```
 
