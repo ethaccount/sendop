@@ -1,3 +1,4 @@
+import { SendopError } from '@/error'
 import { zeroPadLeft } from './ethers-helper'
 
 export function findPrevious(array: string[], entry: string): string {
@@ -10,5 +11,5 @@ export function findPrevious(array: string[], entry: string): string {
 			}
 		}
 	}
-	throw new Error('Entry not found in array')
+	throw new SendopError('sentinel-list-helper: findPrevious: Entry not found in array')
 }

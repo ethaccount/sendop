@@ -6,21 +6,6 @@
 npm install ethers sendop
 ```
 
-### Dev Commands
-
-```sh
-bun install
-docker compose up -d
-
-bun test # bun built-in test
-bun run test # vitest (isolate)
-bun test -t 'test case' # test specific test case
-
-bun run build
-
-bun run build:contract-types
-```
-
 ### Usage (v0.4.1)
 
 For more details, please refer to the *.test.ts files or the test folder.
@@ -103,3 +88,22 @@ waiting for user operation...
 opHash: 0xf3613dceb7b68446f199501112740c854144ba642c40686eb2d301449fe4c150
 receipt.success true
 ```
+
+### Dev Commands
+
+```sh
+bun install
+docker compose up -d
+
+bun test # bun built-in test
+bun run test # vitest (isolate)
+bun test -t 'test case' # test specific test case
+
+bun run build
+
+bun run build:contract-types
+```
+
+### Dev Notes
+
+- Use SendopError to handle all errors thrown by this library

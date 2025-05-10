@@ -116,6 +116,7 @@ export class KernelV3Account extends ModularSmartAccount<KernelCreationOptions> 
 	encodeInitialize(creationOptions: KernelCreationOptions) {
 		return KernelV3Account.encodeInitialize(creationOptions)
 	}
+
 	static encodeInitialize(creationOptions: KernelCreationOptions) {
 		const { validatorAddress, validatorInitData, hookAddress, hookData, initConfig } = creationOptions
 
@@ -192,6 +193,9 @@ export class KernelV3Account extends ModularSmartAccount<KernelCreationOptions> 
 			case ERC7579_MODULE_TYPE.EXECUTOR:
 				deInitData = config.deInitData
 				break
+			default:
+				// TODO: implement other module types
+				throw new KernelError('Unsupported module type')
 		}
 
 		return INTERFACES.KernelV3.encodeFunctionData('uninstallModule', [
