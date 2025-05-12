@@ -56,7 +56,6 @@ export async function setupCLI(
 			option: 'private-key',
 			type: 'string',
 			description: 'Private key',
-			demandOption: true,
 			default: '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80',
 		},
 		b: {
@@ -83,9 +82,10 @@ export async function setupCLI(
 		},
 	} as const
 
-	// Add requested options
-	for (const alias of optionAliases) {
-		const config = optionConfigs[alias]
+	// Add all options
+	for (const alias of Object.keys(optionConfigs)) {
+		const config = optionConfigs[alias as keyof typeof optionConfigs]
+
 		if (config) {
 			yargsInstance = yargsInstance.option(config.option, {
 				alias,
