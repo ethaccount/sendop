@@ -37,6 +37,26 @@ export function formatUserOpToHex(userOp: UserOp): FormattedUserOp {
 	}
 }
 
+export function formatUserOpFromHex(formattedUserOp: FormattedUserOp): UserOp {
+	return {
+		sender: formattedUserOp.sender,
+		nonce: BigInt(formattedUserOp.nonce),
+		factory: formattedUserOp.factory,
+		factoryData: formattedUserOp.factoryData,
+		callData: formattedUserOp.callData,
+		callGasLimit: BigInt(formattedUserOp.callGasLimit),
+		verificationGasLimit: BigInt(formattedUserOp.verificationGasLimit),
+		preVerificationGas: BigInt(formattedUserOp.preVerificationGas),
+		maxFeePerGas: BigInt(formattedUserOp.maxFeePerGas),
+		maxPriorityFeePerGas: BigInt(formattedUserOp.maxPriorityFeePerGas),
+		paymaster: formattedUserOp.paymaster,
+		paymasterVerificationGasLimit: BigInt(formattedUserOp.paymasterVerificationGasLimit),
+		paymasterPostOpGasLimit: BigInt(formattedUserOp.paymasterPostOpGasLimit),
+		paymasterData: formattedUserOp.paymasterData,
+		signature: formattedUserOp.signature,
+	}
+}
+
 export function getEmptyUserOp(): UserOp {
 	return {
 		sender: '',
