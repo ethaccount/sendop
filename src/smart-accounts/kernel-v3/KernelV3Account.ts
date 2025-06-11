@@ -12,10 +12,10 @@ export type KernelV3AccountOptions = ModularSmartAccountOptions & KernelV3Accoun
 
 export type KernelV3AccountConfig = {
 	nonce?: {
-		mode?: KernelValidationMode
-		type?: KernelValidationType
-		identifier?: string
-		key?: string
+		mode?: KernelValidationMode // 1 byte
+		type?: KernelValidationType // 1 byte
+		identifier?: string // 20 bytes
+		key?: string // 2 bytes
 	}
 }
 
