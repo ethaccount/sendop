@@ -1,5 +1,13 @@
 import { ADDRESS } from '@/addresses'
-import type { Bundler, Execution, OperationGetter, PaymasterGetter, SendOpResult, SignatureData, UserOp } from '@/core'
+import type {
+	Bundler,
+	Execution,
+	OperationGetter,
+	PaymasterGetter,
+	SendOpResult,
+	SignatureData,
+	UserOperation,
+} from '@/core'
 import { sendop } from '@/core'
 import { SendopError, UnsupportedEntryPointError } from '@/error'
 import { connectEntryPointV07, connectEntryPointV08 } from '@/utils'
@@ -94,7 +102,7 @@ export abstract class SmartAccount<TCreationOptions extends SmartAccountCreation
 	abstract getCallData(executions: Execution[]): Promise<string> | string
 	abstract connect(address: string): SmartAccount<TCreationOptions>
 	abstract getInitCode(creationOptions: TCreationOptions): string
-	abstract getDummySignature(userOp: UserOp): Promise<string> | string
+	abstract getDummySignature(userOp: UserOperation): Promise<string> | string
 	abstract getSignature(signatureData: SignatureData): Promise<string> | string
 
 	// Static methods

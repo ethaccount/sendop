@@ -1,9 +1,9 @@
 import {
-	formatUserOpToHex,
+	toUserOpHex,
 	type GetPaymasterDataResult,
 	type GetPaymasterStubDataResult,
 	type PaymasterGetter,
-	type UserOp,
+	type UserOperation,
 } from '@/core'
 import { ADDRESS } from '@/addresses'
 import { RpcProvider } from '@/RpcProvider'
@@ -20,11 +20,11 @@ export class PimlicoPaymaster implements PaymasterGetter {
 		this.sponsorshipPolicyId = options.sponsorshipPolicyId
 	}
 
-	async getPaymasterStubData(userOp: UserOp): Promise<GetPaymasterStubDataResult> {
+	async getPaymasterStubData(userOp: UserOperation): Promise<GetPaymasterStubDataResult> {
 		return this.rpcProvider.send({
 			method: 'pm_getPaymasterStubData',
 			params: [
-				formatUserOpToHex(userOp),
+				toUserOpHex(userOp),
 				ADDRESS.EntryPointV07,
 				toBeHex(this.chainId),
 				{
@@ -34,11 +34,11 @@ export class PimlicoPaymaster implements PaymasterGetter {
 		})
 	}
 
-	async getPaymasterData(userOp: UserOp): Promise<GetPaymasterDataResult> {
+	async getPaymasterData(userOp: UserOperation): Promise<GetPaymasterDataResult> {
 		return this.rpcProvider.send({
 			method: 'pm_getPaymasterData',
 			params: [
-				formatUserOpToHex(userOp),
+				toUserOpHex(userOp),
 				ADDRESS.EntryPointV07,
 				toBeHex(this.chainId),
 				{

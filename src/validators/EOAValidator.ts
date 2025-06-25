@@ -1,5 +1,5 @@
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import { ERC7579Validator, type SignatureData, type UserOp } from '@/core'
+import { ERC7579Validator, type SignatureData, type UserOperation } from '@/core'
 import { type Signer } from 'ethers'
 
 type EOAValidatorModuleOptions = {
@@ -19,7 +19,7 @@ export class EOAValidator extends ERC7579Validator {
 		return this._options.address
 	}
 
-	getDummySignature(userOp: UserOp) {
+	getDummySignature(userOp: UserOperation) {
 		return DUMMY_ECDSA_SIGNATURE
 	}
 

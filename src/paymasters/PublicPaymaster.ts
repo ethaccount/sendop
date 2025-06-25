@@ -1,4 +1,4 @@
-import type { GetPaymasterStubDataResult, PaymasterGetter, UserOp } from '@/core'
+import type { GetPaymasterStubDataResult, PaymasterGetter, UserOperation } from '@/core'
 
 export class PublicPaymaster implements PaymasterGetter {
 	public address: string
@@ -7,7 +7,7 @@ export class PublicPaymaster implements PaymasterGetter {
 		this.address = address
 	}
 
-	async getPaymasterStubData(_userOp: UserOp): Promise<GetPaymasterStubDataResult> {
+	async getPaymasterStubData(_userOp: UserOperation): Promise<GetPaymasterStubDataResult> {
 		return {
 			paymaster: this.address,
 			paymasterData: '0x',

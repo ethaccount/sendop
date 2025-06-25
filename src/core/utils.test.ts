@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest'
-import { getEmptyUserOp, getUserOpHashV08, packUserOp } from './utils'
-import { JsonRpcProvider } from 'ethers'
 import { connectEntryPointV08 } from '@/utils'
+import { JsonRpcProvider } from 'ethers'
+import { describe, expect, it } from 'vitest'
+import { getEmptyUserOp, getUserOpHashV08, packUserOp } from './erc4337-utils'
 
-describe('core utils', () => {
+describe('userOpHelper', () => {
 	describe('getUserOpHashV08', () => {
 		it('should generate correct hash for a packed user operation', async () => {
 			const userOp = getEmptyUserOp()
@@ -22,12 +22,11 @@ describe('core utils', () => {
 			userOp.paymasterPostOpGasLimit = BigInt(7000)
 			userOp.paymasterData = '0x9abc'
 
-			const packedOp = packUserOp(userOp)
 			const chainId = 11155111n
 			const provider = new JsonRpcProvider('https://ethereum-sepolia-rpc.publicnode.com')
 			const entryPoint = connectEntryPointV08(provider)
-			const expected = await entryPoint.getUserOpHash(packedOp)
-			const hash = getUserOpHashV08(packedOp, chainId)
+			const expected = await entryPoint.getUserOpHash(packUserOp(userOp))
+			const hash = getUserOpHashV08(userOp, chainId)
 			expect(hash).toBe(expected)
 		})
 	})

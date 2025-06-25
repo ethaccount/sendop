@@ -1,4 +1,4 @@
-import type { ERC7579Validator, ERC7579_MODULE_TYPE, Execution, SignatureData, UserOp } from '@/core'
+import type { ERC7579Validator, ERC7579_MODULE_TYPE, Execution, SignatureData, UserOperation } from '@/core'
 import { CallType, ExecType, ModeSelector, encodeExecutions } from '@/core'
 import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
@@ -31,7 +31,7 @@ export abstract class ModularSmartAccount<
 		return this._options.validator
 	}
 
-	async getDummySignature(userOp: UserOp): Promise<string> {
+	async getDummySignature(userOp: UserOperation): Promise<string> {
 		return this.validator.getDummySignature(userOp)
 	}
 

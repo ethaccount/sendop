@@ -1,5 +1,5 @@
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import { type Execution, type PaymasterGetter, type SendOpResult, type SignatureData, type UserOp } from '@/core'
+import { type Execution, type PaymasterGetter, type SendOpResult, type SignatureData, type UserOperation } from '@/core'
 import { SendopError, UnsupportedEntryPointError } from '@/error'
 import { INTERFACES } from '@/interfaces'
 import { connectEntryPointV08 } from '@/utils'
@@ -73,7 +73,7 @@ export class Simple7702Account extends SmartAccount<any> {
 		throw new Simple7702AccountError('Simple7702Account.getCallData failed')
 	}
 
-	async getDummySignature(userOp: UserOp) {
+	async getDummySignature(userOp: UserOperation) {
 		return DUMMY_ECDSA_SIGNATURE
 	}
 

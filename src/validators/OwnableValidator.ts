@@ -1,6 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import { ERC7579Validator, type SignatureData, type UserOp } from '@/core'
+import { ERC7579Validator, type SignatureData, type UserOperation } from '@/core'
 import { abiEncode } from '@/utils'
 import { concat, type Signer } from 'ethers'
 
@@ -20,7 +20,7 @@ export class OwnableValidator extends ERC7579Validator {
 		return ADDRESS.OwnableValidator
 	}
 
-	getDummySignature(_userOp: UserOp) {
+	getDummySignature(_userOp: UserOperation) {
 		return concat(new Array(this._options.signers.length).fill(DUMMY_ECDSA_SIGNATURE))
 	}
 

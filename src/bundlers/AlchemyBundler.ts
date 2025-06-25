@@ -1,4 +1,4 @@
-import type { GasValues, UserOp } from '@/core'
+import type { GasValues, UserOperation } from '@/core'
 import { SendopError } from '@/error'
 import { BaseBundler, type BundlerOptions } from './BaseBundler'
 import { z } from 'zod'
@@ -8,7 +8,7 @@ export class AlchemyBundler extends BaseBundler {
 		super(chainId, url, options)
 	}
 
-	async _getGasValues(userOp: UserOp): Promise<GasValues> {
+	async _getGasValues(userOp: UserOperation): Promise<GasValues> {
 		const [block, maxPriorityFeePerGas] = await Promise.all([
 			this.rpcProvider.send({ method: 'eth_getBlockByNumber', params: ['latest', true] }), // https://docs.alchemy.com/reference/eth-getblockbynumber
 			this.rpcProvider.send({ method: 'rundler_maxPriorityFeePerGas' }), // https://docs.alchemy.com/reference/rundler-maxpriorityfeepergas

@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { formatUserOpToHex, type Bundler, type GasValues, type UserOp, type UserOpReceipt } from '@/core'
+import { toUserOpHex, type Bundler, type GasValues, type UserOperation, type UserOperationReceipt } from '@/core'
 import { normalizeError, SendopError } from '@/error'
 import { RpcProvider } from '@/RpcProvider'
 import { encodeHandleOpsCalldata, parseContractError, randomAddress } from '@/utils'
@@ -22,9 +22,9 @@ const estimateGasResponseSchema = z.object({
 
 export type BundlerOptions = {
 	skipGasEstimation?: boolean
-	onBeforeEstimation?: (userOp: UserOp) => Promise<UserOp>
+	onBeforeEstimation?: (userOp: UserOperation) => Promise<UserOperation>
 	onAfterEstimation?: (gasValues: GasValues) => Promise<GasValues>
-	onBeforeSendUserOp?: (userOp: UserOp) => Promise<UserOp>
+	onBeforeSendUserOp?: (userOp: UserOperation) => Promise<UserOperation>
 	debugSend?: boolean
 	debug?: boolean
 	debugRpc?: boolean
@@ -86,9 +86,9 @@ export abstract class BaseBundler implements Bundler {
 		}
 	}
 
-	abstract _getGasValues(userOp: UserOp): Promise<GasValues>
+	abstract _getGasValues(userOp: UserOperation): Promise<GasValues>
 
-	async getGasValues(userOp: UserOp): Promise<GasValues> {
+	async getGasValues(userOp: UserOperation): Promise<GasValues> {
 		let gasValues = await this._getGasValues(userOp)
 		if (this._options.onAfterEstimation) {
 			gasValues = await this._options.onAfterEstimation(gasValues)
@@ -96,7 +96,7 @@ export abstract class BaseBundler implements Bundler {
 		return gasValues
 	}
 
-	async sendUserOperation(userOp: UserOp): Promise<string> {
+	async sendUserOperation(userOp: UserOperation): Promise<string> {
 		try {
 			if (this._options.onBeforeSendUserOp) {
 				userOp = await this._options.onBeforeSendUserOp(userOp)
@@ -106,12 +106,12 @@ export abstract class BaseBundler implements Bundler {
 				console.log('handleOpsCalldata:')
 				console.log(encodeHandleOpsCalldata([userOp], randomAddress()))
 				console.log('userOp:')
-				console.log(JSON.stringify(formatUserOpToHex(userOp), null, 2))
+				console.log(JSON.stringify(toUserOpHex(userOp), null, 2))
 			}
 
 			return await this.rpcProvider.send({
 				method: 'eth_sendUserOperation',
-				params: [formatUserOpToHex(userOp), this.entryPointAddress],
+				params: [toUserOpHex(userOp), this.entryPointAddress],
 			})
 		} catch (error: unknown) {
 			const err = normalizeError(error)
@@ -120,18 +120,18 @@ export abstract class BaseBundler implements Bundler {
 				console.log('handleOpsCalldata:')
 				console.log(encodeHandleOpsCalldata([userOp], randomAddress()))
 				console.log('userOp:')
-				console.log(JSON.stringify(formatUserOpToHex(userOp), null, 2))
+				console.log(JSON.stringify(toUserOpHex(userOp), null, 2))
 			}
 
 			throw new BaseBundlerError('Send user operation failed', { cause: err })
 		}
 	}
 
-	async getUserOperationReceipt(hash: string): Promise<UserOpReceipt> {
+	async getUserOperationReceipt(hash: string): Promise<UserOperationReceipt> {
 		return await this.rpcProvider.send({ method: 'eth_getUserOperationReceipt', params: [hash] })
 	}
 
-	protected async estimateUserOperationGas(userOp: UserOp): Promise<GasValues> {
+	protected async estimateUserOperationGas(userOp: UserOperation): Promise<GasValues> {
 		const hasPaymaster = !!userOp.paymaster
 
 		if (this._options.skipGasEstimation) {
@@ -142,7 +142,7 @@ export abstract class BaseBundler implements Bundler {
 			userOp = await this._options.onBeforeEstimation(userOp)
 		}
 
-		const formattedUserOp = formatUserOpToHex(userOp)
+		const formattedUserOp = toUserOpHex(userOp)
 
 		let gasValues: GasValues
 
@@ -184,7 +184,7 @@ export abstract class BaseBundler implements Bundler {
 				console.log('handleOpsCalldata:')
 				console.log(encodeHandleOpsCalldata([userOp], randomAddress()))
 				console.log('userOp:')
-				console.log(JSON.stringify(formatUserOpToHex(userOp), null, 2))
+				console.log(JSON.stringify(toUserOpHex(userOp), null, 2))
 			}
 
 			if (this._options.parseError) {

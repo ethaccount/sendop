@@ -52,7 +52,7 @@ for (const event of events) {
 const userOp = getEmptyUserOp()
 userOp.nonce = BigInt(randomBytes32())
 userOp.sender = kernelAddress
-const userOpHash = getUserOpHash(packUserOp(userOp), 'v0.7', chainId)
+const userOpHash = getUserOpHash(userOp, 'v0.7', chainId)
 const signature = await account1.signMessage(getBytes(userOpHash))
 const smartsession = TSmartSession__factory.connect(ADDRESS.SmartSession, client)
 const session = await smartsession.getSessionValidatorAndConfig(kernelAddress, permissionId)

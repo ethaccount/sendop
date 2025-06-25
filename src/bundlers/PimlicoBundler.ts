@@ -1,4 +1,4 @@
-import type { GasValues, UserOp } from '@/core'
+import type { GasValues, UserOperation } from '@/core'
 import { SendopError } from '@/error'
 import { z } from 'zod'
 import { BaseBundler, type BundlerOptions } from './BaseBundler'
@@ -15,7 +15,7 @@ export class PimlicoBundler extends BaseBundler {
 		this.gasPriceType = options?.gasPriceType ?? 'standard'
 	}
 
-	async _getGasValues(userOp: UserOp): Promise<GasValues> {
+	async _getGasValues(userOp: UserOperation): Promise<GasValues> {
 		const parsed = gasPriceSchema.safeParse(
 			await this.rpcProvider.send({
 				method: 'pimlico_getUserOperationGasPrice', // https://docs.pimlico.io/infra/bundler/endpoints/pimlico_getUserOperationGasPrice

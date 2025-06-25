@@ -1,4 +1,4 @@
-import type { GasValues, UserOp } from '@/core'
+import type { GasValues, UserOperation } from '@/core'
 import { SendopError } from '@/error'
 import { BaseBundler, type BundlerOptions } from './BaseBundler'
 
@@ -7,7 +7,7 @@ export class EtherspotBundler extends BaseBundler {
 		super(chainId, url, options)
 	}
 
-	async _getGasValues(userOp: UserOp): Promise<GasValues> {
+	async _getGasValues(userOp: UserOperation): Promise<GasValues> {
 		// https://etherspot.fyi/api-endpoints/skandha/api-reference/estimate-userop
 		const estimateGas = await this.estimateUserOperationGas(userOp)
 

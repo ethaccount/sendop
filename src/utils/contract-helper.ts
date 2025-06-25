@@ -1,6 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import { TEntryPointV07__factory, TEntryPointV08__factory, TRegistry__factory } from '@/contract-types'
-import type { UserOp } from '@/core'
+import type { UserOperation } from '@/core'
 import { packUserOp } from '@/core'
 import { INTERFACES } from '@/interfaces'
 import type { ContractRunner } from 'ethers'
@@ -28,7 +28,7 @@ export function connectRegistry(runner: ContractRunner) {
 	return TRegistry__factory.connect(ADDRESS.Registry, runner)
 }
 
-export function encodeHandleOpsCalldata(userOps: UserOp[], beneficiary: string) {
+export function encodeHandleOpsCalldata(userOps: UserOperation[], beneficiary: string) {
 	return TEntryPointV07__factory.createInterface().encodeFunctionData('handleOps', [
 		userOps.map(op => packUserOp(op)),
 		beneficiary,

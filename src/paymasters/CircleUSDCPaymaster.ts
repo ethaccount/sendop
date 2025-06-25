@@ -1,5 +1,10 @@
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import { type GetPaymasterDataResult, type GetPaymasterStubDataResult, type PaymasterGetter, type UserOp } from '@/core'
+import {
+	type GetPaymasterDataResult,
+	type GetPaymasterStubDataResult,
+	type PaymasterGetter,
+	type UserOperation,
+} from '@/core'
 import type { TypedData } from '@/utils'
 import { zeroPadLeft } from '@/utils'
 import type { JsonRpcProvider, TypedDataDomain } from 'ethers'
@@ -27,7 +32,7 @@ export class CircleUSDCPaymaster implements PaymasterGetter {
 		)
 	}
 
-	async getPaymasterStubData(_userOp: UserOp): Promise<GetPaymasterStubDataResult> {
+	async getPaymasterStubData(_userOp: UserOperation): Promise<GetPaymasterStubDataResult> {
 		const additionalGasCharge = await this.paymaster.getFunction('additionalGasCharge')()
 
 		// paymasterData = 0x00 || usdc address || Max spendable gas in USDC || EIP-2612 permit signature
@@ -46,7 +51,7 @@ export class CircleUSDCPaymaster implements PaymasterGetter {
 		}
 	}
 
-	async getPaymasterData(userOp: UserOp): Promise<GetPaymasterDataResult> {
+	async getPaymasterData(userOp: UserOperation): Promise<GetPaymasterDataResult> {
 		const permitData = await getPermitData({
 			client: this.options.client,
 			tokenAddress: this.options.tokenAddress,

@@ -1,13 +1,7 @@
 import { SendopError } from '@/error'
 import type { TypedDataDomain, TypedDataField } from 'ethers'
-import type {
-	Execution,
-	GetPaymasterDataResult,
-	GetPaymasterStubDataResult,
-	PackedUserOp,
-	UserOp,
-	UserOpReceipt,
-} from './types'
+import type { Execution, GetPaymasterDataResult, GetPaymasterStubDataResult } from './types'
+import type { PackedUserOperation, UserOperation, UserOperationReceipt } from './UserOperation'
 
 export type GasValues = {
 	maxFeePerGas: bigint
@@ -22,9 +16,9 @@ export interface Bundler {
 	url: string
 	chainId: bigint
 	entryPointAddress: string
-	getGasValues(userOp: UserOp): Promise<GasValues>
-	sendUserOperation(userOp: UserOp): Promise<string>
-	getUserOperationReceipt(hash: string): Promise<UserOpReceipt>
+	getGasValues(userOp: UserOperation): Promise<GasValues>
+	sendUserOperation(userOp: UserOperation): Promise<string>
+	getUserOperationReceipt(hash: string): Promise<UserOperationReceipt>
 }
 
 export interface OperationGetter extends AccountGetter, SignatureGetter {}
@@ -36,7 +30,7 @@ export interface AccountGetter {
 }
 
 export interface SignatureGetter {
-	getDummySignature(userOp: UserOp): Promise<string> | string
+	getDummySignature(userOp: UserOperation): Promise<string> | string
 	getSignature(signatureData: SignatureData): Promise<string> | string
 }
 
@@ -45,21 +39,21 @@ export type SignatureData = SignatureDataV07 | SignatureDataV08
 export interface SignatureDataV07 {
 	entryPointVersion: 'v0.7'
 	hash: Uint8Array
-	userOp: UserOp
+	userOp: UserOperation
 }
 
 export interface SignatureDataV08 {
 	entryPointVersion: 'v0.8'
 	hash: Uint8Array
-	userOp: UserOp
+	userOp: UserOperation
 	domain: TypedDataDomain
 	types: Record<string, Array<TypedDataField>>
-	values: PackedUserOp
+	values: PackedUserOperation
 }
 
 export abstract class ERC7579Validator implements SignatureGetter {
 	abstract address(): string
-	abstract getDummySignature(userOp: UserOp): Promise<string> | string
+	abstract getDummySignature(userOp: UserOperation): Promise<string> | string
 	abstract getSignature(signatureData: SignatureData): Promise<string> | string
 
 	static getInitData(...args: any[]): string {
@@ -82,6 +76,6 @@ export class ERC7579ValidatorError extends SendopError {
  * @dev https://eips.ethereum.org/EIPS/eip-7677
  */
 export interface PaymasterGetter {
-	getPaymasterStubData(userOp: UserOp): Promise<GetPaymasterStubDataResult> | GetPaymasterStubDataResult
-	getPaymasterData?(userOp: UserOp): Promise<GetPaymasterDataResult> | GetPaymasterDataResult
+	getPaymasterStubData(userOp: UserOperation): Promise<GetPaymasterStubDataResult> | GetPaymasterStubDataResult
+	getPaymasterData?(userOp: UserOperation): Promise<GetPaymasterDataResult> | GetPaymasterDataResult
 }

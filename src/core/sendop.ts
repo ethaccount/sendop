@@ -3,8 +3,9 @@ import { SendopError, UnsupportedEntryPointError } from '@/error'
 import { getBytesLength, zeroPadRight } from '@/utils'
 import { dataSlice, getBytes } from 'ethers'
 import type { Bundler, OperationGetter, PaymasterGetter, SignatureGetter } from './interface'
-import type { Execution, SendopOptions, SendOpResult, UserOp, UserOpReceipt } from './types'
-import { getEmptyUserOp, getUserOpHashV07, getUserOpHashV08, getV08DomainAndTypes, packUserOp } from './utils'
+import type { Execution, SendopOptions, SendOpResult } from './types'
+import type { UserOperation, UserOperationReceipt } from './UserOperation'
+import { getEmptyUserOp, getUserOpHashV07, getUserOpHashV08, getV08DomainAndTypes, packUserOp } from './erc4337-utils'
 
 export async function sendop(options: SendopOptions): Promise<SendOpResult> {
 	const { bundler, executions, opGetter, pmGetter, initCode, nonce } = options
@@ -27,7 +28,7 @@ export async function createUserOp(
 	opGetter: OperationGetter,
 	initCode?: string,
 	nonce?: bigint,
-): Promise<UserOp> {
+): Promise<UserOperation> {
 	const userOp = getEmptyUserOp()
 
 	// Parse initCode in options
@@ -56,7 +57,7 @@ export async function createUserOp(
 		}
 	}
 
-	// Create UserOp
+	// Create UserOperation
 	userOp.sender = await opGetter.getSender()
 	userOp.nonce = nonce ?? (await opGetter.getNonce())
 	userOp.callData = await opGetter.getCallData(executions)
@@ -65,12 +66,12 @@ export async function createUserOp(
 }
 
 export async function estimateUserOp(
-	userOp: UserOp,
+	userOp: UserOperation,
 	bundler: Bundler,
 	sigGetter: SignatureGetter,
 	pmGetter?: PaymasterGetter,
 ): Promise<{
-	userOp: UserOp
+	userOp: UserOperation
 	pmIsFinal: boolean
 }> {
 	// Paymaster Gas Estimation
@@ -78,7 +79,7 @@ export async function estimateUserOp(
 	if (pmGetter) {
 		// If pmGetter is provided, get paymaster stub values. See ERC-7677: https://eips.ethereum.org/EIPS/eip-7677
 		const pmStubData = await pmGetter.getPaymasterStubData(userOp)
-		userOp.paymaster = pmStubData.paymaster ?? null
+		userOp.paymaster = pmStubData.paymaster ?? undefined
 		userOp.paymasterData = pmStubData.paymasterData ?? '0x'
 		userOp.paymasterVerificationGasLimit = pmStubData.paymasterVerificationGasLimit ?? 0n
 		userOp.paymasterPostOpGasLimit = pmStubData.paymasterPostOpGasLimit ?? 0n
@@ -105,11 +106,11 @@ export async function estimateUserOp(
 	}
 }
 
-export async function getPaymasterData(userOp: UserOp, pmGetter: PaymasterGetter): Promise<UserOp> {
+export async function getPaymasterData(userOp: UserOperation, pmGetter: PaymasterGetter): Promise<UserOperation> {
 	if (pmGetter && pmGetter.getPaymasterData) {
 		// If pmGetter is provided and pmIsFinal is false, retrieve the paymaster data, usually for signing purposes.
 		const pmData = await pmGetter.getPaymasterData(userOp)
-		userOp.paymaster = pmData.paymaster ?? null
+		userOp.paymaster = pmData.paymaster ?? undefined
 		userOp.paymasterData = pmData.paymasterData ?? '0x'
 	} else {
 		throw new SendopError('Invalid paymaster getter')
@@ -118,12 +119,16 @@ export async function getPaymasterData(userOp: UserOp, pmGetter: PaymasterGetter
 	return userOp
 }
 
-export async function signUserOp(userOp: UserOp, bundler: Bundler, sigGetter: SignatureGetter): Promise<UserOp> {
+export async function signUserOp(
+	userOp: UserOperation,
+	bundler: Bundler,
+	sigGetter: SignatureGetter,
+): Promise<UserOperation> {
 	switch (bundler.entryPointAddress) {
 		case ADDRESS.EntryPointV07:
 			userOp.signature = await sigGetter.getSignature({
 				entryPointVersion: 'v0.7',
-				hash: getBytes(getUserOpHashV07(packUserOp(userOp), bundler.chainId)),
+				hash: getBytes(getUserOpHashV07(userOp, bundler.chainId)),
 				userOp,
 			})
 			break
@@ -132,7 +137,7 @@ export async function signUserOp(userOp: UserOp, bundler: Bundler, sigGetter: Si
 			const packedUserOp = packUserOp(userOp)
 			userOp.signature = await sigGetter.getSignature({
 				entryPointVersion: 'v0.8',
-				hash: getBytes(getUserOpHashV08(packedUserOp, bundler.chainId)),
+				hash: getBytes(getUserOpHashV08(userOp, bundler.chainId)),
 				userOp,
 				domain,
 				types,
@@ -146,13 +151,13 @@ export async function signUserOp(userOp: UserOp, bundler: Bundler, sigGetter: Si
 	return userOp
 }
 
-export async function sendUserOp(bundler: Bundler, userOp: UserOp): Promise<SendOpResult> {
+export async function sendUserOp(bundler: Bundler, userOp: UserOperation): Promise<SendOpResult> {
 	const userOpHash = await bundler.sendUserOperation(userOp)
 
 	return {
 		hash: userOpHash,
 		async wait() {
-			let result: UserOpReceipt | null = null
+			let result: UserOperationReceipt | null = null
 			while (result === null) {
 				result = await bundler.getUserOperationReceipt(userOpHash)
 				if (result === null) {
