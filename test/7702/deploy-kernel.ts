@@ -1,9 +1,15 @@
 import { ADDRESS } from '@/addresses'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import { ERC4337Bundler, getEmptyUserOp, getUserOpHash, type UserOperationReceipt } from '@/ethers-erc4337'
+import {
+	EntryPointV07__factory,
+	ERC4337Bundler,
+	getEmptyUserOp,
+	getUserOpHash,
+	type UserOperationReceipt,
+} from 'ethers-erc4337'
 import { fetchGasPriceAlchemy } from '@/fetchGasPrice'
 import { KernelValidationMode, KernelValidationType } from '@/smart-accounts/kernel-v3/types'
-import { connectEntryPointV07, randomBytes32, zeroBytes } from '@/utils'
+import { randomBytes32, zeroBytes } from '@/utils'
 import type { EthersError } from 'ethers'
 import { concat, Contract, hexlify, Interface, isError, JsonRpcProvider, Wallet, ZeroAddress } from 'ethers'
 import { alchemy, pimlico } from 'evm-providers'
@@ -30,6 +36,7 @@ const bundlerUrl = pimlico(CHAIN_ID, PIMLICO_API_KEY)
 const client = new JsonRpcProvider(rpcUrl)
 const bundler = new ERC4337Bundler(bundlerUrl)
 const entryPointAddress = ADDRESS.EntryPointV07
+const entryPoint = EntryPointV07__factory.connect(entryPointAddress, client)
 
 const entryPoints = await bundler.supportedEntryPoints()
 console.log('entryPoints', entryPoints)
@@ -70,7 +77,6 @@ userOp.factory = KERNEL_V3_3_FACTORY
 userOp.factoryData = factoryData
 
 // get nonce by nonceKey
-const entryPoint = connectEntryPointV07(client)
 
 const nonceKey = getNonceKey(ADDRESS.ECDSAValidator)
 const nonce = await entryPoint.getNonce(accountAddress, nonceKey)
@@ -160,5 +166,5 @@ while (receipt === null) {
 	}
 }
 
-console.log('success', receipt.success)
 console.log('receipt', receipt)
+console.log('success', receipt.success)

@@ -1,7 +1,7 @@
 import { ADDRESS } from '@/addresses'
 import type { Bundler, Execution, OperationGetter, PaymasterGetter, SendOpResult, SignatureData } from '@/core'
 import { sendop } from '@/core'
-import type { UserOperation } from '@/ethers-erc4337'
+import type { UserOperation } from 'ethers-erc4337'
 import { SendopError, UnsupportedEntryPointError } from '@/error'
 import { connectEntryPointV07, connectEntryPointV08 } from '@/utils'
 import { type JsonRpcProvider } from 'ethers'

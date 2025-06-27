@@ -1,6 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import { TOwnableValidator__factory, TSmartSession__factory } from '@/contract-types'
-import { getEmptyUserOp, getUserOpHash } from '@/ethers-erc4337'
+import { getEmptyUserOp, getUserOpHash } from 'ethers-erc4337'
 import { randomBytes32 } from '@/utils'
 import { getBytes, JsonRpcProvider } from 'ethers'
 import { setup } from '../utils'

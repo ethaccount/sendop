@@ -1,5 +1,5 @@
 import type { GetPaymasterStubDataResult, PaymasterGetter } from '@/core'
-import type { UserOperation } from '@/ethers-erc4337'
+import type { UserOperation } from 'ethers-erc4337'
 
 export class PublicPaymaster implements PaymasterGetter {
 	public address: string

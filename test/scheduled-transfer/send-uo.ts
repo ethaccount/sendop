@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { fromUserOpHex, getUserOpHashV07, packUserOp, type UserOperationHex } from '@/ethers-erc4337'
+import { fromUserOpHex, getUserOpHashV07, packUserOp, type UserOperationHex } from 'ethers-erc4337'
 import { RpcProvider } from '@/RpcProvider'
 import { getBundlerUrl } from '../../test/utils'
 

@@ -1,6 +1,6 @@
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
 import { type GetPaymasterDataResult, type GetPaymasterStubDataResult, type PaymasterGetter } from '@/core'
-import type { UserOperation } from '@/ethers-erc4337'
+import type { UserOperation } from 'ethers-erc4337'
 import type { TypedData } from '@/utils'
 import { zeroPadLeft } from '@/utils'
 import type { JsonRpcProvider, TypedDataDomain } from 'ethers'

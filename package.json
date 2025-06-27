@@ -14,6 +14,10 @@
 	"engines": {
 		"bun": ">=1.1.0"
 	},
+	"workspaces": [
+		".",
+		"ethers-erc4337"
+	],
 	"scripts": {
 		"build": "vite build",
 		"build:contract-types": "bun run script/gen-addresses.ts && bun run fetch-abis && bun run typechain && bun run script/gen-interfaces.ts",
@@ -32,7 +36,7 @@
 		"src",
 		"tsconfig.json"
 	],
-	"main": "./dist/index.umd.cjs",
+	"main": "./dist/index.js",
 	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"exports": {
@@ -49,6 +53,7 @@
 		"ethers": "^6.14.4"
 	},
 	"devDependencies": {
+		"ethers-erc4337": "workspace:*",
 		"@typechain/ethers-v6": "^0.5.1",
 		"@types/yargs": "^17.0.33",
 		"consola": "^3.2.3",
@@ -64,6 +69,5 @@
 	},
 	"dependencies": {
 		"zod": "^3.24.3"
-	},
-	"packageManager": "pnpm@9.15.9+sha512.68046141893c66fad01c079231128e9afb89ef87e2691d69e4d40eee228988295fd4682181bae55b58418c3a253bde65a505ec7c5f9403ece5cc3cd37dcf2531"
+	}
 }

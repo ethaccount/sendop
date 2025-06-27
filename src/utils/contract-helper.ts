@@ -1,6 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import { TEntryPointV07__factory, TEntryPointV08__factory, TRegistry__factory } from '@/contract-types'
-import { packUserOp, type UserOperation } from '@/ethers-erc4337'
+import { packUserOp, type UserOperation } from 'ethers-erc4337'
 import { INTERFACES } from '@/interfaces'
 import type { ContractRunner } from 'ethers'
 

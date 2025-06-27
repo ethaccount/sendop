@@ -1,6 +1,6 @@
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
 import { ERC7579Validator, type SignatureData } from '@/core'
-import type { UserOperation } from '@/ethers-erc4337'
+import type { UserOperation } from 'ethers-erc4337'
 import { type Signer } from 'ethers'
 
 type EOAValidatorModuleOptions = {

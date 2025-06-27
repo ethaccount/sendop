@@ -1,7 +1,7 @@
 import { connectEntryPointV08 } from '@/utils'
 import { JsonRpcProvider } from 'ethers'
 import { describe, expect, it } from 'vitest'
-import { getEmptyUserOp, getUserOpHashV08, packUserOp } from '@/ethers-erc4337'
+import { getEmptyUserOp, getUserOpHashV08, packUserOp } from 'ethers-erc4337'
 
 describe('userOpHelper', () => {
 	describe('getUserOpHashV08', () => {

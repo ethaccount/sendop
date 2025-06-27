@@ -1,7 +1,7 @@
 import { SendopError } from '@/error'
 import type { TypedDataDomain, TypedDataField } from 'ethers'
 import type { Execution, GetPaymasterDataResult, GetPaymasterStubDataResult } from './types'
-import type { PackedUserOperation, UserOperation, UserOperationReceipt } from '@/ethers-erc4337'
+import type { PackedUserOperation, UserOperation, UserOperationReceipt } from 'ethers-erc4337'
 
 export type GasValues = {
 	maxFeePerGas: bigint

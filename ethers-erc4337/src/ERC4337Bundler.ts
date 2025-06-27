@@ -1,5 +1,5 @@
-import type { Addressable, JsonRpcApiProviderOptions, Networkish, PerformActionRequest } from 'ethers'
-import { FetchRequest, getBigInt, isAddress, JsonRpcProvider, resolveAddress, toQuantity, ZeroAddress } from 'ethers'
+import type { Addressable, JsonRpcApiProviderOptions, Networkish, PerformActionRequest, FetchRequest } from 'ethers'
+import { getBigInt, isAddress, JsonRpcProvider, resolveAddress, toQuantity, ZeroAddress } from 'ethers'
 import type {
 	EstimateUserOperationGasResponse,
 	EstimateUserOperationGasResponseHex,

@@ -1,6 +1,6 @@
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
 import { type Execution, type PaymasterGetter, type SendOpResult, type SignatureData } from '@/core'
-import type { UserOperation } from '@/ethers-erc4337'
+import type { UserOperation } from 'ethers-erc4337'
 import { SendopError, UnsupportedEntryPointError } from '@/error'
 import { INTERFACES } from '@/interfaces'
 import { connectEntryPointV08 } from '@/utils'
