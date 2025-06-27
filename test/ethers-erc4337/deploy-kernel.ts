@@ -1,6 +1,5 @@
 import { ADDRESS } from '@/addresses'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import { fetchGasPriceAlchemy } from '@/fetchGasPrice'
 import { KernelValidationMode, KernelValidationType } from '@/smart-accounts/kernel-v3/types'
 import { randomBytes32, zeroBytes } from '@/utils'
 import type { EthersError } from 'ethers'
@@ -100,7 +99,10 @@ userOp.signature = DUMMY_ECDSA_SIGNATURE
 
 // estimate gas
 
-const { maxFeePerGas, maxPriorityFeePerGas } = await fetchGasPriceAlchemy(client)
+const { maxFeePerGas, maxPriorityFeePerGas } = await client.getFeeData()
+if (!maxFeePerGas || !maxPriorityFeePerGas) {
+	throw new Error('Failed to get fee data')
+}
 
 userOp.maxFeePerGas = maxFeePerGas
 userOp.maxPriorityFeePerGas = maxPriorityFeePerGas

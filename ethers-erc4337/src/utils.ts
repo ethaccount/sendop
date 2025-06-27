@@ -2,6 +2,7 @@ import type { BigNumberish } from 'ethers'
 import {
 	AbiCoder,
 	concat,
+	dataLength,
 	dataSlice,
 	getAddress,
 	getBigInt,
@@ -11,6 +12,7 @@ import {
 	toBeHex,
 	TypedDataEncoder,
 	ZeroAddress,
+	zeroPadBytes,
 	zeroPadValue,
 	type TypedDataDomain,
 	type TypedDataField,
@@ -25,11 +27,9 @@ export function packUserOp(userOp: UserOperation): PackedUserOperation {
 			throw new Error('[packUserOp] Invalid factory address')
 		}
 
-		if (!userOp.factoryData || userOp.factoryData === '0x') {
-			throw new Error('[packUserOp] Invalid factory data')
-		}
+		initCode = concat([userOp.factory, userOp.factoryData ?? '0x'])
 
-		initCode = concat([userOp.factory, userOp.factoryData])
+		// Note that it may have factory without factoryData when using EIP-7702
 	}
 
 	let paymasterAndData = '0x'
@@ -180,6 +180,23 @@ export function getUserOpHashV07(userOp: UserOperation, chainId: BigNumberish): 
 		],
 	)
 	return getBytes(keccak256(encoded))
+}
+
+export const EIP7702_PREFIX = '0xef0100'
+export const INITCODE_EIP7702_MARKER = '0x7702'
+
+export function isEip7702UserOp(op: UserOperation): boolean {
+	return op.factory === zeroPadBytes(INITCODE_EIP7702_MARKER, 20)
+}
+
+export function getUserOpHashWithEip7702(op: UserOperation, chainId: number, delegateAddress: string): Uint8Array {
+	if (!isEip7702UserOp(op)) {
+		throw new Error('initCode should start with INITCODE_EIP7702_MARKER')
+	}
+
+	op.factory = delegateAddress
+
+	return getUserOpHashV08(op, chainId)
 }
 
 export function getUserOpHashV08(userOp: UserOperation, chainId: BigNumberish): Uint8Array {

@@ -211,14 +211,15 @@ export class ERC4337Bundler extends JsonRpcProvider {
 }
 
 export function toUserOpHex(userOp: UserOperation): UserOperationHex {
+	// Give default value for factoryData instead of undefined if factory is set
+	let factoryData: string | undefined
 	if (userOp.factory) {
 		if (!isAddress(userOp.factory) || userOp.factory === ZeroAddress) {
 			throw new Error('[toUserOpHex] Invalid factory address')
 		}
 
-		if (!userOp.factoryData || userOp.factoryData === '0x') {
-			throw new Error('[toUserOpHex] Invalid factory data')
-		}
+		factoryData = userOp.factoryData ?? '0x'
+		// Note that it may have factory without factoryData when using EIP-7702
 	}
 
 	// Give default values instead of undefined if paymaster is set
@@ -240,7 +241,7 @@ export function toUserOpHex(userOp: UserOperation): UserOperationHex {
 		nonce: toQuantity(userOp.nonce),
 
 		factory: userOp.factory,
-		factoryData: userOp.factoryData,
+		factoryData,
 
 		callGasLimit: toQuantity(userOp.callGasLimit),
 		verificationGasLimit: toQuantity(userOp.verificationGasLimit),
