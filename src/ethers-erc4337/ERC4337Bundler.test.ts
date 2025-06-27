@@ -1,4 +1,4 @@
-import { getBigInt, toBeHex } from 'ethers'
+import { getBigInt } from 'ethers'
 import { alchemy, pimlico } from 'evm-providers'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { ERC4337Bundler } from './ERC4337Bundler'

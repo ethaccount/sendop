@@ -1,7 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import { getEmptyUserOp, getUserOpHash, type UserOperationReceipt } from '@/core'
-import { ERC4337Bundler } from '@/core/ERC4337Bundler'
+import { ERC4337Bundler, getEmptyUserOp, getUserOpHash, type UserOperationReceipt } from '@/ethers-erc4337'
 import { fetchGasPriceAlchemy } from '@/fetchGasPrice'
 import { KernelValidationMode, KernelValidationType } from '@/smart-accounts/kernel-v3/types'
 import { connectEntryPointV07, randomBytes32, zeroBytes } from '@/utils'

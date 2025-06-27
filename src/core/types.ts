@@ -1,5 +1,5 @@
 import type { Bundler, OperationGetter, PaymasterGetter } from './interface'
-import type { UserOperationReceipt } from './UserOperation'
+import type { UserOperationReceipt } from '@/ethers-erc4337'
 
 export type SendopOptions = {
 	bundler: Bundler

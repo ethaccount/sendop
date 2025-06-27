@@ -1,11 +1,6 @@
-import {
-	toUserOpHex,
-	type GetPaymasterDataResult,
-	type GetPaymasterStubDataResult,
-	type PaymasterGetter,
-	type UserOperation,
-} from '@/core'
 import { ADDRESS } from '@/addresses'
+import { type GetPaymasterDataResult, type GetPaymasterStubDataResult, type PaymasterGetter } from '@/core'
+import { toUserOpHex, type UserOperation } from '@/ethers-erc4337'
 import { RpcProvider } from '@/RpcProvider'
 import { toBeHex } from 'ethers'
 

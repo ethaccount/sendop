@@ -1,6 +1,7 @@
 import { ADDRESS } from '@/addresses'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import { type Execution, type SignatureData, type UserOperation } from '@/core'
+import { type Execution, type SignatureData } from '@/core'
+import type { UserOperation } from '@/ethers-erc4337'
 import { SendopError, UnsupportedEntryPointError } from '@/error'
 import { INTERFACES } from '@/interfaces'
 import { connectEntryPointV08 } from '@/utils'

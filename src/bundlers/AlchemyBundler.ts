@@ -1,4 +1,5 @@
-import type { GasValues, UserOperation } from '@/core'
+import type { GasValues } from '@/core'
+import type { UserOperation } from '@/ethers-erc4337'
 import { SendopError } from '@/error'
 import { BaseBundler, type BundlerOptions } from './BaseBundler'
 import { z } from 'zod'

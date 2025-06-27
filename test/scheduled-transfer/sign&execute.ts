@@ -1,14 +1,9 @@
-import {
-	ADDRESS,
-	AlchemyBundler,
-	DUMMY_ECDSA_SIGNATURE,
-	fromUserOpHex,
-	getUserOpHashV07,
-	packUserOp,
-	RpcProvider,
-	sendUserOp,
-	type UserOperationHex,
-} from '@/index'
+import { ADDRESS } from '@/addresses'
+import { AlchemyBundler } from '@/bundlers'
+import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
+import { sendUserOp } from '@/core'
+import { fromUserOpHex, getUserOpHashV07, type UserOperationHex } from '@/ethers-erc4337'
+import { RpcProvider } from '@/RpcProvider'
 import { concat, getBytes, Wallet } from 'ethers'
 import { getBundlerUrl } from '../../test/utils'
 

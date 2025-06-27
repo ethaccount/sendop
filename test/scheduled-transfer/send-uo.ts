@@ -1,4 +1,6 @@
-import { ADDRESS, fromUserOpHex, getUserOpHashV07, packUserOp, RpcProvider, type UserOperationHex } from '@/index'
+import { ADDRESS } from '@/addresses'
+import { fromUserOpHex, getUserOpHashV07, packUserOp, type UserOperationHex } from '@/ethers-erc4337'
+import { RpcProvider } from '@/RpcProvider'
 import { getBundlerUrl } from '../../test/utils'
 
 const bundlerUrl = getBundlerUrl(11155111n, { type: 'pimlico' })

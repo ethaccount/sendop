@@ -1,4 +1,5 @@
-import type { ERC7579Validator, ERC7579_MODULE_TYPE, Execution, SignatureData, UserOperation } from '@/core'
+import type { ERC7579Validator, ERC7579_MODULE_TYPE, Execution, SignatureData } from '@/core'
+import type { UserOperation } from '@/ethers-erc4337'
 import { CallType, ExecType, ModeSelector, encodeExecutions } from '@/core'
 import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
