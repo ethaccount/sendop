@@ -1,17 +1,11 @@
 import { ADDRESS } from '@/addresses'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import {
-	EntryPointV07__factory,
-	ERC4337Bundler,
-	getEmptyUserOp,
-	getUserOpHash,
-	type UserOperationReceipt,
-} from 'ethers-erc4337'
 import { fetchGasPriceAlchemy } from '@/fetchGasPrice'
 import { KernelValidationMode, KernelValidationType } from '@/smart-accounts/kernel-v3/types'
 import { randomBytes32, zeroBytes } from '@/utils'
 import type { EthersError } from 'ethers'
 import { concat, Contract, hexlify, Interface, isError, JsonRpcProvider, Wallet, ZeroAddress } from 'ethers'
+import { EntryPointV07__factory, ERC4337Bundler, getEmptyUserOp, getUserOpHash } from 'ethers-erc4337'
 import { alchemy, pimlico } from 'evm-providers'
 
 const KERNEL_V3_3_FACTORY = '0x2577507b78c2008Ff367261CB6285d44ba5eF2E9'
@@ -157,14 +151,7 @@ try {
 	}
 }
 
-// wait for receipt
-let receipt: UserOperationReceipt | null = null
-while (receipt === null) {
-	receipt = await bundler.getUserOperationReceipt(hexlify(hash))
-	if (receipt === null) {
-		await new Promise(resolve => setTimeout(resolve, 1000))
-	}
-}
+const receipt = await bundler.waitForReceipt(hexlify(hash))
 
 console.log('receipt', receipt)
 console.log('success', receipt.success)

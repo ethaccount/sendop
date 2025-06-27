@@ -1,5 +1,5 @@
 import type { Addressable, JsonRpcApiProviderOptions, Networkish, PerformActionRequest, FetchRequest } from 'ethers'
-import { getBigInt, isAddress, JsonRpcProvider, resolveAddress, toQuantity, ZeroAddress } from 'ethers'
+import { getBigInt, hexlify, isAddress, JsonRpcProvider, resolveAddress, toQuantity, ZeroAddress } from 'ethers'
 import type {
 	EstimateUserOperationGasResponse,
 	EstimateUserOperationGasResponseHex,
@@ -11,6 +11,7 @@ import type {
 } from './UserOperation'
 
 export interface ERC4337Bundler {
+	// ERC4337 methods
 	sendUserOperation(userOp: UserOperation, entryPointAddress: string | Addressable): Promise<string>
 	estimateUserOperationGas(
 		userOp: UserOperation,
@@ -20,6 +21,9 @@ export interface ERC4337Bundler {
 	getUserOperationReceipt(hash: string): Promise<UserOperationReceipt | null>
 	supportedEntryPoints(): Promise<string[]>
 	chainId(): Promise<bigint>
+
+	// convenience methods
+	waitForReceipt(hash: string): Promise<UserOperationReceipt>
 }
 
 // Refer to ERC-7769: JSON-RPC API for ERC-4337: https://eips.ethereum.org/EIPS/eip-7769
@@ -100,7 +104,7 @@ export class ERC4337Bundler extends JsonRpcProvider {
 		return await super._perform(req)
 	}
 
-	// ================================ ERC-4337 convenience methods ================================
+	// ================================ ERC-4337 methods ================================
 
 	/**
 	 * Send a `UserOperation` to the bundler.
@@ -164,6 +168,33 @@ export class ERC4337Bundler extends JsonRpcProvider {
 
 	async chainId(): Promise<bigint> {
 		return getBigInt(await this.send('eth_chainId', []))
+	}
+
+	// ================================ convenience methods ================================
+
+	/**
+	 * Wait for a `UserOperationReceipt` to be included in a block.
+	 * @param hash a `userOpHash` value returned by `eth_sendUserOperation`
+	 * @param timeout the timeout in milliseconds, default to 30 seconds
+	 * @param interval the interval in milliseconds, default to 1 second
+	 * @returns a `UserOperationReceipt` object
+	 */
+	async waitForReceipt(hash: string, timeout = 30_000, interval = 1_000): Promise<UserOperationReceipt> {
+		const endtime = Date.now() + timeout
+
+		let receipt: UserOperationReceipt | null = null
+		while (receipt === null && Date.now() < endtime) {
+			receipt = await this.getUserOperationReceipt(hexlify(hash))
+			if (receipt === null) {
+				await new Promise(resolve => setTimeout(resolve, interval))
+			}
+		}
+
+		if (receipt === null) {
+			throw new Error(`[waitForReceipt] User operation ${hash} not found`)
+		}
+
+		return receipt
 	}
 
 	// Get the underlying eth provider if available
