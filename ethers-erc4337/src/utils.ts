@@ -18,24 +18,19 @@ import {
 	type TypedDataField,
 } from 'ethers'
 import type { PackedUserOperation, UserOperation } from './UserOperation'
-import { ENTRY_POINT_V07_ADDRESS, ENTRY_POINT_V08_ADDRESS } from './constants'
+import { ENTRY_POINT_V07_ADDRESS, ENTRY_POINT_V08_ADDRESS, INITCODE_EIP7702_MARKER } from './constants'
 
 export function packUserOp(userOp: UserOperation): PackedUserOperation {
 	let initCode = '0x'
 	if (userOp.factory) {
-		if (!isAddress(userOp.factory) || userOp.factory === ZeroAddress) {
-			throw new Error('[packUserOp] Invalid factory address')
-		}
-
-		initCode = concat([userOp.factory, userOp.factoryData ?? '0x'])
-
-		// Note that it may have factory without factoryData when using EIP-7702
+		const factory = processUserOpFactory(userOp.factory)
+		initCode = concat([factory, userOp.factoryData ?? '0x'])
 	}
 
 	let paymasterAndData = '0x'
 	if (userOp.paymaster) {
 		if (!isAddress(userOp.paymaster) || userOp.paymaster === ZeroAddress) {
-			throw new Error('[packUserOp] Invalid paymaster address')
+			throw new Error(`[packUserOp] Invalid paymaster: ${userOp.paymaster}`)
 		}
 
 		let paymasterVerificationGasLimit = userOp.paymasterVerificationGasLimit ?? 0n
@@ -62,6 +57,18 @@ export function packUserOp(userOp: UserOperation): PackedUserOperation {
 		paymasterAndData,
 		signature: userOp.signature,
 	}
+}
+
+export function processUserOpFactory(factory: string): string {
+	const isEip7702 = factory.startsWith(INITCODE_EIP7702_MARKER)
+	const isValidAddress = isAddress(factory) && factory !== ZeroAddress
+
+	if (!isValidAddress && !isEip7702) {
+		throw new Error(`[packUserOp] Invalid factory: ${factory}`)
+	}
+
+	// EIP-7702 factories need to be zero-padded to 20 bytes
+	return isEip7702 ? zeroPadBytes(factory, 20) : factory
 }
 
 export function unpackUserOp(packedUserOp: PackedUserOperation): UserOperation {
@@ -182,21 +189,23 @@ export function getUserOpHashV07(userOp: UserOperation, chainId: BigNumberish): 
 	return getBytes(keccak256(encoded))
 }
 
-export const EIP7702_PREFIX = '0xef0100'
-export const INITCODE_EIP7702_MARKER = '0x7702'
-
 export function isEip7702UserOp(op: UserOperation): boolean {
-	return op.factory === zeroPadBytes(INITCODE_EIP7702_MARKER, 20)
+	return op.factory?.startsWith(INITCODE_EIP7702_MARKER) ?? false
 }
 
 export function getUserOpHashWithEip7702(op: UserOperation, chainId: number, delegateAddress: string): Uint8Array {
 	if (!isEip7702UserOp(op)) {
-		throw new Error('initCode should start with INITCODE_EIP7702_MARKER')
+		throw new Error(`[getUserOpHashWithEip7702] factory should start with ${INITCODE_EIP7702_MARKER}`)
 	}
 
-	op.factory = delegateAddress
-
-	return getUserOpHashV08(op, chainId)
+	return getUserOpHashV08(
+		// Note that we create a new userOp with the delegate address instead of modifying the original userOp
+		{
+			...op,
+			factory: delegateAddress,
+		},
+		chainId,
+	)
 }
 
 export function getUserOpHashV08(userOp: UserOperation, chainId: BigNumberish): Uint8Array {

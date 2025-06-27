@@ -1,4 +1,4 @@
-import type { Addressable, JsonRpcApiProviderOptions, Networkish, PerformActionRequest, FetchRequest } from 'ethers'
+import type { Addressable, FetchRequest, JsonRpcApiProviderOptions, Networkish, PerformActionRequest } from 'ethers'
 import { getBigInt, hexlify, isAddress, JsonRpcProvider, resolveAddress, toQuantity, ZeroAddress } from 'ethers'
 import type {
 	EstimateUserOperationGasResponse,
@@ -9,6 +9,7 @@ import type {
 	UserOperationReceipt,
 	UserOperationReceiptHex,
 } from './UserOperation'
+import { processUserOpFactory } from './utils'
 
 export interface ERC4337Bundler {
 	// ERC4337 methods
@@ -212,12 +213,11 @@ export class ERC4337Bundler extends JsonRpcProvider {
 
 export function toUserOpHex(userOp: UserOperation): UserOperationHex {
 	// Give default value for factoryData instead of undefined if factory is set
+
+	let factory: string | undefined
 	let factoryData: string | undefined
 	if (userOp.factory) {
-		if (!isAddress(userOp.factory) || userOp.factory === ZeroAddress) {
-			throw new Error('[toUserOpHex] Invalid factory address')
-		}
-
+		factory = processUserOpFactory(userOp.factory)
 		factoryData = userOp.factoryData ?? '0x'
 		// Note that it may have factory without factoryData when using EIP-7702
 	}
