@@ -2,7 +2,6 @@ import type { BigNumberish } from 'ethers'
 import {
 	AbiCoder,
 	concat,
-	dataLength,
 	dataSlice,
 	getAddress,
 	getBigInt,
