@@ -20,9 +20,9 @@ const { signer, bundler, client } = await setupCLI(['r', 'p', 'b'], {
 })
 
 const number = Math.floor(Math.random() * 10000)
-logger.info(`Setting number to ${number}`)
+console.log(`Setting number to ${number}`)
 
-logger.info('Sending op...')
+console.log('Sending op...')
 const op = await sendop({
 	bundler,
 	executions: [
@@ -42,16 +42,16 @@ const op = await sendop({
 })
 
 const startTime = Date.now()
-logger.info('Waiting for receipt...')
+console.log('Waiting for receipt...')
 const receipt = await op.wait()
 const duration = (Date.now() - startTime) / 1000 // Convert to seconds
-logger.info(`Receipt received after ${duration.toFixed(2)} seconds`)
+console.log(`Receipt received after ${duration.toFixed(2)} seconds`)
 
 const log = receipt.logs.find(log => getAddress(log.address) === getAddress(ADDRESS.Counter))
 if (log && toNumber(log.data) === number) {
-	logger.info(`Number ${number} set successfully`)
+	console.log(`Number ${number} set successfully`)
 } else {
 	logger.error(`Number ${number} not set`)
 }
 
-logger.info(receipt)
+console.log(receipt)

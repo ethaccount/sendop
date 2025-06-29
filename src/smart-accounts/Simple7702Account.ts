@@ -6,6 +6,7 @@ import { INTERFACES } from '@/interfaces'
 import { connectEntryPointV08 } from '@/utils'
 import type { Signer } from 'ethers'
 import { SmartAccount, type SmartAccountOptions } from './SmartAccount'
+import { TypedDataEncoder } from 'ethers'
 
 export type Simple7702AccountOptions = SmartAccountOptions & {
 	signer: Signer

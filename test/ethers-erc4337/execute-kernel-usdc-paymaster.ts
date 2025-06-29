@@ -1,10 +1,12 @@
+import { ADDRESS } from '@/addresses'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
 import { fetchGasPriceAlchemy } from '@/fetchGasPrice'
+import { INTERFACES } from '@/interfaces'
 import { toBytes32 } from '@/utils'
 import { JsonRpcProvider, Wallet } from 'ethers'
 import { ENTRY_POINT_V07_ADDRESS, ERC4337Bundler } from 'ethers-erc4337'
 import { alchemy, pimlico } from 'evm-providers'
-import { getKernelAddress, getKernelNonce } from './kernel'
+import { encodeKernelExecutionData, getKernelAddress, getKernelNonce } from './kernel'
 import { UserOpBuilder } from 'ethers-erc4337'
 
 const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', dev7702pk = '' } = process.env
@@ -44,13 +46,21 @@ const nonce = await getKernelNonce(client, accountAddress, ECDSA_VALIDATOR_ADDRE
 
 const userop = new UserOpBuilder(bundler, entryPointAddress, CHAIN_ID)
 	.setSender(accountAddress)
-	.setFactory({ factory, factoryData })
 	.setNonce(nonce)
 	.setPaymaster({
 		paymaster: PUBLIC_PAYMASTER_ADDRESS,
 	})
 	.setFeeData(await fetchGasPriceAlchemy(client))
 	.setSignature(DUMMY_ECDSA_SIGNATURE)
+	.setCallData(
+		await encodeKernelExecutionData([
+			{
+				to: ADDRESS.Counter,
+				value: 0n,
+				data: INTERFACES.Counter.encodeFunctionData('increment'),
+			},
+		]),
+	)
 
 await userop.estimateGas()
 await userop.signUserOpHash(userOpHash => wallet.signMessage(userOpHash))
