@@ -1,11 +1,11 @@
+import { ADDRESS } from '@/addresses'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import { fetchGasPriceAlchemy } from '@/fetchGasPrice'
-import { toBytes32 } from '@/utils'
+import { fetchGasPriceAlchemy, fetchGasPricePimlico } from '@/fetchGasPrice'
+import { INTERFACES } from '@/interfaces'
+import { withUSDCPaymaster } from '@/paymasters/usdc-paymaster'
 import { JsonRpcProvider, Wallet } from 'ethers'
-import { ENTRY_POINT_V07_ADDRESS, ERC4337Bundler } from 'ethers-erc4337'
+import { ENTRY_POINT_V08_ADDRESS, EntryPointV08__factory, ERC4337Bundler, UserOpBuilder } from 'ethers-erc4337'
 import { alchemy, pimlico } from 'evm-providers'
-import { getKernelAddress, getKernelNonce } from './kernel'
-import { UserOpBuilder } from 'ethers-erc4337'
 
 const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', dev7702pk = '' } = process.env
 
@@ -20,8 +20,6 @@ if (!dev7702) {
 }
 
 const CHAIN_ID = 11155111
-const ECDSA_VALIDATOR_ADDRESS = '0x8104e3ad430ea6d354d013a6789fdfc71e671c43'
-const PUBLIC_PAYMASTER_ADDRESS = '0xcD1c62f36A99f306948dB76c35Bbc1A639f92ce8'
 
 const rpcUrl = alchemy(CHAIN_ID, ALCHEMY_API_KEY)
 const bundlerUrl = pimlico(CHAIN_ID, PIMLICO_API_KEY)
@@ -29,33 +27,35 @@ const bundlerUrl = pimlico(CHAIN_ID, PIMLICO_API_KEY)
 const client = new JsonRpcProvider(rpcUrl)
 const bundler = new ERC4337Bundler(bundlerUrl)
 
-const entryPointAddress = ENTRY_POINT_V07_ADDRESS
+const entryPointAddress = ENTRY_POINT_V08_ADDRESS
+const entryPoint = EntryPointV08__factory.connect(entryPointAddress, client)
 
 const wallet = new Wallet(dev7702pk)
 
-const { accountAddress, factory, factoryData } = await getKernelAddress(
-	client,
-	ECDSA_VALIDATOR_ADDRESS,
-	dev7702,
-	toBytes32(2n),
-)
-
-console.log('accountAddress', accountAddress)
-
-const nonce = await getKernelNonce(client, accountAddress, ECDSA_VALIDATOR_ADDRESS)
-
 const userop = new UserOpBuilder(bundler, entryPointAddress, CHAIN_ID)
-	.setSender(accountAddress)
-	.setFactory({ factory, factoryData })
-	.setNonce(nonce)
-	.setPaymaster({
-		paymaster: PUBLIC_PAYMASTER_ADDRESS,
-	})
+	.setSender(dev7702)
+	.setNonce(await entryPoint.getNonce(dev7702, 0n))
 	.setFeeData(await fetchGasPriceAlchemy(client))
 	.setSignature(DUMMY_ECDSA_SIGNATURE)
+	.setCallData(
+		INTERFACES.Simple7702AccountV08.encodeFunctionData('execute', [
+			ADDRESS.Counter,
+			0n,
+			INTERFACES.Counter.encodeFunctionData('increment'),
+		]),
+	)
+
+await withUSDCPaymaster(userop, {
+	client,
+	chainId: CHAIN_ID,
+	getERC1271Signature: async (permitHash: Uint8Array) => {
+		return wallet.signMessage(permitHash)
+	},
+})
 
 await userop.estimateGas()
-await userop.signUserOpHash(userOpHash => wallet.signMessage(userOpHash))
+
+await userop.signUserOpTypedData(typedData => wallet.signTypedData(...typedData))
 
 const hash = await userop.send()
 console.log('sent', hash)

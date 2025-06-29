@@ -1,10 +1,9 @@
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
 import { type GetPaymasterDataResult, type GetPaymasterStubDataResult, type PaymasterGetter } from '@/core'
 import type { UserOperation } from 'ethers-erc4337'
-import type { TypedData } from '@/utils'
-import { zeroPadLeft } from '@/utils'
-import type { JsonRpcProvider, TypedDataDomain } from 'ethers'
-import { concat, Contract, Interface, MaxUint256, toBeHex, TypedDataEncoder } from 'ethers'
+import { getPermitTypedData, zeroPadLeft } from '@/utils'
+import type { JsonRpcProvider } from 'ethers'
+import { concat, Contract, Interface, toBeHex, TypedDataEncoder } from 'ethers'
 
 export type CircleUSDCPaymasterOptions = {
 	client: JsonRpcProvider
@@ -48,7 +47,7 @@ export class CircleUSDCPaymaster implements PaymasterGetter {
 	}
 
 	async getPaymasterData(userOp: UserOperation): Promise<GetPaymasterDataResult> {
-		const permitData = await getPermitData({
+		const permitData = await getPermitTypedData({
 			client: this.options.client,
 			tokenAddress: this.options.tokenAddress,
 			chainId: this.options.chainId,
@@ -71,57 +70,4 @@ export class CircleUSDCPaymaster implements PaymasterGetter {
 			paymasterData,
 		}
 	}
-}
-
-async function getPermitData({
-	client,
-	tokenAddress,
-	chainId,
-	ownerAddress,
-	spenderAddress,
-	amount,
-}: {
-	client: JsonRpcProvider
-	tokenAddress: string
-	chainId: bigint
-	ownerAddress: string
-	spenderAddress: string
-	amount: bigint
-}): Promise<TypedData> {
-	const token = new Contract(
-		tokenAddress,
-		new Interface([
-			'function name() view returns (string)',
-			'function version() view returns (string)',
-			'function nonces(address owner) view returns (uint256)',
-		]),
-		client,
-	)
-
-	const domain: TypedDataDomain = {
-		name: await token.getFunction('name')(),
-		version: await token.getFunction('version')(),
-		chainId: chainId,
-		verifyingContract: tokenAddress,
-	}
-
-	const types = {
-		Permit: [
-			{ name: 'owner', type: 'address' },
-			{ name: 'spender', type: 'address' },
-			{ name: 'value', type: 'uint256' },
-			{ name: 'nonce', type: 'uint256' },
-			{ name: 'deadline', type: 'uint256' },
-		],
-	}
-
-	const value = {
-		owner: ownerAddress,
-		spender: spenderAddress,
-		value: amount,
-		nonce: await token.getFunction('nonces')(ownerAddress),
-		deadline: MaxUint256,
-	}
-
-	return [domain, types, value]
 }

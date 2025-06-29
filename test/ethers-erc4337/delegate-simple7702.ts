@@ -6,6 +6,8 @@ import { ENTRY_POINT_V08_ADDRESS, EntryPointV08__factory, ERC4337Bundler } from 
 import { alchemy, pimlico } from 'evm-providers'
 import { UserOpBuilder } from 'ethers-erc4337'
 
+// Failed. Don't know why.
+
 const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', dev7702pk = '' } = process.env
 
 if (!ALCHEMY_API_KEY) {
