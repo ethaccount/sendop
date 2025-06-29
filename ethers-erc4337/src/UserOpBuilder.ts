@@ -1,4 +1,4 @@
-import type { EthersError, TypedDataDomain, TypedDataField } from 'ethers'
+import type { BigNumberish, EthersError } from 'ethers'
 import { getBigInt, getBytes, hexlify, isError } from 'ethers'
 import { INITCODE_EIP7702_MARKER } from './constants'
 import { toUserOpHex, type ERC4337Bundler } from './ERC4337Bundler'
@@ -17,8 +17,8 @@ import {
 	getV08DomainAndTypes,
 	isEip7702UserOp,
 	packUserOp,
+	type TypedData,
 } from './utils'
-import type { BigNumberish } from 'ethers'
 
 export class UserOpBuilder {
 	private userOp: UserOperation
@@ -130,7 +130,7 @@ export class UserOpBuilder {
 		return hexlify(getUserOpHash(this.userOp, this.entryPointAddress, this.chainId))
 	}
 
-	typedData(): [TypedDataDomain, Record<string, Array<TypedDataField>>, Record<string, any>] {
+	typedData(): TypedData {
 		const { domain, types } = getV08DomainAndTypes(this.chainId)
 		return [domain, types, this.pack()]
 	}
@@ -218,11 +218,7 @@ export class UserOpBuilder {
 		this.userOp.signature = signature
 	}
 
-	async signUserOpTypedData(
-		fn: (
-			typedData: [TypedDataDomain, Record<string, Array<TypedDataField>>, Record<string, any>],
-		) => Promise<string>,
-	): Promise<void> {
+	async signUserOpTypedData(fn: (typedData: TypedData) => Promise<string>): Promise<void> {
 		const signature = await fn(this.typedData())
 		this.userOp.signature = signature
 	}

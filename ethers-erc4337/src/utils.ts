@@ -213,9 +213,13 @@ export function getUserOpHashV08(userOp: UserOperation, chainId: BigNumberish): 
 	return getBytes(TypedDataEncoder.hash(domain, types, packedUserOp))
 }
 
+export type TypedData = [TypedDataDomain, TypedDataTypes, TypedDataValues]
+export type TypedDataTypes = Record<string, Array<TypedDataField>>
+export type TypedDataValues = Record<string, any>
+
 export function getV08DomainAndTypes(chainId: BigNumberish): {
 	domain: TypedDataDomain
-	types: Record<string, Array<TypedDataField>>
+	types: TypedDataTypes
 } {
 	const domain: TypedDataDomain = {
 		name: 'ERC4337',
