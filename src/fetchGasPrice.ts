@@ -1,12 +1,14 @@
 import { JsonRpcProvider } from 'ethers'
 
-export async function fetchGasPriceAlchemy(alchemyProvider: JsonRpcProvider): Promise<{
+export async function fetchGasPriceAlchemy(alchemyUrl: string): Promise<{
 	maxFeePerGas: bigint
 	maxPriorityFeePerGas: bigint
 }> {
+	const provider = new JsonRpcProvider(alchemyUrl)
+
 	const [block, maxPriorityFeePerGas] = await Promise.all([
-		alchemyProvider.send('eth_getBlockByNumber', ['latest', true]), // https://docs.alchemy.com/reference/eth-getblockbynumber
-		alchemyProvider.send('rundler_maxPriorityFeePerGas', []), // https://docs.alchemy.com/reference/rundler-maxpriorityfeepergas
+		provider.send('eth_getBlockByNumber', ['latest', true]), // https://docs.alchemy.com/reference/eth-getblockbynumber
+		provider.send('rundler_maxPriorityFeePerGas', []), // https://docs.alchemy.com/reference/rundler-maxpriorityfeepergas
 	])
 
 	const maxFeePerGas = (BigInt(block.baseFeePerGas) * 150n) / 100n + BigInt(maxPriorityFeePerGas)

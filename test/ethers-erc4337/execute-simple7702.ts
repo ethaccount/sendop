@@ -37,7 +37,7 @@ async function main() {
 	const userop = new UserOpBuilder(bundler, entryPointAddress, CHAIN_ID)
 		.setSender(dev7702)
 		.setNonce(await entryPoint.getNonce(dev7702, 0n))
-		.setFeeData(await fetchGasPriceAlchemy(client))
+		.setGasPrice(await fetchGasPriceAlchemy(rpcUrl))
 		.setSignature(DUMMY_ECDSA_SIGNATURE)
 		.setPaymaster({
 			paymaster: ADDRESS.PublicPaymaster,

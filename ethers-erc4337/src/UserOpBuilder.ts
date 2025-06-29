@@ -75,7 +75,7 @@ export class UserOpBuilder {
 		return this
 	}
 
-	setFeeData(feeData: { maxFeePerGas: bigint; maxPriorityFeePerGas: bigint }): UserOpBuilder {
+	setGasPrice(feeData: { maxFeePerGas: bigint; maxPriorityFeePerGas: bigint }): UserOpBuilder {
 		this.userOp.maxFeePerGas = feeData.maxFeePerGas
 		this.userOp.maxPriorityFeePerGas = feeData.maxPriorityFeePerGas
 		return this

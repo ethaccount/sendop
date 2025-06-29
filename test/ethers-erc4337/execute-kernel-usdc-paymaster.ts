@@ -2,7 +2,7 @@ import { ADDRESS } from '@/addresses'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
 import { fetchGasPricePimlico } from '@/fetchGasPrice'
 import { INTERFACES } from '@/interfaces'
-import { withUSDCPaymaster } from '@/paymasters/usdc-paymaster'
+import { getUSDCPaymaster } from '@/paymasters/usdc-paymaster'
 import { toBytes32 } from '@/utils'
 import { concat, hexlify, JsonRpcProvider, Wallet } from 'ethers'
 import { ENTRY_POINT_V07_ADDRESS, ERC4337Bundler, UserOpBuilder, type TypedData } from 'ethers-erc4337'
@@ -46,24 +46,10 @@ console.log('accountAddress', accountAddress)
 
 const nonce = await getKernelNonce(client, accountAddress, ADDRESS.ECDSAValidator)
 
-const userop = new UserOpBuilder(bundler, entryPointAddress, CHAIN_ID)
-	.setSender(accountAddress)
-	.setNonce(nonce)
-	.setFeeData(await fetchGasPricePimlico(bundlerUrl))
-	.setSignature(DUMMY_ECDSA_SIGNATURE)
-	.setCallData(
-		await encodeKernelExecutionData([
-			{
-				to: ADDRESS.Counter,
-				value: 0n,
-				data: INTERFACES.Counter.encodeFunctionData('increment'),
-			},
-		]),
-	)
-
-await withUSDCPaymaster(userop, {
+const usdcPaymaster = await getUSDCPaymaster({
 	client,
 	chainId: CHAIN_ID,
+	accountAddress,
 	paymasterAddress: USDC_PAYMASTER_ADDRESS,
 	usdcAddress: USDC_ADDRESS,
 	getERC1271Signature: async (permitHash: Uint8Array) => {
@@ -91,6 +77,22 @@ await withUSDCPaymaster(userop, {
 		])
 	},
 })
+
+const userop = new UserOpBuilder(bundler, entryPointAddress, CHAIN_ID)
+	.setSender(accountAddress)
+	.setNonce(nonce)
+	.setGasPrice(await fetchGasPricePimlico(bundlerUrl))
+	.setSignature(DUMMY_ECDSA_SIGNATURE)
+	.setCallData(
+		await encodeKernelExecutionData([
+			{
+				to: ADDRESS.Counter,
+				value: 0n,
+				data: INTERFACES.Counter.encodeFunctionData('increment'),
+			},
+		]),
+	)
+	.setPaymaster(usdcPaymaster)
 
 await userop.estimateGas()
 await userop.signUserOpHash(userOpHash => wallet.signMessage(userOpHash))

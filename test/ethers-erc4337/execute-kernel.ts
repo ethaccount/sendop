@@ -49,7 +49,7 @@ const userop = new UserOpBuilder(bundler, entryPointAddress, CHAIN_ID)
 	.setPaymaster({
 		paymaster: PUBLIC_PAYMASTER_ADDRESS,
 	})
-	.setFeeData(await fetchGasPriceAlchemy(client))
+	.setGasPrice(await fetchGasPriceAlchemy(rpcUrl))
 	.setSignature(DUMMY_ECDSA_SIGNATURE)
 	.setCallData(
 		await encodeKernelExecutionData([

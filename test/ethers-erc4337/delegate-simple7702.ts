@@ -62,7 +62,7 @@ async function main() {
 			s: auth.signature.s,
 		})
 		.setNonce(await entryPoint.getNonce(dev7702, 0n))
-		.setFeeData(await fetchGasPriceAlchemy(client))
+		.setGasPrice(await fetchGasPriceAlchemy(rpcUrl))
 		.setSignature(DUMMY_ECDSA_SIGNATURE)
 		.setPaymaster({
 			paymaster: ADDRESS.PublicPaymaster,

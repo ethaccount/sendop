@@ -96,7 +96,7 @@ class UserOperationBuilder {
 		return this
 	}
 
-	async setFeeData(): Promise<UserOperationBuilder> {
+	async setGasPrice(): Promise<UserOperationBuilder> {
 		const { maxFeePerGas, maxPriorityFeePerGas } = await this.client.getFeeData()
 		if (!maxFeePerGas || !maxPriorityFeePerGas) {
 			throw new Error('Failed to get fee data')
@@ -173,7 +173,7 @@ async function main() {
 		.setPaymaster(ADDRESS.PublicPaymaster)
 		.setCallData('0x')
 		.setSignature(DUMMY_ECDSA_SIGNATURE)
-		.setFeeData()
+		.setGasPrice()
 		.then(builder => builder.estimateGas())
 		.then(builder => builder.signWithWallet(dev7702pk))
 		.then(builder => builder.execute())
@@ -327,7 +327,7 @@ class UserOperationBuilder {
 		return this
 	}
 
-	async setFeeData(): Promise<UserOperationBuilder> {
+	async setGasPrice(): Promise<UserOperationBuilder> {
 		const { maxFeePerGas, maxPriorityFeePerGas } = await this.client.getFeeData()
 		if (!maxFeePerGas || !maxPriorityFeePerGas) {
 			throw new Error('Failed to get fee data')
@@ -404,7 +404,7 @@ async function main() {
 		.setPaymaster(ADDRESS.PublicPaymaster)
 		.setCallData('0x')
 		.setSignature(DUMMY_ECDSA_SIGNATURE)
-		.setFeeData()
+		.setGasPrice()
 		.then(builder => builder.estimateGas())
 		.then(builder => builder.signWithWallet(dev7702pk))
 		.then(builder => builder.execute())
@@ -468,7 +468,7 @@ async function getKernelNonce(accountAddress: string, validatorAddress: string) 
 
 **User**
 
-setFeeData()
+setGasPrice()
 		.then(builder => builder.estimateGas())
 		.then(builder => builder.signWithWallet(dev7702pk))
 		.then(builder => builder.execute())
