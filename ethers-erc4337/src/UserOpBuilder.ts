@@ -18,6 +18,7 @@ import {
 	isEip7702UserOp,
 	packUserOp,
 } from './utils'
+import type { BigNumberish } from 'ethers'
 
 export class UserOpBuilder {
 	private userOp: UserOperation
@@ -61,7 +62,7 @@ export class UserOpBuilder {
 	}: {
 		paymaster: string
 		paymasterData?: string
-		paymasterPostOpGasLimit?: number
+		paymasterPostOpGasLimit?: BigNumberish
 	}): UserOpBuilder {
 		this.userOp.paymaster = paymaster
 		this.userOp.paymasterData = paymasterData
@@ -77,6 +78,28 @@ export class UserOpBuilder {
 	setFeeData(feeData: { maxFeePerGas: bigint; maxPriorityFeePerGas: bigint }): UserOpBuilder {
 		this.userOp.maxFeePerGas = feeData.maxFeePerGas
 		this.userOp.maxPriorityFeePerGas = feeData.maxPriorityFeePerGas
+		return this
+	}
+
+	setGasLimit({
+		verificationGasLimit,
+		preVerificationGas,
+		callGasLimit,
+		paymasterVerificationGasLimit,
+		paymasterPostOpGasLimit,
+	}: {
+		verificationGasLimit?: BigNumberish
+		preVerificationGas?: BigNumberish
+		callGasLimit?: BigNumberish
+		paymasterVerificationGasLimit?: BigNumberish
+		paymasterPostOpGasLimit?: BigNumberish
+	}): UserOpBuilder {
+		this.userOp.verificationGasLimit = verificationGasLimit ?? this.userOp.verificationGasLimit
+		this.userOp.preVerificationGas = preVerificationGas ?? this.userOp.preVerificationGas
+		this.userOp.callGasLimit = callGasLimit ?? this.userOp.callGasLimit
+		this.userOp.paymasterVerificationGasLimit =
+			paymasterVerificationGasLimit ?? this.userOp.paymasterVerificationGasLimit
+		this.userOp.paymasterPostOpGasLimit = paymasterPostOpGasLimit ?? this.userOp.paymasterPostOpGasLimit
 		return this
 	}
 
@@ -112,8 +135,66 @@ export class UserOpBuilder {
 		return [domain, types, this.pack()]
 	}
 
-	encodeHandleOpsData(beneficiary = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'): string {
+	encodeHandleOpsData(
+		{
+			beneficiary = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+			gasOverride,
+		}: {
+			beneficiary?: string
+			gasOverride?: {
+				preVerificationGas?: BigNumberish
+				verificationGasLimit?: BigNumberish
+				callGasLimit?: BigNumberish
+				paymasterVerificationGasLimit?: BigNumberish
+				paymasterPostOpGasLimit?: BigNumberish
+			}
+		} = { beneficiary: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', gasOverride: undefined },
+	): string {
+		if (gasOverride) {
+			const newUserOp = { ...this.userOp, ...gasOverride }
+			return EntryPointV08__factory.createInterface().encodeFunctionData('handleOps', [
+				[packUserOp(newUserOp)],
+				beneficiary,
+			])
+		}
 		return EntryPointV08__factory.createInterface().encodeFunctionData('handleOps', [[this.pack()], beneficiary])
+	}
+
+	/**
+	 * Add default gas values to the user operation and then encode the handleOps data
+	 * - preVerificationGas: 99_999
+	 * - verificationGasLimit: 999_999
+	 * - callGasLimit: 999_999
+	 * - paymasterVerificationGasLimit: 999_999 if paymaster is set, otherwise undefined
+	 * - paymasterPostOpGasLimit: 999_999 if paymaster is set, otherwise undefined
+	 */
+	encodeHandleOpsDataWithDefaultGas(
+		{
+			beneficiary = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+			gasOverride,
+		}: {
+			beneficiary?: string
+			gasOverride?: {
+				preVerificationGas?: BigNumberish
+				verificationGasLimit?: BigNumberish
+				callGasLimit?: BigNumberish
+				paymasterVerificationGasLimit?: BigNumberish
+				paymasterPostOpGasLimit?: BigNumberish
+			}
+		} = { beneficiary: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', gasOverride: undefined },
+	): string {
+		const defaultGasLimit = {
+			preVerificationGas: 99_999,
+			verificationGasLimit: 999_999,
+			callGasLimit: 999_999,
+			paymasterVerificationGasLimit: this.userOp.paymaster ? 999_999 : undefined,
+			paymasterPostOpGasLimit: this.userOp.paymaster ? 999_999 : undefined,
+		}
+		const newUserOp = { ...this.userOp, ...defaultGasLimit, ...gasOverride }
+		return EntryPointV08__factory.createInterface().encodeFunctionData('handleOps', [
+			[packUserOp(newUserOp)],
+			beneficiary,
+		])
 	}
 
 	async estimateGas(): Promise<void> {
