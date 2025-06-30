@@ -81,25 +81,18 @@ export class UserOpBuilder {
 		return this
 	}
 
-	setGasLimit({
-		verificationGasLimit,
-		preVerificationGas,
-		callGasLimit,
-		paymasterVerificationGasLimit,
-		paymasterPostOpGasLimit,
-	}: {
+	setGasValue(gasValues: {
 		verificationGasLimit?: BigNumberish
 		preVerificationGas?: BigNumberish
 		callGasLimit?: BigNumberish
 		paymasterVerificationGasLimit?: BigNumberish
 		paymasterPostOpGasLimit?: BigNumberish
 	}): UserOpBuilder {
-		this.userOp.verificationGasLimit = verificationGasLimit ?? this.userOp.verificationGasLimit
-		this.userOp.preVerificationGas = preVerificationGas ?? this.userOp.preVerificationGas
-		this.userOp.callGasLimit = callGasLimit ?? this.userOp.callGasLimit
-		this.userOp.paymasterVerificationGasLimit =
-			paymasterVerificationGasLimit ?? this.userOp.paymasterVerificationGasLimit
-		this.userOp.paymasterPostOpGasLimit = paymasterPostOpGasLimit ?? this.userOp.paymasterPostOpGasLimit
+		// Filter out undefined values
+		const definedGasValues = Object.fromEntries(
+			Object.entries(gasValues).filter(([, value]) => value !== undefined),
+		)
+		Object.assign(this.userOp, definedGasValues)
 		return this
 	}
 
