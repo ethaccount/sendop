@@ -25,7 +25,7 @@ export async function getUSDCPaymaster({
 	usdcAddress = USDC_ADDRESS,
 	permitAmount = parseUnits('1', 6),
 	minAllowanceThreshold = parseUnits('1', 6),
-	getSignature,
+	signTypedData,
 }: {
 	client: JsonRpcProvider
 	chainId: BigNumberish
@@ -34,7 +34,7 @@ export async function getUSDCPaymaster({
 	usdcAddress?: string
 	permitAmount?: bigint
 	minAllowanceThreshold?: bigint
-	getSignature: (typedData: TypedData) => Promise<string>
+	signTypedData: (typedData: TypedData) => Promise<string>
 }): Promise<{
 	paymaster: string
 	paymasterData: string
@@ -75,7 +75,7 @@ export async function getUSDCPaymaster({
 			amount: totalPermitAmount,
 		})
 
-		const permitSig = await getSignature(typedData)
+		const permitSig = await signTypedData(typedData)
 
 		// paymasterData = 0x00 || usdc address || permitAmount || permitSignature
 		paymasterData = concat(['0x00', usdcAddress, zeroPadValue(toBeHex(totalPermitAmount), 32), permitSig])

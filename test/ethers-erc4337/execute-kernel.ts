@@ -1,12 +1,12 @@
 import { ADDRESS } from '@/addresses'
-import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
 import { fetchGasPriceAlchemy } from '@/fetchGasPrice'
 import { INTERFACES } from '@/interfaces'
+import { ECDSAValidator, getECDSAValidator } from '@/modules/ECDSAValidator'
 import { toBytes32 } from '@/utils'
 import { JsonRpcProvider, Wallet } from 'ethers'
-import { ENTRY_POINT_V07_ADDRESS, ERC4337Bundler, UserOpBuilder } from 'ethers-erc4337'
+import { ERC4337Bundler } from 'ethers-erc4337'
 import { alchemy, pimlico } from 'evm-providers'
-import { encodeKernelExecutionData, getKernelAddress, getKernelNonce } from './kernel'
+import { KernelUserOpBuilder } from '@/accounts/kernel/builder'
 
 const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', dev7702pk = '' } = process.env
 
@@ -30,36 +30,34 @@ const bundlerUrl = pimlico(CHAIN_ID, PIMLICO_API_KEY)
 const client = new JsonRpcProvider(rpcUrl)
 const bundler = new ERC4337Bundler(bundlerUrl)
 
-const entryPointAddress = ENTRY_POINT_V07_ADDRESS
-
 const wallet = new Wallet(dev7702pk)
 
-const { accountAddress, factory, factoryData } = await getKernelAddress(
+const { accountAddress, factory, factoryData } = await KernelUserOpBuilder.computeAddress(
 	client,
 	ECDSA_VALIDATOR_ADDRESS,
 	dev7702,
 	toBytes32(2n),
 )
 
-const nonce = await getKernelNonce(client, accountAddress, ECDSA_VALIDATOR_ADDRESS)
+const userop = await new KernelUserOpBuilder({
+	chainId: CHAIN_ID,
+	bundler,
+	client,
+	accountAddress,
+	validator: new ECDSAValidator(getECDSAValidator({ ownerAddress: dev7702 })),
+}).buildExecution([
+	{
+		to: ADDRESS.Counter,
+		value: 0n,
+		data: INTERFACES.Counter.encodeFunctionData('increment'),
+	},
+])
 
-const userop = new UserOpBuilder(bundler, entryPointAddress, CHAIN_ID)
-	.setSender(accountAddress)
-	.setNonce(nonce)
+userop
 	.setPaymaster({
 		paymaster: PUBLIC_PAYMASTER_ADDRESS,
 	})
 	.setGasPrice(await fetchGasPriceAlchemy(rpcUrl))
-	.setSignature(DUMMY_ECDSA_SIGNATURE)
-	.setCallData(
-		await encodeKernelExecutionData([
-			{
-				to: ADDRESS.Counter,
-				value: 0n,
-				data: INTERFACES.Counter.encodeFunctionData('increment'),
-			},
-		]),
-	)
 
 await userop.estimateGas()
 await userop.signUserOpHash(userOpHash => wallet.signMessage(userOpHash))

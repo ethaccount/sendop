@@ -184,15 +184,15 @@ export class ERC4337Bundler extends JsonRpcProvider {
 		const endtime = Date.now() + timeout
 
 		let receipt: UserOperationReceipt | null = null
-		while (receipt === null && Date.now() < endtime) {
+		while (!receipt && Date.now() < endtime) {
 			receipt = await this.getUserOperationReceipt(hexlify(hash))
-			if (receipt === null) {
+			if (!receipt) {
 				await new Promise(resolve => setTimeout(resolve, interval))
 			}
 		}
 
-		if (receipt === null) {
-			throw new Error(`[waitForReceipt] User operation ${hash} not found`)
+		if (!receipt) {
+			throw new Error(`[ERC4337Bundler#waitForReceipt] Timeout waiting for user operation ${hash}`)
 		}
 
 		return receipt

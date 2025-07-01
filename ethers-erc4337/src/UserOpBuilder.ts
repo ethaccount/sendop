@@ -26,11 +26,11 @@ export class UserOpBuilder {
 	private entryPointAddress: string
 	private chainId: number
 
-	constructor(bundler: ERC4337Bundler, entryPointAddress: string, chainId: number) {
+	constructor(bundler: ERC4337Bundler, entryPointAddress: string, chainId: BigNumberish) {
 		this.userOp = getEmptyUserOp()
 		this.bundler = bundler
 		this.entryPointAddress = entryPointAddress
-		this.chainId = chainId
+		this.chainId = Number(chainId)
 	}
 
 	setSender(sender: string): UserOpBuilder {
@@ -50,7 +50,7 @@ export class UserOpBuilder {
 		return this
 	}
 
-	setNonce(nonce: bigint): UserOpBuilder {
+	setNonce(nonce: BigNumberish): UserOpBuilder {
 		this.userOp.nonce = nonce
 		return this
 	}

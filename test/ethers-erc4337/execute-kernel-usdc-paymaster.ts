@@ -1,13 +1,13 @@
+import { KernelUserOpBuilder } from '@/accounts/kernel/builder'
 import { ADDRESS } from '@/addresses'
-import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
 import { fetchGasPricePimlico } from '@/fetchGasPrice'
 import { INTERFACES } from '@/interfaces'
+import { ECDSAValidator, getECDSAValidator } from '@/modules/ECDSAValidator'
 import { getUSDCPaymaster } from '@/paymasters/usdc-paymaster'
 import { toBytes32 } from '@/utils'
 import { getBytes, JsonRpcProvider, TypedDataEncoder, Wallet } from 'ethers'
-import { ENTRY_POINT_V07_ADDRESS, ERC4337Bundler, UserOpBuilder, type TypedData } from 'ethers-erc4337'
+import { ERC4337Bundler, type TypedData } from 'ethers-erc4337'
 import { alchemy, pimlico } from 'evm-providers'
-import { encodeKernelExecutionData, getKernelAddress, getKernelERC1271Signature, getKernelNonce } from './kernel'
 
 const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', dev7702pk = '' } = process.env
 
@@ -31,11 +31,9 @@ const bundlerUrl = pimlico(CHAIN_ID, PIMLICO_API_KEY)
 const client = new JsonRpcProvider(rpcUrl)
 const bundler = new ERC4337Bundler(bundlerUrl)
 
-const entryPointAddress = ENTRY_POINT_V07_ADDRESS
-
 const wallet = new Wallet(dev7702pk)
 
-const { accountAddress, factory, factoryData } = await getKernelAddress(
+const { accountAddress } = await KernelUserOpBuilder.computeAddress(
 	client,
 	ADDRESS.ECDSAValidator,
 	dev7702,
@@ -44,7 +42,19 @@ const { accountAddress, factory, factoryData } = await getKernelAddress(
 
 console.log('accountAddress', accountAddress)
 
-const nonce = await getKernelNonce(client, accountAddress, ADDRESS.ECDSAValidator)
+const userop = await new KernelUserOpBuilder({
+	chainId: CHAIN_ID,
+	bundler,
+	client,
+	accountAddress,
+	validator: new ECDSAValidator(getECDSAValidator({ ownerAddress: dev7702 })),
+}).buildExecution([
+	{
+		to: ADDRESS.Counter,
+		value: 0n,
+		data: INTERFACES.Counter.encodeFunctionData('increment'),
+	},
+])
 
 const usdcPaymaster = await getUSDCPaymaster({
 	client,
@@ -52,35 +62,21 @@ const usdcPaymaster = await getUSDCPaymaster({
 	accountAddress,
 	paymasterAddress: USDC_PAYMASTER_ADDRESS,
 	usdcAddress: USDC_ADDRESS,
-	getSignature: async (typedData: TypedData) => {
-		return getKernelERC1271Signature({
+	signTypedData: async (typedData: TypedData) => {
+		return await KernelUserOpBuilder.signERC1271({
 			version: '0.3.3',
 			validator: ADDRESS.ECDSAValidator,
 			hash: getBytes(TypedDataEncoder.hash(...typedData)),
 			chainId: CHAIN_ID,
 			accountAddress,
-			getSignature: async (hash: Uint8Array) => {
+			signHash: async (hash: Uint8Array) => {
 				return wallet.signingKey.sign(hash).serialized
 			},
 		})
 	},
 })
 
-const userop = new UserOpBuilder(bundler, entryPointAddress, CHAIN_ID)
-	.setSender(accountAddress)
-	.setNonce(nonce)
-	.setGasPrice(await fetchGasPricePimlico(bundlerUrl))
-	.setSignature(DUMMY_ECDSA_SIGNATURE)
-	.setCallData(
-		await encodeKernelExecutionData([
-			{
-				to: ADDRESS.Counter,
-				value: 0n,
-				data: INTERFACES.Counter.encodeFunctionData('increment'),
-			},
-		]),
-	)
-	.setPaymaster(usdcPaymaster)
+userop.setGasPrice(await fetchGasPricePimlico(bundlerUrl)).setPaymaster(usdcPaymaster)
 
 await userop.estimateGas()
 await userop.signUserOpHash(userOpHash => wallet.signMessage(userOpHash))
