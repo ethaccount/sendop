@@ -4,7 +4,13 @@ import { fetchGasPriceAlchemy } from '@/fetchGasPrice'
 import { INTERFACES } from '@/interfaces'
 import { getUSDCPaymaster } from '@/paymasters/usdc-paymaster'
 import { JsonRpcProvider, Wallet } from 'ethers'
-import { ENTRY_POINT_V08_ADDRESS, EntryPointV08__factory, ERC4337Bundler, UserOpBuilder } from 'ethers-erc4337'
+import {
+	ENTRY_POINT_V08_ADDRESS,
+	EntryPointV08__factory,
+	ERC4337Bundler,
+	UserOpBuilder,
+	type TypedData,
+} from 'ethers-erc4337'
 import { alchemy, pimlico } from 'evm-providers'
 
 const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', dev7702pk = '' } = process.env
@@ -36,8 +42,8 @@ const usdcPaymaster = await getUSDCPaymaster({
 	client,
 	chainId: CHAIN_ID,
 	accountAddress: dev7702,
-	getERC1271Signature: async (permitHash: Uint8Array) => {
-		return wallet.signMessage(permitHash)
+	getSignature: async (typedData: TypedData) => {
+		return wallet.signTypedData(...typedData)
 	},
 })
 

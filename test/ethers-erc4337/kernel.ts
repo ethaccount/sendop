@@ -5,7 +5,7 @@ import { isBytes, randomBytes32, toBytes32, zeroBytes } from '@/utils'
 import type { TypedDataDomain } from 'ethers'
 import type { TypedDataField } from 'ethers'
 import type { BigNumberish } from 'ethers'
-import { concat, Contract, Interface, JsonRpcProvider, ZeroAddress } from 'ethers'
+import { concat, Contract, getBytes, Interface, JsonRpcProvider, TypedDataEncoder, ZeroAddress } from 'ethers'
 import { ENTRY_POINT_V07_ADDRESS, EntryPointV07__factory, type TypedData } from 'ethers-erc4337'
 
 const KERNEL_V3_3_FACTORY = '0x2577507b78c2008Ff367261CB6285d44ba5eF2E9'
@@ -112,20 +112,20 @@ interface Signer {
 	): Promise<string>
 }
 
-export async function signKernelERC1271Signature({
+export async function getKernelERC1271Signature({
 	version = '0.3.3',
 	validator,
 	hash,
 	chainId,
 	accountAddress,
-	signer,
+	getSignature,
 }: {
 	version: '0.3.3' | '0.3.1'
 	validator: string
 	hash: Uint8Array
 	chainId: BigNumberish
 	accountAddress: string
-	signer: Signer
+	getSignature: (hash: Uint8Array) => Promise<string>
 }) {
 	const typedData: TypedData = [
 		{
@@ -142,7 +142,7 @@ export async function signKernelERC1271Signature({
 		},
 	]
 
-	const sig = await signer.signTypedData(...typedData)
+	const sig = await getSignature(getBytes(TypedDataEncoder.hash(...typedData)))
 
 	return concat([
 		'0x01', // validator mode

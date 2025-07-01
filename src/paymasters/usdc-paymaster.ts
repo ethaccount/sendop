@@ -6,19 +6,27 @@ import {
 	Contract,
 	formatUnits,
 	getBigInt,
-	getBytes,
 	Interface,
 	parseUnits,
 	toBeHex,
-	TypedDataEncoder,
 	zeroPadValue,
 	type JsonRpcProvider,
 } from 'ethers'
+import type { TypedData } from 'ethers-erc4337'
 
 export const USDC_PAYMASTESR_ADDRESS = '0x3BA9A96eE3eFf3A69E2B18886AcF52027EFF8966' // v0.8
 export const USDC_ADDRESS = '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238' // sepolia
 
-export type USDCPaymasterConfig = {
+export async function getUSDCPaymaster({
+	client,
+	chainId,
+	accountAddress,
+	paymasterAddress = USDC_PAYMASTESR_ADDRESS,
+	usdcAddress = USDC_ADDRESS,
+	permitAmount = parseUnits('1', 6),
+	minAllowanceThreshold = parseUnits('1', 6),
+	getSignature,
+}: {
 	client: JsonRpcProvider
 	chainId: BigNumberish
 	accountAddress: string
@@ -26,27 +34,12 @@ export type USDCPaymasterConfig = {
 	usdcAddress?: string
 	permitAmount?: bigint
 	minAllowanceThreshold?: bigint
-	getERC1271Signature: (permitHash: Uint8Array) => Promise<string>
-}
-
-export type USDCPaymasterResult = {
+	getSignature: (typedData: TypedData) => Promise<string>
+}): Promise<{
 	paymaster: string
 	paymasterData: string
 	paymasterPostOpGasLimit: bigint
-}
-
-export async function getUSDCPaymaster(config: USDCPaymasterConfig): Promise<USDCPaymasterResult> {
-	const {
-		client,
-		chainId,
-		accountAddress,
-		paymasterAddress = USDC_PAYMASTESR_ADDRESS,
-		usdcAddress = USDC_ADDRESS,
-		permitAmount = parseUnits('1', 6),
-		minAllowanceThreshold = parseUnits('1', 6),
-		getERC1271Signature,
-	} = config
-
+}> {
 	// Create paymaster contract and get post-op gas limit
 	const usdcPaymaster = new Contract(
 		paymasterAddress,
@@ -73,7 +66,7 @@ export async function getUSDCPaymaster(config: USDCPaymasterConfig): Promise<USD
 
 		const totalPermitAmount = allowance + permitAmount
 
-		const permitData = await getPermitTypedData({
+		const typedData = await getPermitTypedData({
 			client,
 			tokenAddress: usdcAddress,
 			chainId: getBigInt(chainId),
@@ -82,7 +75,7 @@ export async function getUSDCPaymaster(config: USDCPaymasterConfig): Promise<USD
 			amount: totalPermitAmount,
 		})
 
-		const permitSig = await getERC1271Signature(getBytes(TypedDataEncoder.hash(...permitData)))
+		const permitSig = await getSignature(typedData)
 
 		// paymasterData = 0x00 || usdc address || permitAmount || permitSignature
 		paymasterData = concat(['0x00', usdcAddress, zeroPadValue(toBeHex(totalPermitAmount), 32), permitSig])
