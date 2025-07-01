@@ -4,10 +4,10 @@ import { fetchGasPricePimlico } from '@/fetchGasPrice'
 import { INTERFACES } from '@/interfaces'
 import { getUSDCPaymaster } from '@/paymasters/usdc-paymaster'
 import { toBytes32 } from '@/utils'
-import { concat, hexlify, JsonRpcProvider, Wallet } from 'ethers'
-import { ENTRY_POINT_V07_ADDRESS, ERC4337Bundler, UserOpBuilder, type TypedData } from 'ethers-erc4337'
+import { JsonRpcProvider, Wallet } from 'ethers'
+import { ENTRY_POINT_V07_ADDRESS, ERC4337Bundler, UserOpBuilder } from 'ethers-erc4337'
 import { alchemy, pimlico } from 'evm-providers'
-import { encodeKernelExecutionData, getKernelAddress, getKernelNonce } from './kernel'
+import { encodeKernelExecutionData, getKernelAddress, getKernelNonce, signKernelERC1271Signature } from './kernel'
 
 const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', dev7702pk = '' } = process.env
 
@@ -53,28 +53,14 @@ const usdcPaymaster = await getUSDCPaymaster({
 	paymasterAddress: USDC_PAYMASTER_ADDRESS,
 	usdcAddress: USDC_ADDRESS,
 	getERC1271Signature: async (permitHash: Uint8Array) => {
-		const typedData: TypedData = [
-			{
-				name: 'Kernel',
-				version: '0.3.3',
-				chainId: CHAIN_ID,
-				verifyingContract: accountAddress,
-			},
-			{
-				Kernel: [{ name: 'hash', type: 'bytes32' }],
-			},
-			{
-				hash: hexlify(permitHash),
-			},
-		]
-
-		const sig = await wallet.signTypedData(...typedData)
-
-		return concat([
-			'0x01', // validator mode
-			ADDRESS.ECDSAValidator,
-			sig,
-		])
+		return signKernelERC1271Signature({
+			version: '0.3.3',
+			validator: ADDRESS.ECDSAValidator,
+			hash: permitHash,
+			chainId: CHAIN_ID,
+			accountAddress,
+			signer: wallet,
+		})
 	},
 })
 

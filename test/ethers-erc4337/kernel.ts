@@ -2,8 +2,11 @@ import { CallType, encodeExecutions, ExecType, ModeSelector, type Execution } fr
 import { INTERFACES } from '@/interfaces'
 import { KernelValidationMode, KernelValidationType } from '@/smart-accounts/kernel-v3/types'
 import { isBytes, randomBytes32, toBytes32, zeroBytes } from '@/utils'
+import type { TypedDataDomain } from 'ethers'
+import type { TypedDataField } from 'ethers'
+import type { BigNumberish } from 'ethers'
 import { concat, Contract, Interface, JsonRpcProvider, ZeroAddress } from 'ethers'
-import { ENTRY_POINT_V07_ADDRESS, EntryPointV07__factory } from 'ethers-erc4337'
+import { ENTRY_POINT_V07_ADDRESS, EntryPointV07__factory, type TypedData } from 'ethers-erc4337'
 
 const KERNEL_V3_3_FACTORY = '0x2577507b78c2008Ff367261CB6285d44ba5eF2E9'
 
@@ -99,4 +102,51 @@ export async function encodeKernelExecutionData(executions: Execution[]) {
 		default:
 			throw new Error('unsupported call type')
 	}
+}
+
+interface Signer {
+	signTypedData(
+		domain: TypedDataDomain,
+		types: Record<string, Array<TypedDataField>>,
+		value: Record<string, any>,
+	): Promise<string>
+}
+
+export async function signKernelERC1271Signature({
+	version = '0.3.3',
+	validator,
+	hash,
+	chainId,
+	accountAddress,
+	signer,
+}: {
+	version: '0.3.3' | '0.3.1'
+	validator: string
+	hash: Uint8Array
+	chainId: BigNumberish
+	accountAddress: string
+	signer: Signer
+}) {
+	const typedData: TypedData = [
+		{
+			name: 'Kernel',
+			version,
+			chainId,
+			verifyingContract: accountAddress,
+		},
+		{
+			Kernel: [{ name: 'hash', type: 'bytes32' }],
+		},
+		{
+			hash: hash,
+		},
+	]
+
+	const sig = await signer.signTypedData(...typedData)
+
+	return concat([
+		'0x01', // validator mode
+		validator,
+		sig,
+	])
 }
