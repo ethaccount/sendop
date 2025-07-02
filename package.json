@@ -54,23 +54,23 @@
 		"ethers-erc4337": "workspace:*"
 	},
 	"devDependencies": {
-		"ethers-erc4337": "workspace:*",
+		"@rhinestone/module-sdk": "^0.2.10",
 		"@typechain/ethers-v6": "^0.5.1",
 		"@types/yargs": "^17.0.33",
 		"consola": "^3.2.3",
 		"dotenv": "^16.4.7",
+		"ethers-erc4337": "workspace:*",
 		"evm-providers": "^0.5.7",
 		"husky": "^9.1.7",
 		"rollup-plugin-visualizer": "^5.14.0",
 		"typechain": "^8.3.2",
+		"viem": "^2.31.6",
 		"vite": "^6.2.0",
 		"vite-plugin-dts": "^4.4.0",
 		"vitest": "^2.1.8",
 		"yargs": "^17.7.2"
 	},
 	"dependencies": {
-		"@rhinestone/module-sdk": "^0.2.10",
-		"viem": "^2.31.6",
 		"zod": "^3.24.3"
 	}
 }

@@ -1,10 +1,15 @@
 import type { ERC7579ExecModeConfig } from '@/erc7579'
-import type { ModularAccountValidation } from '@/validations/types'
 import type { Execution } from '@/types'
+import type { ModularAccountValidation } from '@/validations/types'
 import type { BigNumberish } from 'ethers'
 import { getBytes, JsonRpcProvider } from 'ethers'
-import { ENTRY_POINT_V07_ADDRESS, ERC4337Bundler, UserOpBuilder, type TypedData } from 'ethers-erc4337'
-import { EntryPointV07__factory } from 'ethers-erc4337/dist'
+import {
+	ENTRY_POINT_V07_ADDRESS,
+	EntryPointV07__factory,
+	ERC4337Bundler,
+	UserOpBuilder,
+	type TypedData,
+} from 'ethers-erc4337'
 import { encode7579Executions } from '../../erc7579/encode7579Executions'
 import type { AccountBuilder } from '../types'
 import { getNonceKey, type NonceConfig } from './api/getNonceKey'
