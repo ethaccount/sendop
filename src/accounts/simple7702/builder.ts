@@ -46,10 +46,25 @@ export class Simple7702UserOpBuilder extends UserOpBuilder implements AccountAPI
 	}
 
 	async getCallData(executions: Execution[]): Promise<string> {
-		return INTERFACES.Simple7702AccountV08.encodeFunctionData('execute', [
-			executions[0].to,
-			executions[0].value,
-			executions[0].data,
+		if (!executions.length) {
+			return '0x'
+		}
+
+		if (executions.length === 1) {
+			const execution = executions[0]
+			return INTERFACES.Simple7702AccountV08.encodeFunctionData('execute', [
+				execution.to,
+				execution.value,
+				execution.data,
+			])
+		}
+
+		return INTERFACES.Simple7702AccountV08.encodeFunctionData('executeBatch', [
+			executions.map(execution => ({
+				target: execution.to,
+				value: execution.value,
+				data: execution.data,
+			})),
 		])
 	}
 
