@@ -1,6 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
-import { isSmartEOA, sendop } from '@/core'
+import { isSmartEOA, sendop } from '@/sendop'
 import { PublicPaymaster } from '@/paymasters'
 import { JsonRpcProvider, keccak256, Wallet } from 'ethers'
 import { Interface } from 'ethers/abi'

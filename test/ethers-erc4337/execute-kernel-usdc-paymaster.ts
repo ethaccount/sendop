@@ -1,3 +1,4 @@
+import { Kernel } from '@/accounts'
 import { KernelUserOpBuilder } from '@/accounts/kernel/builder'
 import { ADDRESS } from '@/addresses'
 import { fetchGasPricePimlico } from '@/fetchGasPrice'
@@ -33,12 +34,14 @@ const bundler = new ERC4337Bundler(bundlerUrl)
 
 const wallet = new Wallet(dev7702pk)
 
-const { accountAddress } = await KernelUserOpBuilder.computeAddress(
+const ecdsaValidator = getECDSAValidator({ ownerAddress: dev7702 })
+
+const { accountAddress } = await Kernel.computeAddress({
 	client,
-	ADDRESS.ECDSAValidator,
-	dev7702,
-	toBytes32(2n),
-)
+	validatorAddress: ecdsaValidator.address,
+	validatorData: ecdsaValidator.initData,
+	salt: toBytes32(2n),
+})
 
 console.log('accountAddress', accountAddress)
 
@@ -47,8 +50,8 @@ const userop = await new KernelUserOpBuilder({
 	bundler,
 	client,
 	accountAddress,
-	validator: new ECDSAValidator(getECDSAValidator({ ownerAddress: dev7702 })),
-}).buildExecution([
+	validator: new ECDSAValidator(ecdsaValidator),
+}).buildExecutions([
 	{
 		to: ADDRESS.Counter,
 		value: 0n,
@@ -63,7 +66,7 @@ const usdcPaymaster = await getUSDCPaymaster({
 	paymasterAddress: USDC_PAYMASTER_ADDRESS,
 	usdcAddress: USDC_ADDRESS,
 	signTypedData: async (typedData: TypedData) => {
-		return await KernelUserOpBuilder.signERC1271({
+		return await Kernel.sign1271({
 			version: '0.3.3',
 			validator: ADDRESS.ECDSAValidator,
 			hash: getBytes(TypedDataEncoder.hash(...typedData)),

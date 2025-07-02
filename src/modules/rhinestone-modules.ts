@@ -1,4 +1,4 @@
-import { ERC7579_MODULE_TYPE } from '@/core'
+import { ERC7579_MODULE_TYPE } from '@/erc7579'
 import { getOwnableValidator } from '@rhinestone/module-sdk'
 import type { Address } from 'viem'
 import type { Module } from './types'

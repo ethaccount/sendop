@@ -1,6 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
-import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
+import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/sendop'
 import { KernelV3Account } from '@/smart-accounts'
 import { EOAValidator } from '@/validators'
 import { hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'

@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { sendop, type Bundler } from '@/core'
+import { sendop, type Bundler } from '@/sendop'
 import { PublicPaymaster } from '@/paymasters'
 import { RpcProvider } from '@/RpcProvider'
 import { KernelV3Account } from '@/smart-accounts'

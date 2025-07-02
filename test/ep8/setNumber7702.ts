@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { sendop } from '@/core'
+import { sendop } from '@/sendop'
 import { PublicPaymaster } from '@/paymasters'
 import { Simple7702Account } from '@/smart-accounts/Simple7702Account'
 import { getAddress, Interface, toNumber } from 'ethers'

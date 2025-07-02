@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { type Bundler, type GasValues } from '@/core'
+import { type Bundler, type GasValues } from '@/sendop'
 import { type UserOperation, type UserOperationReceipt } from 'ethers-erc4337'
 import { toUserOpHex } from 'ethers-erc4337'
 import { normalizeError, SendopError } from '@/error'

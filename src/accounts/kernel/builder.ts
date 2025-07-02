@@ -1,22 +1,17 @@
-import { type Execution } from '@/core'
-import type { Validator } from '@/modules/types'
+import type { ValidatorModule } from '@/modules/types'
+import type { Execution } from '@/types'
 import type { BigNumberish } from 'ethers'
 import { getBytes, JsonRpcProvider } from 'ethers'
 import { ENTRY_POINT_V07_ADDRESS, ERC4337Bundler, UserOpBuilder, type TypedData } from 'ethers-erc4337'
 import { EntryPointV07__factory } from 'ethers-erc4337/dist'
-import { encodeERC7579Execution } from '../encodeERC7579Execution'
-import { Kernel } from './api'
+import { encode7579Executions } from '../../erc7579/encode7579Executions'
+import type { AccountBuilder } from '../types'
 import { getNonceKey } from './api/getNonceKey'
-import type { AccountAPI } from '../types'
 
-export class KernelUserOpBuilder extends UserOpBuilder implements AccountAPI {
-	private validator: Validator
+export class KernelUserOpBuilder extends UserOpBuilder implements AccountBuilder {
+	private validator: ValidatorModule
 	private accountAddress: string
 	private client: JsonRpcProvider
-
-	static computeAddress = Kernel.computeAddress
-	static getNonceKey = Kernel.getNonceKey
-	static signERC1271 = Kernel.signERC1271
 
 	constructor({
 		chainId,
@@ -29,20 +24,12 @@ export class KernelUserOpBuilder extends UserOpBuilder implements AccountAPI {
 		bundler: ERC4337Bundler
 		client: JsonRpcProvider // only for getting nonce
 		accountAddress: string
-		validator: Validator
+		validator: ValidatorModule
 	}) {
 		super(bundler, ENTRY_POINT_V07_ADDRESS, chainId)
 		this.client = client
 		this.validator = validator
 		this.accountAddress = accountAddress
-	}
-
-	async getDummySignature() {
-		return this.validator.getDummySignature()
-	}
-
-	async formatSignature(sig: string) {
-		return this.validator.formatSignature(sig)
 	}
 
 	getSender(): string {
@@ -55,11 +42,19 @@ export class KernelUserOpBuilder extends UserOpBuilder implements AccountAPI {
 		return await entrypoint.getNonce(this.accountAddress, nonceKey)
 	}
 
-	async getCallData(executions: Execution[]): Promise<string> {
-		return await encodeERC7579Execution(executions)
+	async getDummySignature() {
+		return this.validator.getDummySignature()
 	}
 
-	async buildExecution(executions: Execution[]): Promise<UserOpBuilder> {
+	async formatSignature(sig: string) {
+		return this.validator.formatSignature(sig)
+	}
+
+	async getCallData(executions: Execution[]): Promise<string> {
+		return await encode7579Executions(executions)
+	}
+
+	async buildExecutions(executions: Execution[]): Promise<UserOpBuilder> {
 		return this.setSender(this.getSender())
 			.setNonce(await this.getNonce())
 			.setCallData(await this.getCallData(executions))
@@ -71,8 +66,8 @@ export class KernelUserOpBuilder extends UserOpBuilder implements AccountAPI {
 		this.setSignature(await this.formatSignature(signature))
 	}
 
-	// Kernel doesn't support entrypoint v0.8 yet
 	override async signUserOpTypedData(fn: (typedData: TypedData) => Promise<string>): Promise<void> {
+		// Kernel doesn't support entrypoint v0.8
 		throw new Error('signUserOpTypedData is not supported')
 	}
 }

@@ -1,6 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import { TNexusFactory__factory } from '@/contract-types'
-import { CallType, ERC7579_MODULE_TYPE } from '@/core'
+import { CallType, ERC7579_MODULE_TYPE } from '@/erc7579'
 import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
 import { abiEncode, sortAndUniquifyAddresses, zeroBytes } from '@/utils'

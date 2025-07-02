@@ -3,9 +3,10 @@ import { SendopError, UnsupportedEntryPointError } from '@/error'
 import { getBytesLength, zeroPadRight } from '@/utils'
 import { dataSlice, getBytes } from 'ethers'
 import type { Bundler, OperationGetter, PaymasterGetter, SignatureGetter } from './interface'
-import type { Execution, SendopOptions, SendOpResult } from './types'
+import type { SendopOptions, SendOpResult } from './types'
 import type { UserOperation, UserOperationReceipt } from 'ethers-erc4337'
 import { getEmptyUserOp, getUserOpHashV07, getUserOpHashV08, getV08DomainAndTypes, packUserOp } from 'ethers-erc4337'
+import type { Execution } from '@/types'
 
 export async function sendop(options: SendopOptions): Promise<SendOpResult> {
 	const { bundler, executions, opGetter, pmGetter, initCode, nonce } = options

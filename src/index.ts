@@ -1,13 +1,20 @@
-export * from '@/bundlers'
 export * from '@/contract-types'
-export * from '@/core'
-export * from '@/paymasters'
-export * from '@/smart-accounts'
 export * from '@/utils'
-export * from '@/validators'
-
 export * from '@/addresses'
 export * from '@/constants'
-export * from '@/error'
 export * from '@/interfaces'
+
+// New
+export * from '@/erc7579'
+export * from '@/accounts'
+export * from '@/modules'
+export * from '@/types'
+export * from '@/paymasters'
+
+// deprecated
+export * from '@/sendop'
+export * from '@/bundlers'
+export * from '@/smart-accounts'
+export * from '@/validators'
+export * from '@/error'
 export * from '@/RpcProvider'

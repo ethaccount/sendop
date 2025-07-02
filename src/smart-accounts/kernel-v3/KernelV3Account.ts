@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { ERC7579_MODULE_TYPE } from '@/core'
+import { ERC7579_MODULE_TYPE } from '@/erc7579'
 import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
 import { abiEncode, connectEntryPointV07, isBytes, isBytes32, zeroBytes } from '@/utils'

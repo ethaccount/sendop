@@ -1,9 +1,11 @@
-import { CallType, encodeExecutions, ExecType, ModeSelector, type Execution } from '@/core'
 import { INTERFACES } from '@/interfaces'
+import { encodeExecutions } from '@/sendop'
+import type { Execution } from '@/types'
 import { isBytes, toBytes32, zeroBytes } from '@/utils'
 import { concat } from 'ethers'
+import { CallType, ExecType, ModeSelector } from './types'
 
-export async function encodeERC7579Execution(executions: Execution[]) {
+export async function encode7579Executions(executions: Execution[]) {
 	if (!executions.length) {
 		return '0x'
 	}

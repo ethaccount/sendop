@@ -2,7 +2,7 @@ import type { BigNumberish } from 'ethers'
 import { concat, getBytes, TypedDataEncoder } from 'ethers'
 import { type TypedData } from 'ethers-erc4337'
 
-export async function signERC1271({
+export async function sign1271({
 	version = '0.3.3',
 	validator,
 	hash,

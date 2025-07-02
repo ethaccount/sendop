@@ -4,7 +4,7 @@ import { RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 import { TIERC1271__factory } from '@/contract-types'
 import { TRegistry__factory, TSmartSession__factory } from '@/contract-types/factories'
 import type { SessionStruct } from '@/contract-types/TSmartSession'
-import { ERC7579_MODULE_TYPE, sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/core'
+import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/sendop'
 import { INTERFACES } from '@/interfaces'
 import { getScheduledTransferDeInitData, getScheduledTransferInitData } from '@/modules/scheduledTransfer'
 import { PublicPaymaster } from '@/paymasters'
@@ -36,6 +36,7 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { KernelV3Account } from './KernelV3Account'
 import { KernelValidationType, type KernelCreationOptions } from './types'
 import { OwnableValidator } from '@/validators/OwnableValidator'
+import { ERC7579_MODULE_TYPE } from '@/erc7579'
 
 const { chainId, CLIENT_URL, BUNDLER_URL, privateKey, account1 } = await setup()
 

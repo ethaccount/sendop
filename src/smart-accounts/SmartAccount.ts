@@ -1,10 +1,11 @@
 import { ADDRESS } from '@/addresses'
-import type { Bundler, Execution, OperationGetter, PaymasterGetter, SendOpResult, SignatureData } from '@/core'
-import { sendop } from '@/core'
-import type { UserOperation } from 'ethers-erc4337'
 import { SendopError, UnsupportedEntryPointError } from '@/error'
+import type { Bundler, OperationGetter, PaymasterGetter, SendOpResult, SignatureData } from '@/sendop'
+import { sendop } from '@/sendop'
+import type { Execution } from '@/types'
 import { connectEntryPointV07, connectEntryPointV08 } from '@/utils'
-import { type JsonRpcProvider } from 'ethers'
+import type { JsonRpcProvider } from 'ethers'
+import type { UserOperation } from 'ethers-erc4337'
 
 export type SmartAccountOptions = {
 	address?: string

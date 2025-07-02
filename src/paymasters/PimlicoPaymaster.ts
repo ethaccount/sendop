@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { type GetPaymasterDataResult, type GetPaymasterStubDataResult, type PaymasterGetter } from '@/core'
+import { type GetPaymasterDataResult, type GetPaymasterStubDataResult, type PaymasterGetter } from '@/sendop'
 import { toUserOpHex, type UserOperation } from 'ethers-erc4337'
 import { RpcProvider } from '@/RpcProvider'
 import { toBeHex } from 'ethers'

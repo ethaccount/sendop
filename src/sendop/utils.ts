@@ -2,7 +2,7 @@ import { SendopError } from '@/error'
 import { abiEncode, getBytesLength, isBytes } from '@/utils'
 import type { JsonRpcProvider } from 'ethers'
 import { dataSlice, getAddress, isAddress } from 'ethers'
-import type { Execution } from './types'
+import type { Execution } from '@/types'
 
 export function encodeExecution(execution: Execution) {
 	assertExecution(execution)

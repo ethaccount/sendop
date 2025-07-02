@@ -1,3 +1,5 @@
+import { Kernel } from '@/accounts'
+import { KernelUserOpBuilder } from '@/accounts/kernel/builder'
 import { ADDRESS } from '@/addresses'
 import { fetchGasPriceAlchemy } from '@/fetchGasPrice'
 import { INTERFACES } from '@/interfaces'
@@ -6,7 +8,6 @@ import { toBytes32 } from '@/utils'
 import { JsonRpcProvider, Wallet } from 'ethers'
 import { ERC4337Bundler } from 'ethers-erc4337'
 import { alchemy, pimlico } from 'evm-providers'
-import { KernelUserOpBuilder } from '@/accounts/kernel/builder'
 
 const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', dev7702pk = '' } = process.env
 
@@ -32,12 +33,14 @@ const bundler = new ERC4337Bundler(bundlerUrl)
 
 const wallet = new Wallet(dev7702pk)
 
-const { accountAddress, factory, factoryData } = await KernelUserOpBuilder.computeAddress(
+const ecdsaValidator = getECDSAValidator({ ownerAddress: dev7702 })
+
+const { accountAddress } = await Kernel.computeAddress({
 	client,
-	ECDSA_VALIDATOR_ADDRESS,
-	dev7702,
-	toBytes32(2n),
-)
+	validatorAddress: ecdsaValidator.address,
+	validatorData: ecdsaValidator.initData,
+	salt: toBytes32(2n),
+})
 
 const userop = await new KernelUserOpBuilder({
 	chainId: CHAIN_ID,
@@ -45,7 +48,7 @@ const userop = await new KernelUserOpBuilder({
 	client,
 	accountAddress,
 	validator: new ECDSAValidator(getECDSAValidator({ ownerAddress: dev7702 })),
-}).buildExecution([
+}).buildExecutions([
 	{
 		to: ADDRESS.Counter,
 		value: 0n,

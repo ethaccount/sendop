@@ -1,4 +1,4 @@
-import { ERC7579Validator, type SignatureData } from '@/core'
+import { ERC7579Validator, type SignatureData } from '@/sendop'
 import type { UserOperation } from 'ethers-erc4337'
 import { SendopError } from '@/error'
 import { abiEncode } from '@/utils/ethers-helper'

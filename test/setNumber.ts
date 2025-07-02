@@ -1,6 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
-import { sendop } from '@/core'
+import { sendop } from '@/sendop'
 import { PublicPaymaster } from '@/paymasters'
 import { NexusAccount } from '@/smart-accounts/nexus/NexusAccount'
 import { EOAValidator } from '@/validators/EOAValidator'

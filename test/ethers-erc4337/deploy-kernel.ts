@@ -1,3 +1,4 @@
+import { Kernel } from '@/accounts'
 import { KernelUserOpBuilder } from '@/accounts/kernel/builder'
 import { ADDRESS } from '@/addresses'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
@@ -22,7 +23,6 @@ if (!dev7702) {
 }
 
 const CHAIN_ID = 11155111
-const ECDSA_VALIDATOR_ADDRESS = '0x8104e3ad430ea6d354d013a6789fdfc71e671c43'
 const PUBLIC_PAYMASTER_ADDRESS = '0xcD1c62f36A99f306948dB76c35Bbc1A639f92ce8'
 
 const rpcUrl = alchemy(CHAIN_ID, ALCHEMY_API_KEY)
@@ -33,12 +33,12 @@ const bundler = new ERC4337Bundler(bundlerUrl)
 
 const wallet = new Wallet(dev7702pk)
 
-const { accountAddress, factory, factoryData } = await KernelUserOpBuilder.computeAddress(
+const { accountAddress, factory, factoryData } = await Kernel.computeAddress({
 	client,
-	ECDSA_VALIDATOR_ADDRESS,
-	dev7702,
-	toBytes32(4n),
-)
+	validatorAddress: getECDSAValidator({ ownerAddress: dev7702 }).address,
+	validatorData: getECDSAValidator({ ownerAddress: dev7702 }).initData,
+	salt: toBytes32(2n),
+})
 
 console.log('accountAddress', accountAddress)
 
@@ -48,7 +48,7 @@ const userop = await new KernelUserOpBuilder({
 	client,
 	accountAddress,
 	validator: new ECDSAValidator(getECDSAValidator({ ownerAddress: dev7702 })),
-}).buildExecution([
+}).buildExecutions([
 	{
 		to: ADDRESS.Counter,
 		value: 0n,

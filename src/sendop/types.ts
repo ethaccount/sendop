@@ -1,5 +1,6 @@
 import type { Bundler, OperationGetter, PaymasterGetter } from './interface'
 import type { UserOperationReceipt } from 'ethers-erc4337'
+import type { Execution } from '@/types'
 
 export type SendopOptions = {
 	bundler: Bundler
@@ -13,12 +14,6 @@ export type SendopOptions = {
 export type SendOpResult = {
 	hash: string
 	wait(): Promise<UserOperationReceipt>
-}
-
-export type Execution = {
-	to: string
-	data: string
-	value: bigint
 }
 
 /**

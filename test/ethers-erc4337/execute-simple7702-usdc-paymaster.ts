@@ -45,7 +45,7 @@ const userop = await new Simple7702UserOpBuilder({
 	bundler,
 	client,
 	accountAddress: dev7702,
-}).buildExecution([
+}).buildExecutions([
 	{
 		to: ADDRESS.Counter,
 		value: 0n,

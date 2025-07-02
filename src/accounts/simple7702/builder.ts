@@ -1,14 +1,14 @@
-import type { AccountAPI } from '@/accounts/types'
+import type { AccountBuilder } from '@/accounts/types'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import { type Execution } from '@/core'
 import { INTERFACES } from '@/interfaces'
+import type { Execution } from '@/types'
 import type { BigNumberish } from 'ethers'
 import { JsonRpcProvider } from 'ethers'
 import { ENTRY_POINT_V08_ADDRESS, EntryPointV08__factory, ERC4337Bundler, UserOpBuilder } from 'ethers-erc4337'
 
 const entryPointAddress = ENTRY_POINT_V08_ADDRESS
 
-export class Simple7702UserOpBuilder extends UserOpBuilder implements AccountAPI {
+export class Simple7702UserOpBuilder extends UserOpBuilder implements AccountBuilder {
 	private accountAddress: string
 	private client: JsonRpcProvider
 
@@ -28,14 +28,6 @@ export class Simple7702UserOpBuilder extends UserOpBuilder implements AccountAPI
 		this.accountAddress = accountAddress
 	}
 
-	async getDummySignature() {
-		return DUMMY_ECDSA_SIGNATURE
-	}
-
-	async formatSignature(sig: string) {
-		return sig
-	}
-
 	getSender(): string {
 		return this.accountAddress
 	}
@@ -43,6 +35,14 @@ export class Simple7702UserOpBuilder extends UserOpBuilder implements AccountAPI
 	async getNonce(): Promise<bigint> {
 		const entrypoint = EntryPointV08__factory.connect(entryPointAddress, this.client)
 		return await entrypoint.getNonce(this.accountAddress, 0)
+	}
+
+	async getDummySignature() {
+		return DUMMY_ECDSA_SIGNATURE
+	}
+
+	async formatSignature(sig: string) {
+		return sig
 	}
 
 	async getCallData(executions: Execution[]): Promise<string> {
@@ -68,7 +68,7 @@ export class Simple7702UserOpBuilder extends UserOpBuilder implements AccountAPI
 		])
 	}
 
-	async buildExecution(executions: Execution[]): Promise<UserOpBuilder> {
+	async buildExecutions(executions: Execution[]): Promise<UserOpBuilder> {
 		return this.setSender(this.getSender())
 			.setNonce(await this.getNonce())
 			.setCallData(await this.getCallData(executions))

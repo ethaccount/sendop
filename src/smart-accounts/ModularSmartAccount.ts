@@ -1,10 +1,13 @@
-import type { ERC7579Validator, ERC7579_MODULE_TYPE, Execution, SignatureData } from '@/core'
-import type { UserOperation } from 'ethers-erc4337'
-import { CallType, ExecType, ModeSelector, encodeExecutions } from '@/core'
+import type { ERC7579_MODULE_TYPE } from '@/erc7579'
+import { CallType, ExecType, ModeSelector } from '@/erc7579'
 import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
+import type { ERC7579Validator, SignatureData } from '@/sendop'
+import { encodeExecutions } from '@/sendop'
+import type { Execution } from '@/types'
 import { isBytes, toBytes32, zeroBytes } from '@/utils'
 import { concat } from 'ethers'
+import type { UserOperation } from 'ethers-erc4337'
 import { SmartAccount, type SmartAccountCreationOptions, type SmartAccountOptions } from './SmartAccount'
 
 export type ModularSmartAccountOptions = SmartAccountOptions & {

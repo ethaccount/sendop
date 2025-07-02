@@ -1,5 +1,5 @@
-import type { ERC7579_MODULE_TYPE } from '@/core'
-import type { ValidationAPI } from '@/accounts/types'
+import type { AccountValidation } from '@/accounts/types'
+import type { ERC7579_MODULE_TYPE } from '@/erc7579'
 
 export interface Module {
 	address: string
@@ -9,9 +9,9 @@ export interface Module {
 	additionalContext?: string
 }
 
-export interface Validator extends ValidationAPI, Module {}
+export interface ValidatorModule extends AccountValidation, Module {}
 
-export class BaseValidator implements Module {
+export class BaseValidatorModule implements Module {
 	private module: Module
 
 	constructor(module: Module) {

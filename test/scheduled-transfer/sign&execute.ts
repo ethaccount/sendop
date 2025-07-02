@@ -1,7 +1,7 @@
 import { ADDRESS } from '@/addresses'
 import { AlchemyBundler } from '@/bundlers'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import { sendUserOp } from '@/core'
+import { sendUserOp } from '@/sendop'
 import { fromUserOpHex, getUserOpHashV07, type UserOperationHex } from 'ethers-erc4337'
 import { RpcProvider } from '@/RpcProvider'
 import { concat, getBytes, Wallet } from 'ethers'

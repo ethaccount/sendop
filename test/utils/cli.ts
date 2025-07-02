@@ -1,6 +1,6 @@
 import { AlchemyBundler, EtherspotBundler, PimlicoBundler } from '@/bundlers'
 import type { BundlerOptions } from '@/bundlers/BaseBundler'
-import type { Bundler } from '@/core'
+import type { Bundler } from '@/sendop'
 import { createConsola } from 'consola'
 import { JsonRpcProvider, Wallet } from 'ethers'
 import { alchemy } from 'node_modules/evm-providers/dist/providers'

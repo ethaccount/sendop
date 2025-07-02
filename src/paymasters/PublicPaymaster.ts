@@ -1,4 +1,4 @@
-import type { GetPaymasterStubDataResult, PaymasterGetter } from '@/core'
+import type { GetPaymasterStubDataResult, PaymasterGetter } from '@/sendop'
 import type { UserOperation } from 'ethers-erc4337'
 
 export class PublicPaymaster implements PaymasterGetter {

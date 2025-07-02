@@ -1,29 +1,31 @@
-import type { Execution } from '@/core'
-import type { Module } from '@/modules/types'
+import type { Module } from '@/modules'
+import type { Execution } from '@/types'
 import type { BigNumberish } from 'ethers'
 import type { UserOpBuilder } from 'ethers-erc4337'
 
-export interface AccountStaticAPI {
+export interface AccountAPI {
+	new (): any
+	sign1271(...args: any[]): Promise<string>
 	computeAddress(...args: any[]): Promise<{
 		factory: string
 		factoryData: string
 		accountAddress: string
 	}>
 	getNonceKey(...args: any[]): bigint
-	signERC1271(...args: any[]): Promise<string>
 }
 
-export interface AccountAPI extends ValidationAPI {
+export interface AccountBuilder extends AccountValidation {
 	getSender(): string
 	getNonce(): Promise<BigNumberish>
 	getCallData(executions: Execution[]): Promise<string>
-	buildExecution(executions: Execution[]): Promise<UserOpBuilder>
-
-	// optional
-	buildModuleInstallation?(module: Module): Promise<UserOpBuilder>
+	buildExecutions(executions: Execution[]): Promise<UserOpBuilder>
 }
 
-export interface ValidationAPI {
+export interface AccountValidation {
 	getDummySignature(): Promise<string>
 	formatSignature(sig: string): Promise<string>
+}
+
+export interface ModularAccountBuilder extends AccountBuilder {
+	buildModuleInstallation(module: Module): Promise<UserOpBuilder>
 }

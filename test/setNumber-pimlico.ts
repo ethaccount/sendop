@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { sendop } from '@/core'
+import { sendop } from '@/sendop'
 import { PimlicoPaymaster } from '@/paymasters'
 import { KernelV3Account } from '@/smart-accounts'
 import { randomBytes32 } from '@/utils'

@@ -1,4 +1,4 @@
-import type { ERC7579_MODULE_TYPE } from '@/core'
+import { ERC7579_MODULE_TYPE } from '@/erc7579'
 import type { BaseModuleConfig, SimpleInstallModuleConfig, SimpleUninstallModuleConfig } from '../ModularSmartAccount'
 
 export enum KernelValidationMode {

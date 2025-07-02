@@ -1,6 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
-import { sendop } from '@/core'
+import { sendop } from '@/sendop'
 import { PublicPaymaster } from '@/paymasters'
 import { randomBytes32 } from '@/utils'
 import { JsonRpcProvider, Wallet, ZeroAddress } from 'ethers'
