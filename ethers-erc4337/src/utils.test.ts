@@ -2,15 +2,9 @@ import { concat, hexlify, JsonRpcProvider } from 'ethers'
 import { alchemy } from 'evm-providers'
 import { describe, expect, it } from 'vitest'
 import { EIP7702_PREFIX, ENTRY_POINT_V07_ADDRESS, ENTRY_POINT_V08_ADDRESS } from './constants'
+import { packUserOp } from './conversion-utils'
 import { EntryPointV07__factory, EntryPointV08__factory } from './typechain'
-import {
-	getEmptyUserOp,
-	getUserOpHash,
-	getUserOpHashV08,
-	getUserOpHashWithEip7702,
-	isEip7702UserOp,
-	packUserOp,
-} from './utils'
+import { getEmptyUserOp, getUserOpHash, getUserOpHashV08, getUserOpHashWithEip7702, isEip7702UserOp } from './utils'
 
 const SIMPLE_7702_ACCOUNT_ADDRESS = '0x4Cd241E8d1510e30b2076397afc7508Ae59C66c9'
 const CHAIN_ID = 11155111

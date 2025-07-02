@@ -1,7 +1,8 @@
 import type { BigNumberish, EthersError } from 'ethers'
 import { getBigInt, getBytes, hexlify, isError } from 'ethers'
 import { INITCODE_EIP7702_MARKER } from './constants'
-import { toUserOpHex, type ERC4337Bundler } from './ERC4337Bundler'
+import { packUserOp, toUserOpHex } from './conversion-utils'
+import { type ERC4337Bundler } from './ERC4337Bundler'
 import { EntryPointV08__factory } from './typechain'
 import type {
 	EIP7702Authorization,
@@ -16,7 +17,6 @@ import {
 	getUserOpHashWithEip7702,
 	getV08DomainAndTypes,
 	isEip7702UserOp,
-	packUserOp,
 	type TypedData,
 } from './utils'
 

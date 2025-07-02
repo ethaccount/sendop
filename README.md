@@ -99,6 +99,8 @@ bun test -t 'test case' # test specific test case
 bun run build
 
 bun run build:contract-types
+
+bun typecheck # Type checking including ethers-erc4337
 ```
 
 ### Dev Notes
