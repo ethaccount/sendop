@@ -1,4 +1,5 @@
-import type { ValidatorModule } from '@/modules/types'
+import type { ERC7579ExecModeConfig } from '@/erc7579'
+import type { ModularAccountValidation } from '@/modules/types'
 import type { Execution } from '@/types'
 import type { BigNumberish } from 'ethers'
 import { getBytes, JsonRpcProvider } from 'ethers'
@@ -6,12 +7,13 @@ import { ENTRY_POINT_V07_ADDRESS, ERC4337Bundler, UserOpBuilder, type TypedData 
 import { EntryPointV07__factory } from 'ethers-erc4337/dist'
 import { encode7579Executions } from '../../erc7579/encode7579Executions'
 import type { AccountBuilder } from '../types'
-import { getNonceKey } from './api/getNonceKey'
+import { getNonceKey, type NonceConfig } from './api/getNonceKey'
 
 export class KernelUserOpBuilder extends UserOpBuilder implements AccountBuilder {
-	private validator: ValidatorModule
+	private validator: ModularAccountValidation
 	private accountAddress: string
 	private client: JsonRpcProvider
+	private nonceConfig?: NonceConfig
 
 	constructor({
 		chainId,
@@ -19,17 +21,20 @@ export class KernelUserOpBuilder extends UserOpBuilder implements AccountBuilder
 		client,
 		accountAddress,
 		validator,
+		nonceConfig,
 	}: {
 		chainId: BigNumberish
 		bundler: ERC4337Bundler
 		client: JsonRpcProvider // only for getting nonce
 		accountAddress: string
-		validator: ValidatorModule
+		validator: ModularAccountValidation
+		nonceConfig?: NonceConfig
 	}) {
 		super(bundler, ENTRY_POINT_V07_ADDRESS, chainId)
 		this.client = client
 		this.validator = validator
 		this.accountAddress = accountAddress
+		this.nonceConfig = nonceConfig
 	}
 
 	getSender(): string {
@@ -38,7 +43,7 @@ export class KernelUserOpBuilder extends UserOpBuilder implements AccountBuilder
 
 	async getNonce(): Promise<BigNumberish> {
 		const entrypoint = EntryPointV07__factory.connect(ENTRY_POINT_V07_ADDRESS, this.client)
-		const nonceKey = getNonceKey(this.validator.address)
+		const nonceKey = getNonceKey(this.validator.validatorAddress, this.nonceConfig)
 		return await entrypoint.getNonce(this.accountAddress, nonceKey)
 	}
 
@@ -50,14 +55,14 @@ export class KernelUserOpBuilder extends UserOpBuilder implements AccountBuilder
 		return this.validator.formatSignature(sig)
 	}
 
-	async getCallData(executions: Execution[]): Promise<string> {
-		return await encode7579Executions(executions)
+	async getCallData(executions: Execution[], execModeConfig?: ERC7579ExecModeConfig): Promise<string> {
+		return await encode7579Executions(executions, execModeConfig)
 	}
 
-	async buildExecutions(executions: Execution[]): Promise<UserOpBuilder> {
+	async buildExecutions(executions: Execution[], execModeConfig?: ERC7579ExecModeConfig): Promise<UserOpBuilder> {
 		return this.setSender(this.getSender())
 			.setNonce(await this.getNonce())
-			.setCallData(await this.getCallData(executions))
+			.setCallData(await this.getCallData(executions, execModeConfig))
 			.setSignature(await this.getDummySignature())
 	}
 

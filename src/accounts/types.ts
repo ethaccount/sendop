@@ -6,7 +6,7 @@ import type { UserOpBuilder } from 'ethers-erc4337'
 export interface AccountAPI {
 	new (): any
 	sign1271(...args: any[]): Promise<string>
-	computeAddress(...args: any[]): Promise<{
+	getDeployment(...args: any[]): Promise<{
 		factory: string
 		factoryData: string
 		accountAddress: string

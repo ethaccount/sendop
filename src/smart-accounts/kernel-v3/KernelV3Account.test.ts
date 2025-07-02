@@ -34,9 +34,9 @@ import {
 import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { KernelV3Account } from './KernelV3Account'
-import { KernelValidationType, type KernelCreationOptions } from './types'
 import { OwnableValidator } from '@/validators/OwnableValidator'
 import { ERC7579_MODULE_TYPE } from '@/erc7579'
+import { KernelValidationType, type KernelCreationOptions } from '@/accounts'
 
 const { chainId, CLIENT_URL, BUNDLER_URL, privateKey, account1 } = await setup()
 

@@ -3,9 +3,9 @@ import { encodeExecutions } from '@/sendop'
 import type { Execution } from '@/types'
 import { isBytes, toBytes32, zeroBytes } from '@/utils'
 import { concat } from 'ethers'
-import { CallType, ExecType, ModeSelector } from './types'
+import { CallType, ExecType, ModeSelector, type ERC7579ExecModeConfig } from './types'
 
-export async function encode7579Executions(executions: Execution[]) {
+export async function encode7579Executions(executions: Execution[], execModeConfig?: ERC7579ExecModeConfig) {
 	if (!executions.length) {
 		return '0x'
 	}
@@ -20,6 +20,7 @@ export async function encode7579Executions(executions: Execution[]) {
 
 	let { callType, execType, modeSelector, modePayload, unused } = {
 		...defaultExecutionMode,
+		...execModeConfig,
 	}
 
 	if (executions.length === 1) {

@@ -12,7 +12,7 @@ import {
 	type SignatureData,
 } from '@/index'
 import { INTERFACES } from '@/interfaces'
-import { KernelValidationType } from '@/smart-accounts/kernel-v3/types'
+import { KernelValidationType } from '@/accounts'
 import type { Signer } from 'ethers'
 import { Contract, formatUnits, JsonRpcProvider, parseUnits } from 'ethers'
 import fs from 'fs'

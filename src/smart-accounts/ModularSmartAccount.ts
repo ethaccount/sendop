@@ -1,4 +1,4 @@
-import type { ERC7579_MODULE_TYPE } from '@/erc7579'
+import type { BaseModuleConfig, ERC7579_MODULE_TYPE } from '@/erc7579'
 import { CallType, ExecType, ModeSelector } from '@/erc7579'
 import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
@@ -100,17 +100,4 @@ export abstract class ModularSmartAccount<
 	static encodeUninstallModule(config: BaseModuleConfig<ERC7579_MODULE_TYPE>): string {
 		throw new SendopError('ModularSmartAccount.encodeUninstallModule is not implemented')
 	}
-}
-
-export type BaseModuleConfig<T extends ERC7579_MODULE_TYPE> = {
-	moduleType: T
-	moduleAddress: string
-}
-
-export type SimpleInstallModuleConfig<T extends ERC7579_MODULE_TYPE> = BaseModuleConfig<T> & {
-	initData: string
-}
-
-export type SimpleUninstallModuleConfig<T extends ERC7579_MODULE_TYPE> = BaseModuleConfig<T> & {
-	deInitData: string
 }

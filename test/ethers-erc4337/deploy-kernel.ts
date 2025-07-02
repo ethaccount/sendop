@@ -33,7 +33,7 @@ const bundler = new ERC4337Bundler(bundlerUrl)
 
 const wallet = new Wallet(dev7702pk)
 
-const { accountAddress, factory, factoryData } = await Kernel.computeAddress({
+const { accountAddress, factory, factoryData } = await Kernel.getDeployment({
 	client,
 	validatorAddress: getECDSAValidator({ ownerAddress: dev7702 }).address,
 	validatorData: getECDSAValidator({ ownerAddress: dev7702 }).initData,

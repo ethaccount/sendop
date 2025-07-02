@@ -1,7 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import { TSafe7579Launchpad__factory, TSafeProxyFactory__factory } from '@/contract-types'
-import type { CallType } from '@/erc7579/types'
-import { ERC7579_MODULE_TYPE } from '@/erc7579/types'
+import { CallType, ERC7579_MODULE_TYPE, type BaseInstallModuleConfig, type BaseUninstallModuleConfig } from '@/erc7579'
 import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
 import { abiEncode, sortAndUniquifyAddresses, zeroPadRight } from '@/utils'
@@ -9,12 +8,7 @@ import type { JsonRpcProvider } from 'ethers'
 import { dataLength } from 'ethers'
 import { ZeroAddress } from 'ethers/constants'
 import { concat, isHexString } from 'ethers/utils'
-import {
-	ModularSmartAccount,
-	type ModularSmartAccountOptions,
-	type SimpleInstallModuleConfig,
-	type SimpleUninstallModuleConfig,
-} from '../ModularSmartAccount'
+import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
 
 export type Safe7579CreationOptions = {
 	salt: string
@@ -204,13 +198,13 @@ export class Safe7579Error extends SendopError {
 }
 
 export type Safe7579InstallModuleConfig =
-	| SimpleInstallModuleConfig<ERC7579_MODULE_TYPE.VALIDATOR>
-	| SimpleInstallModuleConfig<ERC7579_MODULE_TYPE.EXECUTOR>
-	| (SimpleInstallModuleConfig<ERC7579_MODULE_TYPE.FALLBACK> & {
+	| BaseInstallModuleConfig<ERC7579_MODULE_TYPE.VALIDATOR>
+	| BaseInstallModuleConfig<ERC7579_MODULE_TYPE.EXECUTOR>
+	| (BaseInstallModuleConfig<ERC7579_MODULE_TYPE.FALLBACK> & {
 			functionSig: string // 4 bytes
 			callType: CallType // 1 byte
 	  })
-	| (SimpleInstallModuleConfig<ERC7579_MODULE_TYPE.HOOK> & {
+	| (BaseInstallModuleConfig<ERC7579_MODULE_TYPE.HOOK> & {
 			hookType: Safe7579HookType // 1 byte
 			selector: string // 4 bytes
 	  })
@@ -221,13 +215,13 @@ export enum Safe7579HookType {
 }
 
 export type Safe7579UninstallModuleConfig =
-	| (SimpleUninstallModuleConfig<ERC7579_MODULE_TYPE.VALIDATOR> & {
+	| (BaseUninstallModuleConfig<ERC7579_MODULE_TYPE.VALIDATOR> & {
 			prev: string // address
 	  })
-	| (SimpleUninstallModuleConfig<ERC7579_MODULE_TYPE.EXECUTOR> & {
+	| (BaseUninstallModuleConfig<ERC7579_MODULE_TYPE.EXECUTOR> & {
 			prev: string // address
 	  })
-	| (SimpleUninstallModuleConfig<ERC7579_MODULE_TYPE.FALLBACK> & {
+	| (BaseUninstallModuleConfig<ERC7579_MODULE_TYPE.FALLBACK> & {
 			functionSig: string // 4 bytes
 	  })
-	| SimpleUninstallModuleConfig<ERC7579_MODULE_TYPE.HOOK>
+	| BaseUninstallModuleConfig<ERC7579_MODULE_TYPE.HOOK>

@@ -17,6 +17,10 @@ export class ECDSAValidator extends BaseValidatorModule implements ValidatorModu
 		super(module)
 	}
 
+	get validatorAddress() {
+		return this.address
+	}
+
 	getDummySignature(): Promise<string> {
 		return Promise.resolve(DUMMY_ECDSA_SIGNATURE)
 	}

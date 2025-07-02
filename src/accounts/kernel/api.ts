@@ -1,12 +1,15 @@
 import { randomBytes32 } from '@/utils'
 import type { BigNumberish } from 'ethers'
 import { JsonRpcProvider } from 'ethers'
-import { computeAddress } from './api/computeAddress'
+import { encodeInstallModule } from './api/encodeInstallModule'
+import { encodeUninstallModule } from './api/encodeUninstallModule'
+import { getDeployment } from './api/getDeployment'
 import { getNonceKey } from './api/getNonceKey'
 import { sign1271 } from './api/sign1271'
+import type { KernelInstallModuleConfig, KernelUninstallModuleConfig } from './types'
 
 export class Kernel {
-	static async computeAddress({
+	static async getDeployment({
 		client,
 		validatorAddress,
 		validatorData,
@@ -17,7 +20,7 @@ export class Kernel {
 		validatorData: string
 		salt: string
 	}) {
-		const { factory, factoryData, accountAddress } = await computeAddress({
+		const { factory, factoryData, accountAddress } = await getDeployment({
 			client,
 			validatorAddress,
 			validatorData,
@@ -46,5 +49,13 @@ export class Kernel {
 		signHash: (hash: Uint8Array) => Promise<string>
 	}) {
 		return await sign1271({ version, validator, hash, chainId, accountAddress, signHash })
+	}
+
+	static encodeInstallModule(config: KernelInstallModuleConfig): string {
+		return encodeInstallModule(config)
+	}
+
+	static encodeUninstallModule(config: KernelUninstallModuleConfig): string {
+		return encodeUninstallModule(config)
 	}
 }

@@ -30,3 +30,24 @@ export enum ExecType {
 export enum ModeSelector {
 	DEFAULT = '0x00000000',
 }
+
+export interface ERC7579ExecModeConfig {
+	callType?: CallType // 1 byte
+	execType?: ExecType // 1 byte
+	unused?: string // 4 bytes
+	modeSelector?: ModeSelector // 4 bytes
+	modePayload?: string // 22 bytes
+}
+
+export type BaseModuleConfig<T extends ERC7579_MODULE_TYPE> = {
+	moduleType: T
+	moduleAddress: string
+}
+
+export type BaseInstallModuleConfig<T extends ERC7579_MODULE_TYPE> = BaseModuleConfig<T> & {
+	initData: string
+}
+
+export type BaseUninstallModuleConfig<T extends ERC7579_MODULE_TYPE> = BaseModuleConfig<T> & {
+	deInitData: string
+}

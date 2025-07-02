@@ -1,10 +1,10 @@
-import { KernelValidationType } from '@/smart-accounts/kernel-v3/types'
+import { KernelValidationType } from '@/accounts'
 import { randomBytes32 } from '@/utils'
 import { concat, Contract, Interface, JsonRpcProvider, ZeroAddress } from 'ethers'
 
 const KERNEL_V3_3_FACTORY_ADDRESS = '0x2577507b78c2008Ff367261CB6285d44ba5eF2E9'
 
-export async function computeAddress({
+export async function getDeployment({
 	client,
 	validatorAddress,
 	validatorData,

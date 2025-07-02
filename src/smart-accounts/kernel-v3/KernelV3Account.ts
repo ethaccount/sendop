@@ -1,3 +1,5 @@
+import type { KernelCreationOptions, KernelInstallModuleConfig, KernelUninstallModuleConfig } from '@/accounts'
+import { KernelValidationMode, KernelValidationType } from '@/accounts'
 import { ADDRESS } from '@/addresses'
 import { ERC7579_MODULE_TYPE } from '@/erc7579'
 import { SendopError } from '@/error'
@@ -5,8 +7,6 @@ import { INTERFACES } from '@/interfaces'
 import { abiEncode, connectEntryPointV07, isBytes, isBytes32, zeroBytes } from '@/utils'
 import { concat, Contract, hexlify, JsonRpcProvider, toBeHex, ZeroAddress } from 'ethers'
 import { ModularSmartAccount, type ModularSmartAccountOptions } from '../ModularSmartAccount'
-import type { KernelCreationOptions, KernelInstallModuleConfig, KernelUninstallModuleConfig } from './types'
-import { KernelValidationMode, KernelValidationType } from './types'
 
 export type KernelV3AccountOptions = ModularSmartAccountOptions & KernelV3AccountConfig
 

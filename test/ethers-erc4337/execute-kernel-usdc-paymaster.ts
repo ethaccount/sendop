@@ -36,7 +36,7 @@ const wallet = new Wallet(dev7702pk)
 
 const ecdsaValidator = getECDSAValidator({ ownerAddress: dev7702 })
 
-const { accountAddress } = await Kernel.computeAddress({
+const { accountAddress } = await Kernel.getDeployment({
 	client,
 	validatorAddress: ecdsaValidator.address,
 	validatorData: ecdsaValidator.initData,

@@ -3,13 +3,16 @@ import type { ERC7579_MODULE_TYPE } from '@/erc7579'
 
 export interface Module {
 	address: string
+	type: ERC7579_MODULE_TYPE
 	initData: string
 	deInitData: string
-	type: ERC7579_MODULE_TYPE
-	additionalContext?: string
 }
 
 export interface ValidatorModule extends AccountValidation, Module {}
+
+export interface ModularAccountValidation extends AccountValidation {
+	validatorAddress: string
+}
 
 export class BaseValidatorModule implements Module {
 	private module: Module
@@ -29,8 +32,5 @@ export class BaseValidatorModule implements Module {
 	}
 	get type() {
 		return this.module.type
-	}
-	get additionalContext() {
-		return this.module.additionalContext
 	}
 }

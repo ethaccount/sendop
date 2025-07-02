@@ -25,8 +25,8 @@ describe('Test deployed Kernel on base sepolia', () => {
 
 	const ecdsaValidator = getECDSAValidator({ ownerAddress: owner.address })
 
-	it('#computeAddress', async () => {
-		const { factory, factoryData, accountAddress } = await Kernel.computeAddress({
+	it('#getDeployment', async () => {
+		const { factory, factoryData, accountAddress } = await Kernel.getDeployment({
 			client,
 			validatorAddress: ecdsaValidator.address,
 			validatorData: ecdsaValidator.initData,
