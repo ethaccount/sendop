@@ -7,7 +7,7 @@ export * from '@/interfaces'
 // New
 export * from '@/erc7579'
 export * from '@/accounts'
-export * from '@/modules'
+export * from '@/validations'
 export * from '@/types'
 export * from '@/paymasters'
 

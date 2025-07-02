@@ -1,7 +1,7 @@
 import { ADDRESS } from '@/addresses'
 import { KernelUserOpBuilder, KernelValidationType } from '@/index'
 import { INTERFACES } from '@/interfaces'
-import { SmartSessionValidation } from '@/modules/SmartSessionValidation'
+import { SmartSessionValidation } from '@/validations/SmartSessionValidation'
 import { JsonRpcProvider, Wallet } from 'ethers'
 import { ERC4337Bundler } from 'ethers-erc4337'
 import { alchemy, pimlico } from 'evm-providers'
@@ -47,7 +47,7 @@ const userop = await new KernelUserOpBuilder({
 		threshold: 1,
 	}),
 	nonceConfig: {
-		type: KernelValidationType.VALIDATOR,
+		type: KernelValidationType.VALIDATOR, // must set to use non-root validator
 	},
 }).buildExecutions([
 	{

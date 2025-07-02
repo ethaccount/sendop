@@ -1,5 +1,5 @@
 import type { ERC7579ExecModeConfig } from '@/erc7579'
-import type { ModularAccountValidation } from '@/modules/types'
+import type { ModularAccountValidation } from '@/validations/types'
 import type { Execution } from '@/types'
 import type { BigNumberish } from 'ethers'
 import { getBytes, JsonRpcProvider } from 'ethers'

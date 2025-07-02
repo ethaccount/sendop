@@ -1,12 +1,5 @@
 import type { AccountValidation } from '@/accounts/types'
-import type { ERC7579_MODULE_TYPE } from '@/erc7579'
-
-export interface Module {
-	address: string
-	type: ERC7579_MODULE_TYPE
-	initData: string
-	deInitData: string
-}
+import type { Module } from '@/erc7579'
 
 export interface ValidatorModule extends AccountValidation, Module {}
 

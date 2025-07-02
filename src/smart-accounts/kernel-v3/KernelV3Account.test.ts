@@ -1,14 +1,20 @@
+import { KernelValidationType, type KernelCreationOptions } from '@/accounts'
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 import { TIERC1271__factory } from '@/contract-types'
 import { TRegistry__factory, TSmartSession__factory } from '@/contract-types/factories'
 import type { SessionStruct } from '@/contract-types/TSmartSession'
-import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/sendop'
+import { ERC7579_MODULE_TYPE } from '@/erc7579'
 import { INTERFACES } from '@/interfaces'
-import { getScheduledTransferDeInitData, getScheduledTransferInitData } from '@/modules/scheduledTransfer'
 import { PublicPaymaster } from '@/paymasters'
-import { ERC1271_MAGIC_VALUE, type TypedData } from '@/utils'
+import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/sendop'
+import {
+	ERC1271_MAGIC_VALUE,
+	getScheduledTransferDeInitData,
+	getScheduledTransferInitData,
+	type TypedData,
+} from '@/utils'
 import { abiEncode, getEncodedFunctionParams, randomBytes32 } from '@/utils/ethers-helper'
 import {
 	EOAValidator,
@@ -17,6 +23,7 @@ import {
 	SMART_SESSIONS_ENABLE_MODE,
 	WebAuthnValidator,
 } from '@/validators'
+import { OwnableValidator } from '@/validators/OwnableValidator'
 import {
 	concat,
 	getBytes,
@@ -34,9 +41,6 @@ import {
 import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { KernelV3Account } from './KernelV3Account'
-import { OwnableValidator } from '@/validators/OwnableValidator'
-import { ERC7579_MODULE_TYPE } from '@/erc7579'
-import { KernelValidationType, type KernelCreationOptions } from '@/accounts'
 
 const { chainId, CLIENT_URL, BUNDLER_URL, privateKey, account1 } = await setup()
 

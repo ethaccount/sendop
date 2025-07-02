@@ -16,8 +16,8 @@ import {
 	TSmartSession__factory,
 } from '@/index'
 import { INTERFACES } from '@/interfaces'
-import { getScheduledTransferInitData } from '@/modules/scheduledTransfer'
 import { publicPaymaster } from '@/paymasters/public-paymaster'
+import { getScheduledTransferInitData } from '@/utils'
 import { getOwnableValidator } from '@rhinestone/module-sdk'
 import { concat, JsonRpcProvider, parseEther, Wallet, ZeroAddress } from 'ethers'
 import { ERC4337Bundler } from 'ethers-erc4337'

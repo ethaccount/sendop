@@ -1,5 +1,5 @@
 import { TIERC1271__factory } from '@/contract-types'
-import { getECDSAValidator } from '@/modules'
+import { getECDSAValidator } from '@/validations'
 import { isBytes, toBytes32 } from '@/utils'
 import { getBytes, isAddress, JsonRpcProvider, keccak256, toUtf8Bytes, Wallet } from 'ethers'
 import { alchemy } from 'evm-providers'

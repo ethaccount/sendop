@@ -2,10 +2,16 @@ import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 import { ERC7579_MODULE_TYPE } from '@/erc7579'
+import { PublicPaymaster, TIERC1271__factory, TNexus__factory, WebAuthnValidator } from '@/index'
 import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/sendop'
-import { TIERC1271__factory, TNexus__factory, PublicPaymaster, WebAuthnValidator } from '@/index'
-import { getScheduledTransferDeInitData, getScheduledTransferInitData } from '@/modules/scheduledTransfer'
-import { ERC1271_MAGIC_VALUE, findPrevious, randomBytes32, zeroPadLeft } from '@/utils'
+import {
+	ERC1271_MAGIC_VALUE,
+	findPrevious,
+	getScheduledTransferDeInitData,
+	getScheduledTransferInitData,
+	randomBytes32,
+	zeroPadLeft,
+} from '@/utils'
 import { OwnableValidator } from '@/validators/OwnableValidator'
 import {
 	concat,

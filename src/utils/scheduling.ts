@@ -1,5 +1,5 @@
 import { concat, toBeHex } from 'ethers'
-import { abiEncode, zeroPadLeft } from '../utils/ethers-helper'
+import { abiEncode, zeroPadLeft } from './ethers-helper'
 
 export type ScheduledTransferParams = {
 	executeInterval: number

@@ -1,14 +1,15 @@
 import { ADDRESS } from '@/addresses'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
 import { ERC7579_MODULE_TYPE } from '@/erc7579'
-import { BaseValidatorModule, type Module, type ValidatorModule } from './types'
+import { BaseValidatorModule, type ValidatorModule } from './types'
+import type { Module } from '@/erc7579'
 
 export function getECDSAValidator({ ownerAddress }: { ownerAddress: string }): Module {
 	return {
 		address: ADDRESS.ECDSAValidator,
+		type: ERC7579_MODULE_TYPE.VALIDATOR,
 		initData: ownerAddress,
 		deInitData: '0x',
-		type: ERC7579_MODULE_TYPE.VALIDATOR,
 	}
 }
 

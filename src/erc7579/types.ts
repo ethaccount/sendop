@@ -15,8 +15,6 @@ export enum PolicyType {
 	ERC1271 = 3,
 }
 
-// =============================== ExecutionMode ===============================
-
 export enum CallType {
 	SIGNLE = '0x00',
 	BATCH = '0x01',
@@ -29,6 +27,13 @@ export enum ExecType {
 
 export enum ModeSelector {
 	DEFAULT = '0x00000000',
+}
+
+export interface Module {
+	address: string
+	type: ERC7579_MODULE_TYPE
+	initData: string
+	deInitData: string
 }
 
 export interface ERC7579ExecModeConfig {

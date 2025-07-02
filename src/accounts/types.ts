@@ -1,5 +1,5 @@
-import type { Module } from '@/modules'
 import type { Execution } from '@/types'
+import type { Module } from '@/erc7579'
 import type { BigNumberish } from 'ethers'
 import type { UserOpBuilder } from 'ethers-erc4337'
 
