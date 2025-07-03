@@ -7,7 +7,7 @@ import { TRegistry__factory, TSmartSession__factory } from '@/contract-types/fac
 import type { SessionStruct } from '@/contract-types/TSmartSession'
 import { ERC7579_MODULE_TYPE } from '@/erc7579'
 import { INTERFACES } from '@/interfaces'
-import { PublicPaymaster } from '@/paymasters'
+import { DeprecatedPublicPaymaster } from '@/paymasters'
 import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/sendop'
 import {
 	ERC1271_MAGIC_VALUE,
@@ -61,7 +61,7 @@ describe('KernelV3Account', () => {
 			address: ADDRESS.ECDSAValidator,
 			signer: new Wallet(privateKey),
 		})
-		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
+		pmGetter = new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster)
 	})
 
 	describe('Kerenl deploy and setNumber', () => {

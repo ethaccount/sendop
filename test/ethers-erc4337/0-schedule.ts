@@ -2,27 +2,28 @@ import { ADDRESS } from '@/addresses'
 import { RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 import type { SessionStruct } from '@/contract-types/TSmartSession'
 import {
-	ECDSAValidator,
 	ERC7579_MODULE_TYPE,
-	getECDSAValidator,
 	getEncodedFunctionParams,
 	getPermissionId,
 	Kernel,
-	KernelUserOpBuilder,
+	KernelAccountAPI,
+	PublicPaymaster,
 	randomBytes32,
+	SingleEOAValidation,
 	SMART_SESSIONS_ENABLE_MODE,
 	toBytes32,
 	TRegistry__factory,
 	TSmartSession__factory,
+	type SignerBehavior,
 } from '@/index'
 import { INTERFACES } from '@/interfaces'
-import { publicPaymaster } from '@/paymasters/public-paymaster'
 import { getScheduledTransferInitData } from '@/utils'
+import { getECDSAValidator } from '@/validations/getECDSAValidator'
 import { getOwnableValidator } from '@rhinestone/module-sdk'
 import { concat, JsonRpcProvider, parseEther, Wallet, ZeroAddress } from 'ethers'
 import { ERC4337Bundler } from 'ethers-erc4337'
 import { alchemy, pimlico } from 'evm-providers'
-import { executeUserOp } from 'test/test-utils'
+import { executeUserOperation } from './helpers'
 
 if (!process.env.ALCHEMY_API_KEY) {
 	throw new Error('ALCHEMY_API_KEY is not set')
@@ -40,14 +41,21 @@ if (!process.env.acc1pk) {
 	throw new Error('acc1pk is not set')
 }
 
-// bun run test/scheduled-transfer/new/0-schedule.ts
+// bun run test/ethers-erc4337/0-schedule.ts
 
 const CHAIN_ID = 84532
 const alchemyUrl = alchemy(CHAIN_ID, process.env.ALCHEMY_API_KEY)
 const pimlicoUrl = pimlico(CHAIN_ID, process.env.PIMLICO_API_KEY)
-const owner = new Wallet(process.env.dev7702pk)
+
 const client = new JsonRpcProvider(alchemyUrl)
 const bundler = new ERC4337Bundler(pimlicoUrl)
+
+const owner = new Wallet(process.env.dev7702pk)
+const signer: SignerBehavior = {
+	signHash: async hash => {
+		return owner.signMessage(hash)
+	},
+}
 
 const ecdsaValidator = getECDSAValidator({ ownerAddress: owner.address })
 
@@ -106,13 +114,7 @@ const encodedSessions = getEncodedFunctionParams(
 
 const smartSessionInitData = concat([SMART_SESSIONS_ENABLE_MODE, encodedSessions])
 
-const userop = await new KernelUserOpBuilder({
-	chainId: CHAIN_ID,
-	bundler,
-	client,
-	accountAddress,
-	validator: new ECDSAValidator(ecdsaValidator),
-}).buildExecutions([
+const executions = [
 	// trust attester
 	{
 		to: ADDRESS.Registry,
@@ -150,13 +152,19 @@ const userop = await new KernelUserOpBuilder({
 			}),
 		}),
 	},
-])
+]
 
-userop
-	.setFactory({
+await executeUserOperation({
+	accountAPI: new KernelAccountAPI(new SingleEOAValidation(), ecdsaValidator.address),
+	accountAddress,
+	chainId: CHAIN_ID,
+	client,
+	bundler,
+	executions,
+	signer,
+	paymasterAPI: PublicPaymaster,
+	deployment: {
 		factory,
 		factoryData,
-	})
-	.setPaymaster(publicPaymaster)
-
-await executeUserOp(userop, pimlicoUrl, owner)
+	},
+})

@@ -2,7 +2,7 @@ import { ADDRESS } from '@/addresses'
 import {
 	BICONOMY_ATTESTER_ADDRESS,
 	OwnableValidator,
-	PublicPaymaster,
+	DeprecatedPublicPaymaster,
 	RHINESTONE_ATTESTER_ADDRESS,
 	sendop,
 } from '@/index'
@@ -45,7 +45,7 @@ const op = await sendop({
 	executions: [],
 	opGetter: nexus,
 	initCode: nexus.getInitCode(creationOptions),
-	pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
+	pmGetter: new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster),
 })
 
 logger.info(`hash: ${op.hash}`)

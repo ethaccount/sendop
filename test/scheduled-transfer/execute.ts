@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { PimlicoBundler, PublicPaymaster } from '@/index'
+import { PimlicoBundler, DeprecatedPublicPaymaster } from '@/index'
 import { JsonRpcProvider } from 'ethers'
 import fs from 'fs'
 import path from 'path'
@@ -45,7 +45,7 @@ const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 	// debugSend: true,
 })
 
-const pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
+const pmGetter = new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster)
 
 const receipt = await executeScheduledTransfer({
 	accountAddress: kernelAddress,

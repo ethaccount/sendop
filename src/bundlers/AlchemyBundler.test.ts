@@ -1,6 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import { sendop, type Bundler } from '@/sendop'
-import { PublicPaymaster } from '@/paymasters'
+import { DeprecatedPublicPaymaster } from '@/paymasters'
 import { RpcProvider } from '@/RpcProvider'
 import { KernelV3Account } from '@/smart-accounts'
 import { EOAValidator } from '@/validators'
@@ -79,7 +79,7 @@ describe.skip('AlchemyBundler', () => {
 			bundler: alchemyBundler,
 			executions: [],
 			opGetter: kernel,
-			pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
+			pmGetter: new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster),
 			initCode: kernel.getInitCode(creationOptions),
 		})
 

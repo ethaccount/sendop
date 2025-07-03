@@ -1,10 +1,12 @@
+import { Simple7702AccountAPI } from '@/accounts/simple7702'
 import { ADDRESS } from '@/addresses'
-import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
-import { fetchGasPriceAlchemy } from '@/fetchGasPrice'
 import { INTERFACES } from '@/interfaces'
+import { PublicPaymaster } from '@/paymasters/public-paymaster'
+import type { SignerBehavior } from '@/types'
 import { JsonRpcProvider, Wallet } from 'ethers'
-import { ENTRY_POINT_V08_ADDRESS, EntryPointV08__factory, ERC4337Bundler, UserOpBuilder } from 'ethers-erc4337'
+import { ERC4337Bundler } from 'ethers-erc4337'
 import { alchemy, pimlico } from 'evm-providers'
+import { executeUserOperation } from './helpers'
 
 const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', dev7702pk = '' } = process.env
 
@@ -28,37 +30,27 @@ const bundlerUrl = pimlico(CHAIN_ID, PIMLICO_API_KEY)
 const client = new JsonRpcProvider(rpcUrl)
 const bundler = new ERC4337Bundler(bundlerUrl)
 
-const entryPointAddress = ENTRY_POINT_V08_ADDRESS
-const entryPoint = EntryPointV08__factory.connect(entryPointAddress, client)
-
 const owner = new Wallet(dev7702pk, client)
 
-async function main() {
-	const userop = new UserOpBuilder(bundler, entryPointAddress, CHAIN_ID)
-		.setSender(dev7702)
-		.setNonce(await entryPoint.getNonce(dev7702, 0n))
-		.setGasPrice(await fetchGasPriceAlchemy(rpcUrl))
-		.setSignature(DUMMY_ECDSA_SIGNATURE)
-		.setPaymaster({
-			paymaster: ADDRESS.PublicPaymaster,
-		})
-		.setCallData(
-			INTERFACES.Simple7702AccountV08.encodeFunctionData('execute', [
-				ADDRESS.Counter,
-				0n,
-				INTERFACES.Counter.encodeFunctionData('increment'),
-			]),
-		)
-
-	await userop.estimateGas()
-
-	await userop.signUserOpTypedData(typedData => owner.signTypedData(...typedData))
-
-	const hash = await userop.send()
-	console.log('sent', hash)
-
-	const receipt = await userop.wait()
-	console.log('success', receipt.success)
+const signer: SignerBehavior = {
+	signHash: async (hash: Uint8Array) => {
+		return owner.signingKey.sign(hash).serialized
+	},
 }
 
-main().catch(e => console.error(e.message))
+await executeUserOperation({
+	accountAPI: new Simple7702AccountAPI(),
+	accountAddress: dev7702,
+	chainId: CHAIN_ID,
+	client,
+	bundler,
+	executions: [
+		{
+			to: ADDRESS.Counter,
+			value: 0n,
+			data: INTERFACES.Counter.encodeFunctionData('increment'),
+		},
+	],
+	signer,
+	paymasterAPI: PublicPaymaster,
+})

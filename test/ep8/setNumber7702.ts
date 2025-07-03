@@ -1,6 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import { sendop } from '@/sendop'
-import { PublicPaymaster } from '@/paymasters'
+import { DeprecatedPublicPaymaster } from '@/paymasters'
 import { Simple7702Account } from '@/smart-accounts/Simple7702Account'
 import { getAddress, Interface, toNumber } from 'ethers'
 import { logger } from 'test/utils'
@@ -38,7 +38,7 @@ const op = await sendop({
 		bundler,
 		signer,
 	}),
-	pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
+	pmGetter: new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster),
 })
 
 const startTime = Date.now()

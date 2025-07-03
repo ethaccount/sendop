@@ -1,7 +1,7 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers/PimlicoBundler'
 import { sendop } from '@/sendop'
-import { PublicPaymaster } from '@/paymasters'
+import { DeprecatedPublicPaymaster } from '@/paymasters'
 import { NexusAccount } from '@/smart-accounts/nexus/NexusAccount'
 import { EOAValidator } from '@/validators/EOAValidator'
 import { getAddress, Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
@@ -67,7 +67,7 @@ const op = await sendop({
 			signer,
 		}),
 	}),
-	pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
+	pmGetter: new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster),
 })
 
 const startTime = Date.now()

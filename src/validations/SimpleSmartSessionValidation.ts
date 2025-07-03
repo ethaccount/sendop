@@ -1,20 +1,18 @@
-import type { AccountValidation } from '@/accounts'
 import { ADDRESS } from '@/addresses'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
+import type { ValidationAPI } from '@/types'
 import { concatBytesList } from '@/utils'
 import { getSmartSessionUseModeSignature } from '@/validators/smartsession'
 
-export class SmartSessionValidation implements AccountValidation {
+export class SimpleSmartSessionValidation implements ValidationAPI {
+	validatorAddress = ADDRESS.SmartSession
+
 	private permissionId: string
 	private threshold: number
 
 	constructor({ permissionId, threshold }: { permissionId: string; threshold: number }) {
 		this.permissionId = permissionId
 		this.threshold = threshold
-	}
-
-	get validatorAddress() {
-		return ADDRESS.SmartSession
 	}
 
 	async getDummySignature() {
@@ -25,6 +23,6 @@ export class SmartSessionValidation implements AccountValidation {
 	}
 
 	async formatSignature(sig: string) {
-		return getSmartSessionUseModeSignature(this.permissionId, concatBytesList(Array(this.threshold).fill(sig)))
+		return getSmartSessionUseModeSignature(this.permissionId, sig)
 	}
 }

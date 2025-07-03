@@ -1,7 +1,7 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { isSmartEOA, sendop } from '@/sendop'
-import { PublicPaymaster } from '@/paymasters'
+import { DeprecatedPublicPaymaster } from '@/paymasters'
 import { JsonRpcProvider, keccak256, Wallet } from 'ethers'
 import { Interface } from 'ethers/abi'
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -71,7 +71,7 @@ describe('Simple7702Account', () => {
 				},
 			],
 			opGetter: account,
-			pmGetter: new PublicPaymaster(PUBLIC_PAYMASTER_ADDRESS),
+			pmGetter: new DeprecatedPublicPaymaster(PUBLIC_PAYMASTER_ADDRESS),
 		})
 
 		const receipt = await op.wait()
@@ -98,7 +98,7 @@ describe('Simple7702Account', () => {
 				},
 			],
 			opGetter: account,
-			pmGetter: new PublicPaymaster(PUBLIC_PAYMASTER_ADDRESS),
+			pmGetter: new DeprecatedPublicPaymaster(PUBLIC_PAYMASTER_ADDRESS),
 		})
 
 		const receipt = await op.wait()

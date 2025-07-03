@@ -16,7 +16,7 @@ import {
 	zeroPadLeft,
 } from '@/index'
 import { INTERFACES } from '@/interfaces'
-import { PublicPaymaster } from '@/paymasters'
+import { DeprecatedPublicPaymaster } from '@/paymasters'
 import { concat, parseUnits, toBeHex } from 'ethers'
 import fs from 'fs'
 import path from 'path'
@@ -35,7 +35,7 @@ const { client, bundler, signer } = await setupCLI(['r', 'b', 'p'], {
 	},
 })
 
-const pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
+const pmGetter = new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster)
 
 const creationOptions = {
 	salt: randomBytes32(),

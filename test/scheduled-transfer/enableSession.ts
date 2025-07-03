@@ -6,7 +6,7 @@ import {
 	getPermissionId,
 	KernelV3Account,
 	PimlicoBundler,
-	PublicPaymaster,
+	DeprecatedPublicPaymaster,
 	sendop,
 	zeroPadLeft,
 } from '@/index'
@@ -52,7 +52,7 @@ const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 	// },
 })
 
-const pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
+const pmGetter = new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster)
 
 const session: SessionStruct = {
 	sessionValidator: ADDRESS.OwnableValidator,

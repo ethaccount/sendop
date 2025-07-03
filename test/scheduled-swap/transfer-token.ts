@@ -1,7 +1,7 @@
 import { ADDRESS } from '@/addresses'
 import { EOAValidator, KernelV3Account, PimlicoBundler, sendop } from '@/index'
 import { INTERFACES } from '@/interfaces'
-import { PublicPaymaster } from '@/paymasters'
+import { DeprecatedPublicPaymaster } from '@/paymasters'
 import { JsonRpcProvider, parseEther, Wallet } from 'ethers'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
@@ -42,7 +42,7 @@ const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 	parseError: true,
 })
 
-const pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
+const pmGetter = new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster)
 
 const kernel = new KernelV3Account({
 	address: accountAddress,

@@ -50,39 +50,35 @@ console.log('auth', auth)
 
 console.log('verifyAuthorization', verifyAuthorization(auth, auth.signature) === dev7702)
 
-async function main() {
-	const userop = new UserOpBuilder(bundler, entryPointAddress, CHAIN_ID)
-		.setSender(dev7702)
-		.setEIP7702Auth({
-			chainId: CHAIN_ID,
-			address: SIMPLE_7702_ACCOUNT,
-			nonce: eip7702Nonce,
-			yParity: auth.signature.yParity,
-			r: auth.signature.r,
-			s: auth.signature.s,
-		})
-		.setNonce(await entryPoint.getNonce(dev7702, 0n))
-		.setGasPrice(await fetchGasPriceAlchemy(rpcUrl))
-		.setSignature(DUMMY_ECDSA_SIGNATURE)
-		.setPaymaster({
-			paymaster: ADDRESS.PublicPaymaster,
-		})
+const userop = new UserOpBuilder(bundler, entryPointAddress, CHAIN_ID)
+	.setSender(dev7702)
+	.setEIP7702Auth({
+		chainId: CHAIN_ID,
+		address: SIMPLE_7702_ACCOUNT,
+		nonce: eip7702Nonce,
+		yParity: auth.signature.yParity,
+		r: auth.signature.r,
+		s: auth.signature.s,
+	})
+	.setNonce(await entryPoint.getNonce(dev7702, 0n))
+	.setGasPrice(await fetchGasPriceAlchemy(rpcUrl))
+	.setSignature(DUMMY_ECDSA_SIGNATURE)
+	.setPaymaster({
+		paymaster: ADDRESS.PublicPaymaster,
+	})
 
-	console.log('userop', userop.preview())
+console.log('userop', userop.preview())
 
-	await userop.estimateGas()
+await userop.estimateGas()
 
-	await userop.signUserOpTypedData(typedData => owner.signTypedData(...typedData))
+await userop.signUserOpTypedData(typedData => owner.signTypedData(...typedData))
 
-	console.log(userop.hex())
-	console.log(userop.pack())
-	console.log(userop.encodeHandleOpsData())
+console.log(userop.hex())
+console.log(userop.pack())
+console.log(userop.encodeHandleOpsData())
 
-	const hash = await userop.send()
-	console.log('sent', hash)
+const hash = await userop.send()
+console.log('sent', hash)
 
-	const receipt = await userop.wait()
-	console.log('success', receipt.success)
-}
-
-main().catch(e => console.error(e.message))
+const receipt = await userop.wait()
+console.log('success', receipt.success)

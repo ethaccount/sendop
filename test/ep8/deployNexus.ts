@@ -5,7 +5,7 @@ import {
 	RHINESTONE_ATTESTER_ADDRESS,
 	sendop,
 	EtherspotBundler,
-	PublicPaymaster,
+	DeprecatedPublicPaymaster,
 } from '@/index'
 import { NexusAccount } from '@/smart-accounts/nexus/NexusAccount'
 import type { NexusCreationOptions } from '@/smart-accounts/nexus/types'
@@ -71,7 +71,7 @@ const op = await sendop({
 	executions: [],
 	opGetter: nexus,
 	initCode: nexus.getInitCode(creationOptions),
-	pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
+	pmGetter: new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster),
 })
 
 logger.info(`hash: ${op.hash}`)

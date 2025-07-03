@@ -2,7 +2,7 @@ import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 import { ERC7579_MODULE_TYPE } from '@/erc7579'
-import { PublicPaymaster, TIERC1271__factory, TNexus__factory, WebAuthnValidator } from '@/index'
+import { DeprecatedPublicPaymaster, TIERC1271__factory, TNexus__factory, WebAuthnValidator } from '@/index'
 import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/sendop'
 import {
 	ERC1271_MAGIC_VALUE,
@@ -46,7 +46,7 @@ describe('NexusAccount', () => {
 			debug: true,
 		})
 		validator = new OwnableValidator({ signers: [new Wallet(privateKey)] })
-		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
+		pmGetter = new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster)
 
 		logger.info(`Signer: ${signer.address}`)
 	})

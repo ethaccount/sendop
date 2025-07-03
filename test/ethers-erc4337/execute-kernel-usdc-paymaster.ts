@@ -1,14 +1,15 @@
-import { Kernel } from '@/accounts'
-import { KernelUserOpBuilder } from '@/accounts/kernel/builder'
+import { Kernel, KernelAccountAPI } from '@/accounts'
 import { ADDRESS } from '@/addresses'
-import { fetchGasPricePimlico } from '@/fetchGasPrice'
 import { INTERFACES } from '@/interfaces'
-import { ECDSAValidator, getECDSAValidator } from '@/validations/ECDSAValidator'
-import { getUSDCPaymaster } from '@/paymasters/usdc-paymaster'
+import { createUSDCPaymaster } from '@/paymasters/usdc-paymaster'
+import type { SignerBehavior } from '@/types'
 import { toBytes32 } from '@/utils'
+import { getECDSAValidator } from '@/validations/getECDSAValidator'
+import { SingleEOAValidation } from '@/validations/SingleEOAValidation'
 import { getBytes, JsonRpcProvider, TypedDataEncoder, Wallet } from 'ethers'
 import { ERC4337Bundler, type TypedData } from 'ethers-erc4337'
 import { alchemy, pimlico } from 'evm-providers'
+import { executeUserOperation } from './helpers'
 
 const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', dev7702pk = '' } = process.env
 
@@ -23,8 +24,8 @@ if (!dev7702) {
 }
 
 const CHAIN_ID = 84532 // base sepolia
-const USDC_ADDRESS = '0x036CbD53842c5426634e7929541eC2318f3dCF7e'
-const USDC_PAYMASTER_ADDRESS = '0x31BE08D380A21fc740883c0BC434FcFc88740b58'
+const USDC_ADDRESS = '0x036CbD53842c5426634e7929541eC2318f3dCF7e' // base sepolia
+const USDC_PAYMASTER_ADDRESS = '0x31BE08D380A21fc740883c0BC434FcFc88740b58' // base sepolia v0.7
 
 const rpcUrl = alchemy(CHAIN_ID, ALCHEMY_API_KEY)
 const bundlerUrl = pimlico(CHAIN_ID, PIMLICO_API_KEY)
@@ -33,6 +34,11 @@ const client = new JsonRpcProvider(rpcUrl)
 const bundler = new ERC4337Bundler(bundlerUrl)
 
 const wallet = new Wallet(dev7702pk)
+const signer: SignerBehavior = {
+	signHash: async (hash: Uint8Array) => {
+		return wallet.signingKey.sign(hash).serialized
+	},
+}
 
 const ecdsaValidator = getECDSAValidator({ ownerAddress: dev7702 })
 
@@ -45,21 +51,7 @@ const { accountAddress } = await Kernel.getDeployment({
 
 console.log('accountAddress', accountAddress)
 
-const userop = await new KernelUserOpBuilder({
-	chainId: CHAIN_ID,
-	bundler,
-	client,
-	accountAddress,
-	validator: new ECDSAValidator(ecdsaValidator),
-}).buildExecutions([
-	{
-		to: ADDRESS.Counter,
-		value: 0n,
-		data: INTERFACES.Counter.encodeFunctionData('increment'),
-	},
-])
-
-const usdcPaymaster = await getUSDCPaymaster({
+const usdcPaymaster = await createUSDCPaymaster({
 	client,
 	chainId: CHAIN_ID,
 	accountAddress,
@@ -79,13 +71,21 @@ const usdcPaymaster = await getUSDCPaymaster({
 	},
 })
 
-userop.setGasPrice(await fetchGasPricePimlico(bundlerUrl)).setPaymaster(usdcPaymaster)
+const kernelAPI = new KernelAccountAPI(new SingleEOAValidation(), ecdsaValidator.address)
 
-await userop.estimateGas()
-await userop.signUserOpHash(userOpHash => wallet.signMessage(userOpHash))
-
-const hash = await userop.send()
-console.log('sent', hash)
-
-const receipt = await userop.wait()
-console.log('success', receipt.success)
+await executeUserOperation({
+	accountAPI: kernelAPI,
+	accountAddress,
+	chainId: CHAIN_ID,
+	client,
+	bundler,
+	executions: [
+		{
+			to: ADDRESS.Counter,
+			value: 0n,
+			data: INTERFACES.Counter.encodeFunctionData('increment'),
+		},
+	],
+	signer,
+	paymasterAPI: usdcPaymaster,
+})

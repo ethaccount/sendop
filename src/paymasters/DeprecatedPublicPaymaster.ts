@@ -1,7 +1,7 @@
 import type { GetPaymasterStubDataResult, PaymasterGetter } from '@/sendop'
 import type { UserOperation } from 'ethers-erc4337'
 
-export class PublicPaymaster implements PaymasterGetter {
+export class DeprecatedPublicPaymaster implements PaymasterGetter {
 	public address: string
 
 	constructor(address: string) {

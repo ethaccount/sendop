@@ -1,3 +1,3 @@
-export * from './types'
-export * from './ECDSAValidator'
-export * from './SmartSessionValidation'
+export * from './SingleEOAValidation'
+export * from './SimpleSmartSessionValidation'
+export * from './getECDSAValidator'

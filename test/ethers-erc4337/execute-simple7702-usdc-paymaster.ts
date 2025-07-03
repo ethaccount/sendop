@@ -1,11 +1,12 @@
-import { Simple7702UserOpBuilder } from '@/accounts/simple7702/builder'
+import { Simple7702AccountAPI } from '@/accounts/simple7702'
 import { ADDRESS } from '@/addresses'
-import { fetchGasPricePimlico } from '@/fetchGasPrice'
 import { INTERFACES } from '@/interfaces'
-import { getUSDCPaymaster } from '@/paymasters/usdc-paymaster'
+import { createUSDCPaymaster } from '@/paymasters/usdc-paymaster'
+import type { SignerBehavior } from '@/types'
 import { JsonRpcProvider, parseUnits, Wallet } from 'ethers'
 import { ERC4337Bundler, type TypedData } from 'ethers-erc4337'
 import { alchemy, pimlico } from 'evm-providers'
+import { executeUserOperation } from './helpers'
 
 const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', dev7702pk = '' } = process.env
 
@@ -29,38 +30,36 @@ const bundler = new ERC4337Bundler(bundlerUrl)
 
 const wallet = new Wallet(dev7702pk)
 
-const usdcPaymaster = await getUSDCPaymaster({
+const usdcPaymaster = await createUSDCPaymaster({
 	client,
 	chainId: CHAIN_ID,
 	accountAddress: dev7702,
-	permitAmount: parseUnits('2', 6),
-	minAllowanceThreshold: parseUnits('2', 6),
+	permitAmount: parseUnits('10', 6),
+	minAllowanceThreshold: parseUnits('10', 6),
 	signTypedData: async (typedData: TypedData) => {
 		return wallet.signTypedData(...typedData)
 	},
 })
 
-const userop = await new Simple7702UserOpBuilder({
-	chainId: CHAIN_ID,
-	bundler,
-	client,
-	accountAddress: dev7702,
-}).buildExecutions([
-	{
-		to: ADDRESS.Counter,
-		value: 0n,
-		data: INTERFACES.Counter.encodeFunctionData('increment'),
+const signer: SignerBehavior = {
+	signHash: async (hash: Uint8Array) => {
+		return wallet.signingKey.sign(hash).serialized
 	},
-])
+}
 
-userop.setPaymaster(usdcPaymaster).setGasPrice(await fetchGasPricePimlico(bundlerUrl))
-
-await userop.estimateGas()
-
-await userop.signUserOpTypedData(typedData => wallet.signTypedData(...typedData))
-
-const hash = await userop.send()
-console.log('sent', hash)
-
-const receipt = await userop.wait()
-console.log('success', receipt.success)
+await executeUserOperation({
+	accountAPI: new Simple7702AccountAPI(),
+	accountAddress: dev7702,
+	chainId: CHAIN_ID,
+	client,
+	bundler,
+	executions: [
+		{
+			to: ADDRESS.Counter,
+			value: 0n,
+			data: INTERFACES.Counter.encodeFunctionData('increment'),
+		},
+	],
+	signer,
+	paymasterAPI: usdcPaymaster,
+})

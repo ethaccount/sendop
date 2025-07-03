@@ -1,7 +1,7 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { sendop } from '@/sendop'
-import { PublicPaymaster } from '@/paymasters'
+import { DeprecatedPublicPaymaster } from '@/paymasters'
 import { randomBytes32 } from '@/utils'
 import { JsonRpcProvider, Wallet, ZeroAddress } from 'ethers'
 import { Interface } from 'ethers/abi'
@@ -22,7 +22,7 @@ describe('SimpleAccount', () => {
 	let account: SimpleAccount
 	let computedAddress: string
 	const salt = randomBytes32()
-	const pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
+	const pmGetter = new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster)
 
 	beforeAll(async () => {
 		signer = new Wallet(privateKey)

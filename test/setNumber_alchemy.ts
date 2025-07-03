@@ -5,7 +5,7 @@ import { KernelV3Account } from '@/smart-accounts'
 import { EOAValidator } from '@/validators/EOAValidator'
 import { getAddress, Interface, JsonRpcProvider, toNumber, Wallet } from 'ethers'
 import { setup } from './utils'
-import { PublicPaymaster } from '@/paymasters'
+import { DeprecatedPublicPaymaster } from '@/paymasters'
 
 const { logger, chainId, CLIENT_URL, ALCHEMY_BUNDLER_URL, privateKey } = await setup({ chainId: 11155111n })
 logger.info(`Chain ID: ${chainId}`)
@@ -38,7 +38,7 @@ const op = await sendop({
 			signer,
 		}),
 	}),
-	pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
+	pmGetter: new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster),
 })
 
 const startTime = Date.now()

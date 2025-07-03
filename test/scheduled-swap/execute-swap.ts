@@ -5,7 +5,7 @@ import {
 	getSmartSessionUseModeSignature,
 	KernelV3Account,
 	PimlicoBundler,
-	PublicPaymaster,
+	DeprecatedPublicPaymaster,
 	sendop,
 	type Bundler,
 	type PaymasterGetter,
@@ -55,7 +55,7 @@ const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 	// debugSend: true,
 })
 
-const pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
+const pmGetter = new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster)
 
 const USDC_WETH_POOL = '0x3289680dD4d6C10bb19b899729cda5eEF58AEfF1' // fee 500
 

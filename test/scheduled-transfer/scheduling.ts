@@ -1,6 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import { TScheduledTransfers__factory } from '@/contract-types'
-import { PimlicoBundler, PublicPaymaster } from '@/index'
+import { PimlicoBundler, DeprecatedPublicPaymaster } from '@/index'
 import { JsonRpcProvider } from 'ethers'
 import { setup } from 'test/utils'
 import yargs from 'yargs'
@@ -38,7 +38,7 @@ const bundler = new PimlicoBundler(chainId, BUNDLER_URL, {
 	parseError: true,
 })
 
-const pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
+const pmGetter = new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster)
 
 const scheduledTransfers = TScheduledTransfers__factory.connect(ADDRESS.ScheduledTransfers, client)
 

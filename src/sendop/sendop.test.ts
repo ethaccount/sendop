@@ -8,7 +8,7 @@ import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import type { Bundler, ERC7579Validator, PaymasterGetter } from './interface'
 import { sendop } from './sendop'
-import { PublicPaymaster } from '@/paymasters'
+import { DeprecatedPublicPaymaster } from '@/paymasters'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, isLocal } = await setup()
 
@@ -31,7 +31,7 @@ describe('sendop', () => {
 		client = new JsonRpcProvider(CLIENT_URL)
 		signer = new Wallet(privateKey, client)
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL)
-		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
+		pmGetter = new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster)
 		validator = new EOAValidator({
 			address: ADDRESS.ECDSAValidator,
 			signer,
@@ -105,7 +105,7 @@ describe('sendop', () => {
 			bundler: new PimlicoBundler(chainId, BUNDLER_URL),
 			executions: [],
 			opGetter: kernel,
-			pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
+			pmGetter: new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster),
 			initCode: kernel.getInitCode(creationOptions),
 		})
 		logger.info(`hash: ${op.hash}`)

@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { KernelV3Account, OwnableValidator, PublicPaymaster, randomBytes32, sendop } from '@/index'
+import { KernelV3Account, OwnableValidator, DeprecatedPublicPaymaster, randomBytes32, sendop } from '@/index'
 import { logger, setupCLI } from './utils'
 
 const { signer, bundler, client } = await setupCLI(['r', 'p', 'b'], {
@@ -31,7 +31,7 @@ const op = await sendop({
 		}),
 	}),
 	initCode: KernelV3Account.getInitCode(creationOptions),
-	pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
+	pmGetter: new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster),
 })
 
 logger.info(`hash: ${op.hash}`)

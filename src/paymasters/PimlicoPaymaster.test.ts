@@ -7,7 +7,7 @@ import { hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
 import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { PimlicoPaymaster } from './PimlicoPaymaster'
-import { PublicPaymaster } from './PublicPaymaster'
+import { DeprecatedPublicPaymaster } from './DeprecatedPublicPaymaster'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, PIMLICO_SPONSORSHIP_POLICY_ID } = await setup({
 	chainId: 11155111n,
@@ -30,7 +30,7 @@ describe.skip('PimlicoPaymaster', () => {
 		client = new JsonRpcProvider(CLIENT_URL)
 		signer = new Wallet(privateKey, client)
 		bundler = new PimlicoBundler(chainId, BUNDLER_URL)
-		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
+		pmGetter = new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster)
 		validator = new EOAValidator({
 			address: ADDRESS.ECDSAValidator,
 			signer,

@@ -1,4 +1,5 @@
 import { TIERC20__factory } from '@/contract-types'
+import type { PaymasterAPI } from '@/types'
 import { getPermitTypedData, zeroBytes } from '@/utils'
 import type { BigNumberish } from 'ethers'
 import {
@@ -17,7 +18,7 @@ import type { TypedData } from 'ethers-erc4337'
 export const USDC_PAYMASTESR_ADDRESS = '0x3BA9A96eE3eFf3A69E2B18886AcF52027EFF8966' // v0.8
 export const USDC_ADDRESS = '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238' // sepolia
 
-export async function getUSDCPaymaster({
+export async function createUSDCPaymaster({
 	client,
 	chainId,
 	accountAddress,
@@ -35,11 +36,7 @@ export async function getUSDCPaymaster({
 	permitAmount?: bigint
 	minAllowanceThreshold?: bigint
 	signTypedData: (typedData: TypedData) => Promise<string>
-}): Promise<{
-	paymaster: string
-	paymasterData: string
-	paymasterPostOpGasLimit: bigint
-}> {
+}): Promise<PaymasterAPI> {
 	// Create paymaster contract and get post-op gas limit
 	const usdcPaymaster = new Contract(
 		paymasterAddress,
@@ -82,8 +79,8 @@ export async function getUSDCPaymaster({
 	}
 
 	return {
-		paymaster: paymasterAddress,
-		paymasterData,
-		paymasterPostOpGasLimit,
+		getPaymaster: () => Promise.resolve(paymasterAddress),
+		getPaymasterData: () => Promise.resolve(paymasterData),
+		getPaymasterPostOpGasLimit: () => Promise.resolve(paymasterPostOpGasLimit),
 	}
 }

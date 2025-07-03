@@ -4,7 +4,7 @@ import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/consta
 import { TIERC1271__factory, TISafe7579__factory } from '@/contract-types'
 import { ERC7579_MODULE_TYPE } from '@/erc7579'
 import { WebAuthnValidator } from '@/index'
-import { PublicPaymaster } from '@/paymasters'
+import { DeprecatedPublicPaymaster } from '@/paymasters'
 import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/sendop'
 import {
 	ERC1271_MAGIC_VALUE,
@@ -49,7 +49,7 @@ describe('Safe7579Account', () => {
 			parseError: true,
 		})
 		validator = new OwnableValidator({ signers: [signer] })
-		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
+		pmGetter = new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster)
 
 		account = new Safe7579Account({
 			client,

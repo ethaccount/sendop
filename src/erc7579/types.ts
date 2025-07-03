@@ -29,7 +29,7 @@ export enum ModeSelector {
 	DEFAULT = '0x00000000',
 }
 
-export interface Module {
+export interface ERC7579Module {
 	address: string
 	type: ERC7579_MODULE_TYPE
 	initData: string

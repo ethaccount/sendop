@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { EOAValidator, KernelV3Account, PublicPaymaster, sendop } from '@/index'
+import { EOAValidator, KernelV3Account, DeprecatedPublicPaymaster, sendop } from '@/index'
 import { Interface } from 'ethers'
 import { logger, setupCLI } from '../utils'
 
@@ -38,7 +38,7 @@ const op = await sendop({
 			signer,
 		}),
 	}),
-	pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
+	pmGetter: new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster),
 })
 
 logger.info(`hash: ${op.hash}`)

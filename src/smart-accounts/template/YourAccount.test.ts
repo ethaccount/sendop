@@ -1,7 +1,7 @@
 import { ADDRESS } from '@/addresses'
 import { PimlicoBundler } from '@/bundlers'
 import { sendop, type Bundler, type ERC7579Validator, type PaymasterGetter } from '@/sendop'
-import { PublicPaymaster } from '@/paymasters'
+import { DeprecatedPublicPaymaster } from '@/paymasters'
 import { randomBytes32 } from '@/utils'
 import { EOAValidator } from '@/validators'
 import { hexlify, Interface, JsonRpcProvider, randomBytes, resolveAddress, toNumber, Wallet } from 'ethers'
@@ -30,7 +30,7 @@ describe.skip('YourAccount', () => {
 			address: ADDRESS.ECDSAValidator,
 			signer: new Wallet(privateKey),
 		})
-		pmGetter = new PublicPaymaster(ADDRESS.PublicPaymaster)
+		pmGetter = new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster)
 
 		account = new YourAccount({
 			client,

@@ -1,6 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import { sendop, type Bundler } from '@/sendop'
-import { PublicPaymaster } from '@/paymasters'
+import { DeprecatedPublicPaymaster } from '@/paymasters'
 import { KernelV3Account } from '@/smart-accounts'
 import { randomBytes32 } from '@/utils'
 import { EOAValidator } from '@/validators'
@@ -51,7 +51,7 @@ describe('PimlicoBundler', () => {
 				}),
 			}),
 			initCode: KernelV3Account.getInitCode(creationOptions),
-			pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
+			pmGetter: new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster),
 		})
 
 		logger.info(`hash: ${op.hash}`)

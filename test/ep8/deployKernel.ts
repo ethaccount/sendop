@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { EOAValidator, KernelV3Account, sendop, EtherspotBundler, PublicPaymaster } from '@/index'
+import { EOAValidator, KernelV3Account, sendop, EtherspotBundler, DeprecatedPublicPaymaster } from '@/index'
 import { hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
 import { setup } from '../utils'
 
@@ -45,7 +45,7 @@ const op = await sendop({
 	executions: [],
 	opGetter: kernel,
 	initCode: kernel.getInitCode(creationOptions),
-	pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
+	pmGetter: new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster),
 })
 
 logger.info(`hash: ${op.hash}`)

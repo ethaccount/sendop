@@ -1,7 +1,7 @@
 import { ADDRESS } from '@/addresses'
 import {
 	BICONOMY_ATTESTER_ADDRESS,
-	PublicPaymaster,
+	DeprecatedPublicPaymaster,
 	randomBytes32,
 	RHINESTONE_ATTESTER_ADDRESS,
 	Safe7579Account,
@@ -55,7 +55,7 @@ const op = await sendop({
 	],
 	opGetter: safe7579,
 	initCode: safe7579.getInitCode(creationOptions),
-	pmGetter: new PublicPaymaster(ADDRESS.PublicPaymaster),
+	pmGetter: new DeprecatedPublicPaymaster(ADDRESS.PublicPaymaster),
 })
 
 logger.info(`hash: ${op.hash}`)
