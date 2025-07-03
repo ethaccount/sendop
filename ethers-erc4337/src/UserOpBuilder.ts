@@ -1,5 +1,5 @@
 import type { BigNumberish, EthersError } from 'ethers'
-import { getBigInt, getBytes, hexlify, isError } from 'ethers'
+import { getBigInt, getBytes, hexlify, isAddress, isError, ZeroAddress } from 'ethers'
 import { INITCODE_EIP7702_MARKER } from './constants'
 import { packUserOp, toUserOpHex } from './conversion-utils'
 import { type ERC4337Bundler } from './ERC4337Bundler'
@@ -191,6 +191,13 @@ export class UserOpBuilder {
 	}
 
 	async estimateGas(): Promise<void> {
+		if (!this.userOp.sender || this.userOp.sender === ZeroAddress) {
+			throw new Error('[UserOpBuilder#estimateGas] sender is not set')
+		}
+		if (!this.userOp.nonce) {
+			throw new Error('[UserOpBuilder#estimateGas] nonce is not set')
+		}
+
 		try {
 			const estimations = await this.bundler.estimateUserOperationGas(this.userOp, this.entryPointAddress)
 			this.userOp.verificationGasLimit = estimations.verificationGasLimit
