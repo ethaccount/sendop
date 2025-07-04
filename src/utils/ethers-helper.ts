@@ -1,4 +1,3 @@
-import { SendopError } from '@/error'
 import type { ParamType } from 'ethers'
 import { AbiCoder, concat, getAddress, hexlify, randomBytes, toBeHex, zeroPadBytes, zeroPadValue } from 'ethers'
 
@@ -94,7 +93,7 @@ export function isSameAddress(address1: string, address2: string) {
 	return getAddress(address1) === getAddress(address2)
 }
 
-export class InvalidHexStringError extends SendopError {
+export class InvalidHexStringError extends Error {
 	constructor(message?: string, cause?: Error) {
 		super(message ?? 'Invalid hex string', cause)
 		this.name = 'InvalidHexStringError'

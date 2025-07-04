@@ -1,7 +1,7 @@
 import { ADDRESS } from '@/addresses'
 import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 import { ERC7579_MODULE_TYPE } from '@/erc7579'
-import { OwnableValidator } from '@/validators/OwnableValidator'
+import { getOwnableValidator } from '@rhinestone/module-sdk'
 import { JsonRpcProvider, Wallet } from 'ethers'
 import { alchemy } from 'evm-providers'
 import { describe, expect, it } from 'vitest'
@@ -21,13 +21,18 @@ const signer = new Wallet(process.env.dev7702pk)
 const client = new JsonRpcProvider(alchemyUrl)
 
 describe('Nexus API', () => {
+	const ownableValidator = getOwnableValidator({
+		owners: [signer.address as `0x${string}`],
+		threshold: 1,
+	})
+
 	it('#getDeployment', async () => {
 		const deployment = await Nexus.getDeployment({
 			client,
 			creationOptions: {
 				bootstrap: 'initNexusWithSingleValidator',
-				validatorAddress: ADDRESS.OwnableValidator,
-				validatorInitData: OwnableValidator.getInitData([signer.address], 1),
+				validatorAddress: ownableValidator.address,
+				validatorInitData: ownableValidator.initData,
 				registryAddress: ADDRESS.Registry,
 				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS],
 				threshold: 1,

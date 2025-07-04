@@ -8,7 +8,6 @@ import { dataLength, isHexString } from 'ethers'
 import { ZeroAddress } from 'ethers/constants'
 import { concat } from 'ethers/utils'
 import {
-	Safe7579Error,
 	type Safe7579CreationOptions,
 	type Safe7579InstallModuleConfig,
 	type Safe7579UninstallModuleConfig,
@@ -93,7 +92,7 @@ export class Safe7579 {
 
 	static encodeInstallModule(config: Safe7579InstallModuleConfig): string {
 		if (!isHexString(config.initData)) {
-			throw new Safe7579Error('Invalid Safe7579InstallModuleConfig.initData')
+			throw new Error('[Safe7579.encodeInstallModule] Invalid Safe7579InstallModuleConfig.initData')
 		}
 
 		let moduleInitData: string
@@ -107,10 +106,10 @@ export class Safe7579 {
 				break
 			case ERC7579_MODULE_TYPE.FALLBACK:
 				if (dataLength(config.functionSig) !== 4) {
-					throw new Safe7579Error('Invalid Safe7579InstallModuleConfig.functionSig')
+					throw new Error('[Safe7579.encodeInstallModule] Invalid Safe7579InstallModuleConfig.functionSig')
 				}
 				if (dataLength(config.callType) !== 1) {
-					throw new Safe7579Error('Invalid Safe7579InstallModuleConfig.callType')
+					throw new Error('[Safe7579.encodeInstallModule] Invalid Safe7579InstallModuleConfig.callType')
 				}
 				moduleInitData = abiEncode(
 					['bytes4', 'bytes1', 'bytes'],
@@ -119,10 +118,10 @@ export class Safe7579 {
 				break
 			case ERC7579_MODULE_TYPE.HOOK:
 				if (dataLength(config.hookType) !== 1) {
-					throw new Safe7579Error('Invalid Safe7579InstallModuleConfig.hookType')
+					throw new Error('[Safe7579.encodeInstallModule] Invalid Safe7579InstallModuleConfig.hookType')
 				}
 				if (dataLength(config.selector) !== 4) {
-					throw new Safe7579Error('Invalid Safe7579InstallModuleConfig.selector')
+					throw new Error('[Safe7579.encodeInstallModule] Invalid Safe7579InstallModuleConfig.selector')
 				}
 				moduleInitData = abiEncode(
 					['bytes1', 'bytes4', 'bytes'],
@@ -130,7 +129,7 @@ export class Safe7579 {
 				)
 				break
 			default:
-				throw new Safe7579Error('Invalid Safe7579InstallModuleConfig.moduleType')
+				throw new Error('[Safe7579.encodeInstallModule] Invalid Safe7579InstallModuleConfig.moduleType')
 		}
 		return INTERFACES.ISafe7579.encodeFunctionData('installModule', [
 			config.moduleType,
@@ -141,7 +140,7 @@ export class Safe7579 {
 
 	static encodeUninstallModule(config: Safe7579UninstallModuleConfig): string {
 		if (!isHexString(config.deInitData)) {
-			throw new Safe7579Error('Invalid Safe7579UninstallModuleConfig.deInitData')
+			throw new Error('[Safe7579.encodeUninstallModule] Invalid Safe7579UninstallModuleConfig.deInitData')
 		}
 
 		let moduleDeInitData: string
@@ -160,7 +159,7 @@ export class Safe7579 {
 				moduleDeInitData = config.deInitData
 				break
 			default:
-				throw new Safe7579Error('Invalid Safe7579UninstallModuleConfig.moduleType')
+				throw new Error('[Safe7579.encodeUninstallModule] Invalid Safe7579UninstallModuleConfig.moduleType')
 		}
 
 		return INTERFACES.ISafe7579.encodeFunctionData('uninstallModule', [

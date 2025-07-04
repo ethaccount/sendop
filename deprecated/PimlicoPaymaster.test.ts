@@ -6,7 +6,7 @@ import { EOAValidator } from '@/validators'
 import { hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
 import { setup } from 'test/utils'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { PimlicoPaymaster } from './PimlicoPaymaster'
+import { PimlicoPaymaster } from '../src/paymasters/PimlicoPaymaster'
 import { DeprecatedPublicPaymaster } from './DeprecatedPublicPaymaster'
 
 const { logger, chainId, CLIENT_URL, BUNDLER_URL, privateKey, PIMLICO_SPONSORSHIP_POLICY_ID } = await setup({

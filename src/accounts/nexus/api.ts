@@ -1,7 +1,6 @@
 import { ADDRESS } from '@/addresses'
 import { TNexusFactory__factory } from '@/contract-types'
 import { ERC7579_MODULE_TYPE } from '@/erc7579'
-import { SendopError } from '@/error'
 import { INTERFACES } from '@/interfaces'
 import { abiEncode, randomBytes32, sortAndUniquifyAddresses } from '@/utils'
 import type { JsonRpcProvider } from 'ethers'

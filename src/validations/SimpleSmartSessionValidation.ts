@@ -2,7 +2,7 @@ import { ADDRESS } from '@/addresses'
 import { DUMMY_ECDSA_SIGNATURE } from '@/constants'
 import type { ValidationAPI } from '@/types'
 import { concatBytesList } from '@/utils'
-import { getSmartSessionUseModeSignature } from '@/validators/smartsession'
+import { getSmartSessionUseModeSignature } from '@/utils/smartsession'
 
 export class SimpleSmartSessionValidation implements ValidationAPI {
 	validatorAddress = ADDRESS.SmartSession

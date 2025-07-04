@@ -1,5 +1,4 @@
 import { CallType, ERC7579_MODULE_TYPE, type BaseInstallModuleConfig, type BaseUninstallModuleConfig } from '@/erc7579'
-import { SendopError } from '@/error'
 
 export type Safe7579CreationOptions = {
 	salt: string
@@ -42,11 +41,4 @@ export type Safe7579UninstallModuleConfig =
 
 export type Safe7579NonceConfig = {
 	key: string // 4 bytes
-}
-
-export class Safe7579Error extends SendopError {
-	constructor(message: string, cause?: Error) {
-		super(message, cause)
-		this.name = 'Safe7579Error'
-	}
 }
