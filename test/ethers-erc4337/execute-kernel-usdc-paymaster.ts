@@ -71,7 +71,10 @@ const usdcPaymaster = await createUSDCPaymaster({
 	},
 })
 
-const kernelAPI = new KernelAccountAPI(new SingleEOAValidation(), ecdsaValidator.address)
+const kernelAPI = new KernelAccountAPI({
+	validation: new SingleEOAValidation(),
+	validatorAddress: ecdsaValidator.address,
+})
 
 await executeUserOperation({
 	accountAPI: kernelAPI,

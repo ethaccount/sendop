@@ -14,7 +14,6 @@ export * from '@/paymasters'
 // deprecated
 export * from '@/sendop'
 export * from '@/bundlers'
-export * from '@/smart-accounts'
 export * from '@/validators'
 export * from '@/error'
 export * from '@/RpcProvider'

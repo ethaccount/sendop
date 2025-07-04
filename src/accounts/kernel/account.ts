@@ -12,15 +12,19 @@ export class KernelAccountAPI extends AbstractModularAccount {
 	private nonceConfig?: NonceConfig
 	private execModeConfig?: ERC7579ExecModeConfig
 
-	constructor(
-		validation: ValidationAPI,
-		validatorAddress: string,
+	constructor({
+		validation,
+		validatorAddress,
+		config,
+	}: {
+		validation: ValidationAPI
+		validatorAddress: string
 		config?: {
 			nonceConfig?: NonceConfig
 			execModeConfig?: ERC7579ExecModeConfig
 			version?: '0.3.1' | '0.3.3'
-		},
-	) {
+		}
+	}) {
 		super(validation)
 		this.validatorAddress = validatorAddress
 		this.nonceConfig = config?.nonceConfig
@@ -38,7 +42,7 @@ export class KernelAccountAPI extends AbstractModularAccount {
 		)
 	}
 
-	getCallData(executions: Execution[]): Promise<string> {
+	async getCallData(executions: Execution[]): Promise<string> {
 		return encode7579Executions(executions, this.execModeConfig)
 	}
 }

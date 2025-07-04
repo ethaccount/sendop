@@ -155,7 +155,10 @@ const executions = [
 ]
 
 await executeUserOperation({
-	accountAPI: new KernelAccountAPI(new SingleEOAValidation(), ecdsaValidator.address),
+	accountAPI: new KernelAccountAPI({
+		validation: new SingleEOAValidation(),
+		validatorAddress: ecdsaValidator.address,
+	}),
 	accountAddress,
 	chainId: CHAIN_ID,
 	client,

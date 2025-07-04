@@ -47,7 +47,11 @@ const { accountAddress } = await Kernel.getDeployment({
 	salt: toBytes32(2n),
 })
 
-const kernelAPI = new KernelAccountAPI(new SingleEOAValidation(), ecdsaValidator.address)
+const kernelAPI = new KernelAccountAPI({
+	validation: new SingleEOAValidation(),
+	validatorAddress: ecdsaValidator.address,
+})
+
 const executions = [
 	{
 		to: ADDRESS.Counter,

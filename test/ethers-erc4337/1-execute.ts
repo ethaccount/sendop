@@ -56,9 +56,13 @@ const executions = [
 ]
 
 await executeUserOperation({
-	accountAPI: new KernelAccountAPI(smartSessionValidation, smartSessionValidation.validatorAddress, {
-		nonceConfig: {
-			type: KernelValidationType.VALIDATOR, // must set to use non-root validator
+	accountAPI: new KernelAccountAPI({
+		validation: smartSessionValidation,
+		validatorAddress: smartSessionValidation.validatorAddress,
+		config: {
+			nonceConfig: {
+				type: KernelValidationType.VALIDATOR, // must set to use non-root validator
+			},
 		},
 	}),
 	accountAddress: ACCOUNT_ADDRESS,

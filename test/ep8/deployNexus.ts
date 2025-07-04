@@ -7,8 +7,8 @@ import {
 	EtherspotBundler,
 	DeprecatedPublicPaymaster,
 } from '@/index'
-import { NexusAccount } from '@/smart-accounts/nexus/NexusAccount'
-import type { NexusCreationOptions } from '@/smart-accounts/nexus/types'
+import { Nexus } from '@/accounts/nexus'
+import type { NexusCreationOptions } from '@/accounts/nexus'
 import { hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'

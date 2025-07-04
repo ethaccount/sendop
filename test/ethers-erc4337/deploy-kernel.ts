@@ -48,7 +48,11 @@ const { accountAddress, factory, factoryData } = await Kernel.getDeployment({
 
 console.log('accountAddress', accountAddress)
 
-const kernelAPI = new KernelAccountAPI(new SingleEOAValidation(), ecdsaValidator.address)
+const kernelAPI = new KernelAccountAPI({
+	validation: new SingleEOAValidation(),
+	validatorAddress: ecdsaValidator.address,
+})
+
 const executions = [
 	{
 		to: ADDRESS.Counter,

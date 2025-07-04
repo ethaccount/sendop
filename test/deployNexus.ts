@@ -6,8 +6,8 @@ import {
 	RHINESTONE_ATTESTER_ADDRESS,
 	sendop,
 } from '@/index'
-import { NexusAccount } from '@/smart-accounts/nexus/NexusAccount'
-import type { NexusCreationOptions } from '@/smart-accounts/nexus/types'
+import { Nexus } from '@/accounts/nexus'
+import type { NexusCreationOptions } from '@/accounts/nexus'
 import { hexlify, randomBytes } from 'ethers'
 import { logger, setupCLI } from './utils'
 
