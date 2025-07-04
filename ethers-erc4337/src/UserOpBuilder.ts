@@ -23,14 +23,23 @@ import {
 export class UserOpBuilder {
 	private userOp: UserOperation
 	private bundler: ERC4337Bundler
-	private entryPointAddress: string
+	#entryPointAddress: string
 	private chainId: number
 
 	constructor(bundler: ERC4337Bundler, entryPointAddress: string, chainId: BigNumberish) {
 		this.userOp = getEmptyUserOp()
 		this.bundler = bundler
-		this.entryPointAddress = entryPointAddress
+		this.#entryPointAddress = entryPointAddress
 		this.chainId = Number(chainId)
+	}
+
+	setEntryPoint(entryPointAddress: string): UserOpBuilder {
+		this.#entryPointAddress = entryPointAddress
+		return this
+	}
+
+	get entryPointAddress() {
+		return this.#entryPointAddress
 	}
 
 	setSender(sender: string): UserOpBuilder {
