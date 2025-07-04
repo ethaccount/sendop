@@ -39,10 +39,8 @@ export type NexusUninstallModuleConfig =
 	  })
 	| BaseUninstallModuleConfig<ERC7579_MODULE_TYPE.HOOK>
 
-export type NexusAccountConfig = {
-	nonce?: {
-		mode?: NexusValidationMode // 1 byte
-		validator?: string // 20 bytes
-		key?: string // 3 bytes
-	}
+export type NexusNonceConfig = {
+	mode?: NexusValidationMode // 1 byte
+	validator?: string // 20 bytes
+	key?: string // 3 bytes
 }

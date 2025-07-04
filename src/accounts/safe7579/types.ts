@@ -40,8 +40,8 @@ export type Safe7579UninstallModuleConfig =
 	  })
 	| BaseUninstallModuleConfig<ERC7579_MODULE_TYPE.HOOK>
 
-export type Safe7579AccountConfig = {
-	// Add specific config options for Safe7579 if needed
+export type Safe7579NonceConfig = {
+	key: string // 4 bytes
 }
 
 export class Safe7579Error extends SendopError {

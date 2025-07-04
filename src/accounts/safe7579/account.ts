@@ -1,16 +1,16 @@
 import { encode7579Executions, type ERC7579ExecModeConfig } from '@/erc7579'
 import { AbstractModularAccount, type Execution, type ValidationAPI } from '@/types'
-import { zeroPadRight } from '@/utils'
-import type { JsonRpcProvider } from 'ethers'
+import { isBytes, zeroBytes } from '@/utils'
+import { concat, type JsonRpcProvider } from 'ethers'
 import { ENTRY_POINT_V07_ADDRESS, EntryPointV07__factory } from 'ethers-erc4337'
-import type { Safe7579AccountConfig } from './types'
+import type { Safe7579NonceConfig } from './types'
 
 export class Safe7579AccountAPI extends AbstractModularAccount {
 	id = 'rhinestone.safe7579.v1.0.0'
 	entryPointAddress = ENTRY_POINT_V07_ADDRESS
 
 	private validatorAddress: string
-	private safe7579Config?: Safe7579AccountConfig
+	private nonceConfig?: Safe7579NonceConfig
 	private execModeConfig?: ERC7579ExecModeConfig
 
 	constructor({
@@ -21,13 +21,13 @@ export class Safe7579AccountAPI extends AbstractModularAccount {
 		validation: ValidationAPI
 		validatorAddress: string
 		config?: {
-			safe7579Config?: Safe7579AccountConfig
+			nonceConfig?: Safe7579NonceConfig
 			execModeConfig?: ERC7579ExecModeConfig
 		}
 	}) {
 		super(validation)
 		this.validatorAddress = validatorAddress
-		this.safe7579Config = config?.safe7579Config
+		this.nonceConfig = config?.nonceConfig
 		this.execModeConfig = config?.execModeConfig
 	}
 
@@ -43,6 +43,12 @@ export class Safe7579AccountAPI extends AbstractModularAccount {
 	}
 
 	private getNonceKey(): bigint {
-		return BigInt(zeroPadRight(this.validatorAddress, 24))
+		if (this.nonceConfig) {
+			if (!isBytes(this.nonceConfig.key, 4)) {
+				throw new Error('[Safe7579AccountAPI] nonceConfig.key must be 4 bytes')
+			}
+			return BigInt(concat([this.validatorAddress, this.nonceConfig.key]))
+		}
+		return BigInt(concat([this.validatorAddress, zeroBytes(4)]))
 	}
 }
