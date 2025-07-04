@@ -18,7 +18,7 @@ export class Kernel {
 		client: JsonRpcProvider
 		validatorAddress: string
 		validatorData: string
-		salt: string
+		salt?: string
 	}) {
 		const { factory, factoryData, accountAddress } = await getDeployment({
 			client,
