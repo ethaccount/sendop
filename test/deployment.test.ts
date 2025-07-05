@@ -15,16 +15,13 @@ import { executeUserOperation } from './helpers'
 
 // bun run test test/deployment.test.ts
 
-const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', dev7702pk = '' } = process.env
+const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', DEV_7702_PK = '' } = process.env
 
 if (!ALCHEMY_API_KEY) {
 	throw new Error('ALCHEMY_API_KEY is not set')
 }
 if (!PIMLICO_API_KEY) {
 	throw new Error('PIMLICO_API_KEY is not set')
-}
-if (!dev7702) {
-	throw new Error('dev7702 is not set')
 }
 
 const CHAIN_ID = 84532
@@ -35,11 +32,11 @@ const pimlicoUrl = pimlico(CHAIN_ID, PIMLICO_API_KEY)
 const client = new JsonRpcProvider(alchemyUrl)
 const bundler = new ERC4337Bundler(pimlicoUrl)
 
-const signer = new Wallet(dev7702pk)
+const signer = new Wallet(DEV_7702_PK)
 
-const ecdsaValidator = getECDSAValidator({ ownerAddress: dev7702 })
+const ecdsaValidator = getECDSAValidator({ ownerAddress: signer.address })
 const ownableValidator = getOwnableValidator({
-	owners: [dev7702 as `0x${string}`],
+	owners: [signer.address as `0x${string}`],
 	threshold: 1,
 })
 

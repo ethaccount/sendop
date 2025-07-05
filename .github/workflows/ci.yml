@@ -44,9 +44,9 @@ jobs:
                   echo "PIMLICO_API_KEY=${{ secrets.PIMLICO_API_KEY }}" >> .env
                   echo "PIMLICO_SPONSORSHIP_POLICY_ID=${{ secrets.PIMLICO_SPONSORSHIP_POLICY_ID }}" >> .env
                   echo "DEV_7702_PK=${{ secrets.DEV_7702_PK }}" >> .env
-            - name: Start Docker services
-              run: |
-                  docker compose up -d
+            # - name: Start Docker services
+            #   run: |
+            #       docker compose up -d
 
             # - name: Install Forge dependencies
             #   run: |
@@ -62,6 +62,6 @@ jobs:
             - name: Run tests
               run: bun run test
 
-            - name: Stop Docker services
-              if: always()
-              run: docker compose down
+            # - name: Stop Docker services
+            #   if: always()
+            #   run: docker compose down

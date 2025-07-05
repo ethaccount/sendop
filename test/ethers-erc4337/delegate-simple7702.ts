@@ -8,7 +8,7 @@ import { UserOpBuilder } from 'ethers-erc4337'
 
 // Failed. Don't know why.
 
-const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', dev7702pk = '' } = process.env
+const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', DEV_7702_PK = '' } = process.env
 
 if (!ALCHEMY_API_KEY) {
 	throw new Error('ALCHEMY_API_KEY is not set')
@@ -18,8 +18,8 @@ if (!dev7702) {
 	throw new Error('dev7702 is not set')
 }
 
-if (!dev7702pk) {
-	throw new Error('dev7702pk is not set')
+if (!DEV_7702_PK) {
+	throw new Error('DEV_7702_PK is not set')
 }
 
 const SIMPLE_7702_ACCOUNT = '0x4Cd241E8d1510e30b2076397afc7508Ae59C66c9'
@@ -34,7 +34,7 @@ const bundler = new ERC4337Bundler(bundlerUrl)
 const entryPointAddress = ENTRY_POINT_V08_ADDRESS
 const entryPoint = EntryPointV08__factory.connect(entryPointAddress, client)
 
-const owner = new Wallet(dev7702pk, client)
+const owner = new Wallet(DEV_7702_PK, client)
 
 // sign eip-7702 auth
 

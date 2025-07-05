@@ -33,8 +33,8 @@ if (!process.env.PIMLICO_API_KEY) {
 	throw new Error('PIMLICO_API_KEY is not set')
 }
 
-if (!process.env.dev7702pk) {
-	throw new Error('dev7702pk is not set')
+if (!process.env.DEV_7702_PK) {
+	throw new Error('DEV_7702_PK is not set')
 }
 
 if (!process.env.acc1pk) {
@@ -50,7 +50,7 @@ const pimlicoUrl = pimlico(CHAIN_ID, process.env.PIMLICO_API_KEY)
 const client = new JsonRpcProvider(alchemyUrl)
 const bundler = new ERC4337Bundler(pimlicoUrl)
 
-const owner = new Wallet(process.env.dev7702pk)
+const owner = new Wallet(process.env.DEV_7702_PK)
 const signer: SignerBehavior = {
 	signHash: async hash => {
 		return owner.signMessage(hash)

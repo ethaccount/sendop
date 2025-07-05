@@ -11,7 +11,7 @@ import { ERC4337Bundler, type TypedData } from 'ethers-erc4337'
 import { alchemy, pimlico } from 'evm-providers'
 import { executeUserOperation } from './helpers'
 
-const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', dev7702pk = '' } = process.env
+const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', DEV_7702_PK = '' } = process.env
 
 if (!ALCHEMY_API_KEY) {
 	throw new Error('ALCHEMY_API_KEY is not set')
@@ -33,7 +33,7 @@ const bundlerUrl = pimlico(CHAIN_ID, PIMLICO_API_KEY)
 const client = new JsonRpcProvider(rpcUrl)
 const bundler = new ERC4337Bundler(bundlerUrl)
 
-const wallet = new Wallet(dev7702pk)
+const wallet = new Wallet(DEV_7702_PK)
 const signer: SignerBehavior = {
 	signHash: async (hash: Uint8Array) => {
 		return wallet.signingKey.sign(hash).serialized

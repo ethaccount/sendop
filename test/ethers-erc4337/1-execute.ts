@@ -15,8 +15,8 @@ if (!process.env.PIMLICO_API_KEY) {
 	throw new Error('PIMLICO_API_KEY is not set')
 }
 
-if (!process.env.dev7702pk) {
-	throw new Error('dev7702pk is not set')
+if (!process.env.DEV_7702_PK) {
+	throw new Error('DEV_7702_PK is not set')
 }
 
 if (!process.env.acc1pk) {

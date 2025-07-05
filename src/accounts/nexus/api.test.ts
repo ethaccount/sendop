@@ -11,13 +11,13 @@ if (!process.env.ALCHEMY_API_KEY) {
 	throw new Error('ALCHEMY_API_KEY is not set')
 }
 
-if (!process.env.dev7702pk) {
-	throw new Error('dev7702pk is not set')
+if (!process.env.DEV_7702_PK) {
+	throw new Error('DEV_7702_PK is not set')
 }
 
 const CHAIN_ID = 84532
 const alchemyUrl = alchemy(CHAIN_ID, process.env.ALCHEMY_API_KEY)
-const signer = new Wallet(process.env.dev7702pk)
+const signer = new Wallet(process.env.DEV_7702_PK)
 const client = new JsonRpcProvider(alchemyUrl)
 
 describe('Nexus API', () => {
