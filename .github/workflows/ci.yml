@@ -60,7 +60,7 @@ jobs:
               run: bun run build
 
             - name: Run tests
-              run: bun test
+              run: bun run test
 
             - name: Stop Docker services
               if: always()
