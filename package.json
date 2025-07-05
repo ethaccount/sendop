@@ -1,6 +1,6 @@
 {
 	"name": "sendop",
-	"version": "0.4.2",
+	"version": "0.5.0-beta.1",
 	"description": "A TypeScript library for sending user operations for ERC-4337 contracts.",
 	"author": "Johnson Chen <johnson86tw@gmail.com>",
 	"repository": "https://github.com/ethaccount/sendop",
@@ -14,6 +14,10 @@
 	"engines": {
 		"bun": ">=1.1.0"
 	},
+	"workspaces": [
+		".",
+		"ethers-erc4337"
+	],
 	"scripts": {
 		"build": "vite build",
 		"build:contract-types": "bun run script/gen-addresses.ts && bun run fetch-abis && bun run typechain && bun run script/gen-interfaces.ts",
@@ -32,7 +36,7 @@
 		"src",
 		"tsconfig.json"
 	],
-	"main": "./dist/index.umd.cjs",
+	"main": "./dist/index.js",
 	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"exports": {
@@ -46,17 +50,21 @@
 		}
 	},
 	"peerDependencies": {
-		"ethers": "^6.13.5"
+		"ethers": "^6.15.0",
+		"ethers-erc4337": "workspace:*"
 	},
 	"devDependencies": {
+		"@rhinestone/module-sdk": "^0.2.10",
 		"@typechain/ethers-v6": "^0.5.1",
 		"@types/yargs": "^17.0.33",
 		"consola": "^3.2.3",
 		"dotenv": "^16.4.7",
+		"ethers-erc4337": "workspace:*",
 		"evm-providers": "^0.5.7",
 		"husky": "^9.1.7",
 		"rollup-plugin-visualizer": "^5.14.0",
 		"typechain": "^8.3.2",
+		"viem": "^2.31.6",
 		"vite": "^6.2.0",
 		"vite-plugin-dts": "^4.4.0",
 		"vitest": "^2.1.8",
