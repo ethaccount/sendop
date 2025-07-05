@@ -77,7 +77,7 @@ export async function buildAccountExecutions({
 	bundler: ERC4337Bundler
 	executions: Execution[]
 }) {
-	return new UserOpBuilder(bundler, accountAPI.entryPointAddress, chainId)
+	return new UserOpBuilder({ chainId, bundler, entryPointAddress: accountAPI.entryPointAddress })
 		.setSender(accountAddress)
 		.setCallData(await accountAPI.getCallData(executions))
 		.setNonce(await accountAPI.getNonce(client, accountAddress))

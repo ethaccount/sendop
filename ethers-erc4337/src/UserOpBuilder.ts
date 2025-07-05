@@ -1,5 +1,5 @@
 import type { BigNumberish, EthersError } from 'ethers'
-import { getBigInt, getBytes, hexlify, isAddress, isError, ZeroAddress } from 'ethers'
+import { getBytes, hexlify, isError, ZeroAddress } from 'ethers'
 import { INITCODE_EIP7702_MARKER } from './constants'
 import { packUserOp, toUserOpHex } from './conversion-utils'
 import { type ERC4337Bundler } from './ERC4337Bundler'
@@ -22,24 +22,63 @@ import {
 
 export class UserOpBuilder {
 	private userOp: UserOperation
-	private bundler: ERC4337Bundler
-	#entryPointAddress: string
-	private chainId: number
+	private _chainId: number
+	private _bundler?: ERC4337Bundler
+	private _entryPointAddress?: string
 
-	constructor(bundler: ERC4337Bundler, entryPointAddress: string, chainId: BigNumberish) {
+	constructor({
+		chainId,
+		bundler,
+		entryPointAddress,
+	}: {
+		chainId: BigNumberish
+		bundler?: ERC4337Bundler
+		entryPointAddress?: string
+	}) {
 		this.userOp = getEmptyUserOp()
-		this.bundler = bundler
-		this.#entryPointAddress = entryPointAddress
-		this.chainId = Number(chainId)
+		this._bundler = bundler
+		this._chainId = Number(chainId)
+		this._entryPointAddress = entryPointAddress
 	}
 
 	setEntryPoint(entryPointAddress: string): UserOpBuilder {
-		this.#entryPointAddress = entryPointAddress
+		this._entryPointAddress = entryPointAddress
 		return this
 	}
 
-	get entryPointAddress() {
-		return this.#entryPointAddress
+	setBundler(bundler: ERC4337Bundler): UserOpBuilder {
+		this._bundler = bundler
+		return this
+	}
+
+	get entryPointAddress(): string | undefined {
+		return this._entryPointAddress
+	}
+
+	get bundler(): ERC4337Bundler | undefined {
+		return this._bundler
+	}
+
+	get chainId(): number {
+		return this._chainId
+	}
+
+	private checkEntryPointAddress(): void {
+		if (!this._entryPointAddress) {
+			throw new Error('[UserOpBuilder] entry point address is not set')
+		}
+	}
+
+	private checkBundler(): void {
+		if (!this._bundler) {
+			throw new Error('[UserOpBuilder] bundler is not set')
+		}
+	}
+
+	private checkSender(): void {
+		if (!this.userOp.sender || this.userOp.sender === ZeroAddress) {
+			throw new Error('[UserOpBuilder] sender is not set')
+		}
 	}
 
 	setSender(sender: string): UserOpBuilder {
@@ -123,18 +162,82 @@ export class UserOpBuilder {
 	}
 
 	hash(): string {
+		this.checkEntryPointAddress()
 		if (isEip7702UserOp(this.userOp)) {
 			if (!this.userOp.eip7702Auth) {
 				throw new Error('[UserOpBuilder#hash] EIP-7702 auth is not set')
 			}
-			return hexlify(getUserOpHashWithEip7702(this.userOp, this.chainId, this.userOp.eip7702Auth.address))
+			return hexlify(getUserOpHashWithEip7702(this.userOp, this._chainId, this.userOp.eip7702Auth.address))
 		}
-		return hexlify(getUserOpHash(this.userOp, this.entryPointAddress, this.chainId))
+		return hexlify(getUserOpHash(this.userOp, this._entryPointAddress!, this._chainId))
 	}
 
 	typedData(): TypedData {
-		const { domain, types } = getV08DomainAndTypes(this.chainId)
+		const { domain, types } = getV08DomainAndTypes(this._chainId)
 		return [domain, types, this.pack()]
+	}
+
+	async estimateGas(): Promise<void> {
+		this.checkSender()
+		this.checkEntryPointAddress()
+		this.checkBundler()
+
+		try {
+			const estimations = await this._bundler!.estimateUserOperationGas(this.userOp, this._entryPointAddress!)
+			this.userOp.verificationGasLimit = estimations.verificationGasLimit
+			this.userOp.preVerificationGas = estimations.preVerificationGas
+			this.userOp.callGasLimit = estimations.callGasLimit
+			this.userOp.paymasterVerificationGasLimit = estimations.paymasterVerificationGasLimit
+		} catch (e: unknown) {
+			if (isError(e, (e as EthersError).code)) {
+				throw new Error(`[UserOpBuilder#estimateGas] ${e.error?.message}`)
+			} else {
+				throw new Error(`[UserOpBuilder#estimateGas] ${e}`)
+			}
+		}
+	}
+
+	async signUserOpHash(fn: (userOpHash: Uint8Array) => Promise<string>): Promise<void> {
+		const signature = await fn(getBytes(this.hash()))
+		this.userOp.signature = signature
+	}
+
+	async signUserOpTypedData(fn: (typedData: TypedData) => Promise<string>): Promise<void> {
+		const signature = await fn(this.typedData())
+		this.userOp.signature = signature
+	}
+
+	async send(): Promise<string> {
+		this.checkSender()
+		this.checkEntryPointAddress()
+		this.checkBundler()
+
+		try {
+			return await this._bundler!.sendUserOperation(this.userOp, this._entryPointAddress!)
+		} catch (e: unknown) {
+			if (isError(e, (e as EthersError).code)) {
+				throw new Error(`[UserOpBuilder#send] ${e.error?.message}`)
+			} else {
+				throw new Error(`[UserOpBuilder#send] ${e}`)
+			}
+		}
+	}
+
+	async wait(): Promise<UserOperationReceipt> {
+		this.checkBundler()
+		return await this._bundler!.waitForReceipt(this.hash())
+	}
+
+	async execute(): Promise<{
+		hash: string
+		receipt: UserOperationReceipt
+	}> {
+		const hash = await this.send()
+		const receipt = await this.wait()
+		return {
+			hash,
+			receipt,
+		}
 	}
 
 	encodeHandleOpsData(
@@ -197,74 +300,5 @@ export class UserOpBuilder {
 			[packUserOp(newUserOp)],
 			beneficiary,
 		])
-	}
-
-	async estimateGas(): Promise<void> {
-		if (!this.userOp.sender || this.userOp.sender === ZeroAddress) {
-			throw new Error('[UserOpBuilder#estimateGas] sender is not set')
-		}
-		if (!this.userOp.nonce) {
-			throw new Error('[UserOpBuilder#estimateGas] nonce is not set')
-		}
-
-		try {
-			const estimations = await this.bundler.estimateUserOperationGas(this.userOp, this.entryPointAddress)
-			this.userOp.verificationGasLimit = estimations.verificationGasLimit
-			this.userOp.preVerificationGas = estimations.preVerificationGas
-			this.userOp.callGasLimit = estimations.callGasLimit
-			this.userOp.paymasterVerificationGasLimit = estimations.paymasterVerificationGasLimit
-		} catch (e: unknown) {
-			if (isError(e, (e as EthersError).code)) {
-				throw new Error(`[UserOpBuilder#estimateGas] ${e.error?.message}`)
-			} else {
-				throw new Error(`[UserOpBuilder#estimateGas] ${e}`)
-			}
-		}
-	}
-
-	async signUserOpHash(fn: (userOpHash: Uint8Array) => Promise<string>): Promise<void> {
-		const signature = await fn(getBytes(this.hash()))
-		this.userOp.signature = signature
-	}
-
-	async signUserOpTypedData(fn: (typedData: TypedData) => Promise<string>): Promise<void> {
-		const signature = await fn(this.typedData())
-		this.userOp.signature = signature
-	}
-
-	async send(): Promise<string> {
-		// To remind user to estimate gas first before sending
-		if (getBigInt(this.userOp.verificationGasLimit) === 0n) {
-			throw new Error('[UserOpBuilder#send] verificationGasLimit is 0')
-		}
-		if (getBigInt(this.userOp.preVerificationGas) === 0n) {
-			throw new Error('[UserOpBuilder#send] preVerificationGas is 0')
-		}
-
-		try {
-			return await this.bundler.sendUserOperation(this.userOp, this.entryPointAddress)
-		} catch (e: unknown) {
-			if (isError(e, (e as EthersError).code)) {
-				throw new Error(`[UserOpBuilder#send] ${e.error?.message}`)
-			} else {
-				throw new Error(`[UserOpBuilder#send] ${e}`)
-			}
-		}
-	}
-
-	async wait(): Promise<UserOperationReceipt> {
-		return await this.bundler.waitForReceipt(this.hash())
-	}
-
-	async execute(): Promise<{
-		hash: string
-		receipt: UserOperationReceipt
-	}> {
-		const hash = await this.send()
-		const receipt = await this.wait()
-		return {
-			hash,
-			receipt,
-		}
 	}
 }

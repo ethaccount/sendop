@@ -50,7 +50,7 @@ console.log('auth', auth)
 
 console.log('verifyAuthorization', verifyAuthorization(auth, auth.signature) === dev7702)
 
-const userop = new UserOpBuilder(bundler, entryPointAddress, CHAIN_ID)
+const userop = new UserOpBuilder({ chainId: CHAIN_ID, bundler, entryPointAddress })
 	.setSender(dev7702)
 	.setEIP7702Auth({
 		chainId: CHAIN_ID,
