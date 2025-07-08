@@ -1,6 +1,6 @@
 {
 	"name": "ethers-erc4337",
-	"version": "0.0.3",
+	"version": "0.0.4-beta.2",
 	"description": "ERC-4337 utilities for ethers.js",
 	"author": "Johnson Chen <johnson86tw@gmail.com>",
 	"repository": "https://github.com/ethaccount/sendop/tree/main/ethers-erc4337",

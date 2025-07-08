@@ -189,11 +189,7 @@ export class UserOpBuilder {
 			this.userOp.callGasLimit = estimations.callGasLimit
 			this.userOp.paymasterVerificationGasLimit = estimations.paymasterVerificationGasLimit
 		} catch (e: unknown) {
-			if (isError(e, (e as EthersError).code)) {
-				throw new Error(`[UserOpBuilder#estimateGas] ${e.error?.message}`)
-			} else {
-				throw new Error(`[UserOpBuilder#estimateGas] ${e}`)
-			}
+			throw e
 		}
 	}
 
@@ -215,11 +211,7 @@ export class UserOpBuilder {
 		try {
 			return await this._bundler!.sendUserOperation(this.userOp, this._entryPointAddress!)
 		} catch (e: unknown) {
-			if (isError(e, (e as EthersError).code)) {
-				throw new Error(`[UserOpBuilder#send] ${e.error?.message}`)
-			} else {
-				throw new Error(`[UserOpBuilder#send] ${e}`)
-			}
+			throw e
 		}
 	}
 
