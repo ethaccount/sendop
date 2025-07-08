@@ -101,7 +101,7 @@ private validate(): void {
 
 **2. Add Serialization Support**
 ```typescript
-toJSON(): string {
+toRequest(): string {
   return JSON.stringify({
     userOp: this.userOp,
     chainId: this._chainId,
@@ -109,8 +109,13 @@ toJSON(): string {
   })
 }
 
-static fromJSON(json: string, bundler?: ERC4337Bundler): UserOpBuilder {
-  // reconstruction logic
+static fromUserOp({
+  chainId,
+  op,
+  entryPointAddress,
+  bundler,
+}): UserOpBuilder {
+
 }
 ```
 
