@@ -33,11 +33,10 @@ export default defineConfig({
 		},
 		outDir: 'dist',
 		rollupOptions: {
-			external: ['ethers', 'ethers-erc4337'],
+			external: ['ethers'],
 			output: {
 				globals: {
 					ethers: 'ethers',
-					'ethers-erc4337': 'ethers-erc4337',
 				},
 			},
 		},

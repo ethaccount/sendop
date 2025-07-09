@@ -4,6 +4,7 @@ export * from '@/addresses'
 export * from '@/constants'
 export * from '@/interfaces'
 
+export * from '@/core'
 export * from '@/erc7579'
 export * from '@/accounts'
 export * from '@/validations'

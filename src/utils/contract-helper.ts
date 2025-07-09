@@ -1,17 +1,17 @@
 import { ADDRESS } from '@/addresses'
-import { TEntryPointV07__factory, TEntryPointV08__factory, TRegistry__factory } from '@/contract-types'
-import { packUserOp, type UserOperation } from 'ethers-erc4337'
+import { EntryPointV07__factory, EntryPointV08__factory, Registry__factory } from '@/contract-types'
+import { packUserOp, type UserOperation } from '@/core'
 import { INTERFACES } from '@/interfaces'
 import type { ContractRunner } from 'ethers'
 
 export type EntryPointVersion = 'v0.7' | 'v0.8'
 
 export function connectEntryPointV07(runner: ContractRunner) {
-	return TEntryPointV07__factory.connect(ADDRESS.EntryPointV07, runner)
+	return EntryPointV07__factory.connect(ADDRESS.EntryPointV07, runner)
 }
 
 export function connectEntryPointV08(runner: ContractRunner) {
-	return TEntryPointV08__factory.connect(ADDRESS.EntryPointV08, runner)
+	return EntryPointV08__factory.connect(ADDRESS.EntryPointV08, runner)
 }
 
 export function connectEntryPoint(version: EntryPointVersion, runner: ContractRunner) {
@@ -24,11 +24,11 @@ export function connectEntryPoint(version: EntryPointVersion, runner: ContractRu
 }
 
 export function connectRegistry(runner: ContractRunner) {
-	return TRegistry__factory.connect(ADDRESS.Registry, runner)
+	return Registry__factory.connect(ADDRESS.Registry, runner)
 }
 
 export function encodeHandleOpsCalldata(userOps: UserOperation[], beneficiary: string) {
-	return TEntryPointV07__factory.createInterface().encodeFunctionData('handleOps', [
+	return EntryPointV07__factory.createInterface().encodeFunctionData('handleOps', [
 		userOps.map(op => packUserOp(op)),
 		beneficiary,
 	])

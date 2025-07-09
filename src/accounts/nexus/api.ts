@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { TNexusFactory__factory } from '@/contract-types'
+import { NexusFactory__factory } from '@/contract-types'
 import { ERC7579_MODULE_TYPE } from '@/erc7579'
 import { INTERFACES } from '@/interfaces'
 import { abiEncode, randomBytes32, sortAndUniquifyAddresses } from '@/utils'
@@ -8,7 +8,7 @@ import { dataLength, isHexString } from 'ethers'
 import { concat } from 'ethers/utils'
 import type { NexusCreationOptions, NexusInstallModuleConfig, NexusUninstallModuleConfig } from './types'
 
-export class Nexus {
+export class NexusAPI {
 	static async getDeployment({
 		client,
 		creationOptions,
@@ -23,7 +23,7 @@ export class Nexus {
 		const initializeData = getInitializeData(fullCreationOptions)
 		const factoryData = INTERFACES.NexusFactory.encodeFunctionData('createAccount', [initializeData, salt])
 
-		const nexusFactory = TNexusFactory__factory.connect(ADDRESS.NexusFactory, client)
+		const nexusFactory = NexusFactory__factory.connect(ADDRESS.NexusFactory, client)
 		const accountAddress = await nexusFactory.computeAccountAddress(initializeData, fullCreationOptions.salt)
 
 		return { factory: ADDRESS.NexusFactory, factoryData, accountAddress }

@@ -5,7 +5,7 @@ import { getOwnableValidator } from '@rhinestone/module-sdk'
 import { JsonRpcProvider, Wallet } from 'ethers'
 import { alchemy } from 'evm-providers'
 import { describe, expect, it } from 'vitest'
-import { Nexus } from './api'
+import { NexusAPI } from './api'
 
 if (!process.env.ALCHEMY_API_KEY) {
 	throw new Error('ALCHEMY_API_KEY is not set')
@@ -27,7 +27,7 @@ describe('Nexus API', () => {
 	})
 
 	it('#getDeployment', async () => {
-		const deployment = await Nexus.getDeployment({
+		const deployment = await NexusAPI.getDeployment({
 			client,
 			creationOptions: {
 				bootstrap: 'initNexusWithSingleValidator',
@@ -45,7 +45,7 @@ describe('Nexus API', () => {
 	})
 
 	it('#encodeInstallModule', () => {
-		const encoded = Nexus.encodeInstallModule({
+		const encoded = NexusAPI.encodeInstallModule({
 			moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 			moduleAddress: ADDRESS.WebAuthnValidator,
 			initData: '0x1234',
@@ -54,7 +54,7 @@ describe('Nexus API', () => {
 	})
 
 	it('#encodeUninstallModule', () => {
-		const encoded = Nexus.encodeUninstallModule({
+		const encoded = NexusAPI.encodeUninstallModule({
 			moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 			moduleAddress: ADDRESS.WebAuthnValidator,
 			deInitData: '0x1234',

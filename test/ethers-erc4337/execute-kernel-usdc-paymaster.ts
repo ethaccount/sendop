@@ -1,4 +1,4 @@
-import { Kernel, KernelAccountAPI } from '@/accounts'
+import { KernelAccountAPI, KernelAPI } from '@/accounts'
 import { ADDRESS } from '@/addresses'
 import { INTERFACES } from '@/interfaces'
 import { createUSDCPaymaster } from '@/paymasters/usdc-paymaster'
@@ -7,7 +7,7 @@ import { toBytes32 } from '@/utils'
 import { getECDSAValidator } from '@/validations/getECDSAValidator'
 import { SingleEOAValidation } from '@/validations/SingleEOAValidation'
 import { getBytes, JsonRpcProvider, TypedDataEncoder, Wallet } from 'ethers'
-import { ERC4337Bundler, type TypedData } from 'ethers-erc4337'
+import { ERC4337Bundler, type TypedData } from '@/core'
 import { alchemy, pimlico } from 'evm-providers'
 import { executeUserOperation } from './helpers'
 
@@ -42,7 +42,7 @@ const signer: SignerBehavior = {
 
 const ecdsaValidator = getECDSAValidator({ ownerAddress: dev7702 })
 
-const { accountAddress } = await Kernel.getDeployment({
+const { accountAddress } = await KernelAPI.getDeployment({
 	client,
 	validatorAddress: ecdsaValidator.address,
 	validatorData: ecdsaValidator.initData,
@@ -58,7 +58,7 @@ const usdcPaymaster = await createUSDCPaymaster({
 	paymasterAddress: USDC_PAYMASTER_ADDRESS,
 	usdcAddress: USDC_ADDRESS,
 	signTypedData: async (typedData: TypedData) => {
-		return await Kernel.sign1271({
+		return await KernelAPI.sign1271({
 			version: '0.3.3',
 			validator: ADDRESS.ECDSAValidator,
 			hash: getBytes(TypedDataEncoder.hash(...typedData)),

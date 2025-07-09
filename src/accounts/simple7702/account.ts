@@ -1,8 +1,9 @@
+import { EntryPointV08__factory } from '@/contract-types'
+import { ENTRY_POINT_V08_ADDRESS } from '@/core'
 import { INTERFACES } from '@/interfaces'
 import { type AccountAPI, type Execution } from '@/types'
 import { SingleEOAValidation } from '@/validations/SingleEOAValidation'
 import type { JsonRpcProvider } from 'ethers'
-import { ENTRY_POINT_V08_ADDRESS, EntryPointV08__factory } from 'ethers-erc4337'
 
 export class Simple7702AccountAPI extends SingleEOAValidation implements AccountAPI {
 	id = 'infinitism.Simple7702Account.0.8.0'

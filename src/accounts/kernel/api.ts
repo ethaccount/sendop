@@ -8,7 +8,7 @@ import { getNonceKey } from './api/getNonceKey'
 import { sign1271 } from './api/sign1271'
 import type { KernelInstallModuleConfig, KernelUninstallModuleConfig } from './types'
 
-export class Kernel {
+export class KernelAPI {
 	static async getDeployment({
 		client,
 		validatorAddress,

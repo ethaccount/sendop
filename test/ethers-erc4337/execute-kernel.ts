@@ -1,4 +1,4 @@
-import { Kernel, KernelAccountAPI } from '@/accounts'
+import { KernelAccountAPI, KernelAPI } from '@/accounts'
 import { ADDRESS } from '@/addresses'
 import { INTERFACES } from '@/interfaces'
 import { PublicPaymaster } from '@/paymasters'
@@ -6,7 +6,7 @@ import { toBytes32 } from '@/utils'
 import { getECDSAValidator } from '@/validations/getECDSAValidator'
 import { SingleEOAValidation } from '@/validations/SingleEOAValidation'
 import { JsonRpcProvider, Wallet } from 'ethers'
-import { ERC4337Bundler } from 'ethers-erc4337'
+import { ERC4337Bundler } from '@/core'
 import { alchemy, pimlico } from 'evm-providers'
 import { executeUserOperation } from './helpers'
 
@@ -40,7 +40,7 @@ const signer = {
 	},
 }
 
-const { accountAddress } = await Kernel.getDeployment({
+const { accountAddress } = await KernelAPI.getDeployment({
 	client,
 	validatorAddress: ecdsaValidator.address,
 	validatorData: ecdsaValidator.initData,

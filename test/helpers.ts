@@ -1,7 +1,7 @@
 import type { AccountAPI, Execution, PaymasterAPI } from '@/types'
 import type { Signer } from 'ethers'
 import { getBytes, JsonRpcProvider } from 'ethers'
-import { ERC4337Bundler, UserOpBuilder, type UserOperationReceipt } from 'ethers-erc4337'
+import { ERC4337Bundler, UserOpBuilder, type UserOperationReceipt } from '@/core'
 
 export async function executeUserOperation({
 	accountAPI,

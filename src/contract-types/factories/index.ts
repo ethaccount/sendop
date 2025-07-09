@@ -2,20 +2,19 @@
 /* tslint:disable */
 /* eslint-disable */
 export * as manual from "./manual";
-export { TCounter__factory } from "./TCounter__factory";
-export { TECDSAValidator__factory } from "./TECDSAValidator__factory";
-export { TERC20SpendingLimitPolicy__factory } from "./TERC20SpendingLimitPolicy__factory";
-export { TEntryPointV07__factory } from "./TEntryPointV07__factory";
-export { TEntryPointV08__factory } from "./TEntryPointV08__factory";
-export { TKernelV3__factory } from "./TKernelV3__factory";
-export { TKernelV3Factory__factory } from "./TKernelV3Factory__factory";
-export { TNexus__factory } from "./TNexus__factory";
-export { TNexusBootstrap__factory } from "./TNexusBootstrap__factory";
-export { TNexusFactory__factory } from "./TNexusFactory__factory";
-export { TRegistry__factory } from "./TRegistry__factory";
-export { TSimple7702AccountV08__factory } from "./TSimple7702AccountV08__factory";
-export { TSimpleAccountFactoryV08__factory } from "./TSimpleAccountFactoryV08__factory";
-export { TSmartSession__factory } from "./TSmartSession__factory";
-export { TSudoPolicy__factory } from "./TSudoPolicy__factory";
-export { TUniActionPolicy__factory } from "./TUniActionPolicy__factory";
-export { TWebAuthnValidator__factory } from "./TWebAuthnValidator__factory";
+export { Counter__factory } from "./Counter__factory";
+export { ECDSAValidator__factory } from "./ECDSAValidator__factory";
+export { ERC20SpendingLimitPolicy__factory } from "./ERC20SpendingLimitPolicy__factory";
+export { EntryPointV07__factory } from "./EntryPointV07__factory";
+export { EntryPointV08__factory } from "./EntryPointV08__factory";
+export { KernelV3__factory } from "./KernelV3__factory";
+export { KernelV3Factory__factory } from "./KernelV3Factory__factory";
+export { Nexus__factory } from "./Nexus__factory";
+export { NexusBootstrap__factory } from "./NexusBootstrap__factory";
+export { NexusFactory__factory } from "./NexusFactory__factory";
+export { Registry__factory } from "./Registry__factory";
+export { Simple7702AccountV08__factory } from "./Simple7702AccountV08__factory";
+export { SimpleAccountFactoryV08__factory } from "./SimpleAccountFactoryV08__factory";
+export { SmartSession__factory } from "./SmartSession__factory";
+export { SudoPolicy__factory } from "./SudoPolicy__factory";
+export { WebAuthnValidator__factory } from "./WebAuthnValidator__factory";

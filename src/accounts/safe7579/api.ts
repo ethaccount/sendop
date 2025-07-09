@@ -1,5 +1,5 @@
 import { ADDRESS } from '@/addresses'
-import { TSafe7579Launchpad__factory, TSafeProxyFactory__factory } from '@/contract-types'
+import { Safe7579Launchpad__factory, SafeProxyFactory__factory } from '@/contract-types'
 import { ERC7579_MODULE_TYPE } from '@/erc7579'
 import { INTERFACES } from '@/interfaces'
 import { abiEncode, randomBytes32, sortAndUniquifyAddresses } from '@/utils'
@@ -13,7 +13,7 @@ import {
 	type Safe7579UninstallModuleConfig,
 } from './types'
 
-export class Safe7579 {
+export class Safe7579API {
 	static async getDeployment({
 		client,
 		creationOptions,
@@ -25,26 +25,26 @@ export class Safe7579 {
 	}) {
 		const fullCreationOptions = { ...creationOptions, salt }
 
-		const initializer = Safe7579.getInitializer(fullCreationOptions)
+		const initializer = Safe7579API.getInitializer(fullCreationOptions)
 		const factoryData = INTERFACES.SafeProxyFactory.encodeFunctionData('createProxyWithNonce', [
 			ADDRESS.Safe,
 			initializer,
 			salt,
 		])
 
-		const accountAddress = await Safe7579.computeAccountAddress(client, fullCreationOptions)
+		const accountAddress = await Safe7579API.computeAccountAddress(client, fullCreationOptions)
 
 		return { factory: ADDRESS.SafeProxyFactory, factoryData, accountAddress }
 	}
 
 	static async computeAccountAddress(client: JsonRpcProvider, creationOptions: Safe7579CreationOptions) {
-		const initializer = Safe7579.getInitializer(creationOptions)
-		const launchpad = TSafe7579Launchpad__factory.connect(ADDRESS.Safe7579Launchpad, client)
+		const initializer = Safe7579API.getInitializer(creationOptions)
+		const launchpad = Safe7579Launchpad__factory.connect(ADDRESS.Safe7579Launchpad, client)
 
 		return await launchpad.predictSafeAddress(
 			ADDRESS.Safe,
 			ADDRESS.SafeProxyFactory,
-			await TSafeProxyFactory__factory.connect(ADDRESS.SafeProxyFactory, client).proxyCreationCode(),
+			await SafeProxyFactory__factory.connect(ADDRESS.SafeProxyFactory, client).proxyCreationCode(),
 			creationOptions.salt,
 			initializer,
 		)
@@ -55,7 +55,7 @@ export class Safe7579 {
 			ADDRESS.SafeProxyFactory,
 			INTERFACES.SafeProxyFactory.encodeFunctionData('createProxyWithNonce', [
 				ADDRESS.Safe,
-				Safe7579.getInitializer(creationOptions),
+				Safe7579API.getInitializer(creationOptions),
 				creationOptions.salt,
 			]),
 		])

@@ -4,7 +4,7 @@ import { INTERFACES } from '@/interfaces'
 import { createUSDCPaymaster } from '@/paymasters/usdc-paymaster'
 import type { SignerBehavior } from '@/types'
 import { JsonRpcProvider, parseUnits, Wallet } from 'ethers'
-import { ERC4337Bundler, type TypedData } from 'ethers-erc4337'
+import { ERC4337Bundler, type TypedData } from '@/core'
 import { alchemy, pimlico } from 'evm-providers'
 import { executeUserOperation } from './helpers'
 
