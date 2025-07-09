@@ -1,17 +1,9 @@
 import type { BigNumberish } from 'ethers'
-import {
-	AbiCoder,
-	getBigInt,
-	getBytes,
-	keccak256,
-	TypedDataEncoder,
-	ZeroAddress,
-	type TypedDataDomain,
-	type TypedDataField,
-} from 'ethers'
+import { AbiCoder, getBigInt, getBytes, keccak256, TypedDataEncoder, ZeroAddress, type TypedDataDomain } from 'ethers'
 import type { UserOperation } from './UserOperation'
 import { ENTRY_POINT_V07_ADDRESS, ENTRY_POINT_V08_ADDRESS, INITCODE_EIP7702_MARKER } from './constants'
 import { packUserOp } from './conversion-utils'
+import type { TypedDataTypes } from './types'
 
 export function getEmptyUserOp(): UserOperation {
 	return {
@@ -96,10 +88,6 @@ export function getUserOpHashV08(userOp: UserOperation, chainId: BigNumberish): 
 	const { domain, types } = getV08DomainAndTypes(chainId)
 	return getBytes(TypedDataEncoder.hash(domain, types, packedUserOp))
 }
-
-export type TypedData = [TypedDataDomain, TypedDataTypes, TypedDataValues]
-export type TypedDataTypes = Record<string, Array<TypedDataField>>
-export type TypedDataValues = Record<string, any>
 
 export function getV08DomainAndTypes(chainId: BigNumberish): {
 	domain: TypedDataDomain

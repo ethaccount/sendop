@@ -4,6 +4,7 @@ import { INITCODE_EIP7702_MARKER } from './constants'
 import { packUserOp, toUserOpHex } from './conversion-utils'
 import { type ERC4337Bundler } from './ERC4337Bundler'
 import { EntryPointV08__factory } from './typechain'
+import type { TypedData } from './types'
 import type {
 	EIP7702Authorization,
 	PackedUserOperation,
@@ -11,14 +12,7 @@ import type {
 	UserOperationHex,
 	UserOperationReceipt,
 } from './UserOperation'
-import {
-	getEmptyUserOp,
-	getUserOpHash,
-	getUserOpHashWithEip7702,
-	getV08DomainAndTypes,
-	isEip7702UserOp,
-	type TypedData,
-} from './utils'
+import { getEmptyUserOp, getUserOpHash, getUserOpHashWithEip7702, getV08DomainAndTypes, isEip7702UserOp } from './utils'
 
 export class UserOpBuilder {
 	private userOp: UserOperation
