@@ -1,6 +1,6 @@
 import { EntryPointV08__factory } from '@/contract-types'
-import type { BigNumberish, EthersError } from 'ethers'
-import { getBytes, hexlify, isError, ZeroAddress } from 'ethers'
+import type { BigNumberish } from 'ethers'
+import { getBytes, hexlify, ZeroAddress } from 'ethers'
 import { INITCODE_EIP7702_MARKER } from './constants'
 import { packUserOp, toUserOpHex } from './conversion-utils'
 import { type ERC4337Bundler } from './ERC4337Bundler'
@@ -176,19 +176,11 @@ export class UserOpBuilder {
 		this.checkEntryPointAddress()
 		this.checkBundler()
 
-		try {
-			const estimations = await this._bundler!.estimateUserOperationGas(this.userOp, this._entryPointAddress!)
-			this.userOp.verificationGasLimit = estimations.verificationGasLimit
-			this.userOp.preVerificationGas = estimations.preVerificationGas
-			this.userOp.callGasLimit = estimations.callGasLimit
-			this.userOp.paymasterVerificationGasLimit = estimations.paymasterVerificationGasLimit
-		} catch (e: unknown) {
-			if (isError(e, (e as EthersError).code)) {
-				throw new Error(`[UserOpBuilder#estimateGas] ${e.error?.message || e.error || e}`)
-			} else {
-				throw new Error(`[UserOpBuilder#estimateGas] ${e}`)
-			}
-		}
+		const estimations = await this._bundler!.estimateUserOperationGas(this.userOp, this._entryPointAddress!)
+		this.userOp.verificationGasLimit = estimations.verificationGasLimit
+		this.userOp.preVerificationGas = estimations.preVerificationGas
+		this.userOp.callGasLimit = estimations.callGasLimit
+		this.userOp.paymasterVerificationGasLimit = estimations.paymasterVerificationGasLimit
 	}
 
 	async signUserOpHash(fn: (userOpHash: Uint8Array) => Promise<string>): Promise<void> {
@@ -206,15 +198,7 @@ export class UserOpBuilder {
 		this.checkEntryPointAddress()
 		this.checkBundler()
 
-		try {
-			return await this._bundler!.sendUserOperation(this.userOp, this._entryPointAddress!)
-		} catch (e: unknown) {
-			if (isError(e, (e as EthersError).code)) {
-				throw new Error(`[UserOpBuilder#send] ${e.error?.message || e.error || e}`)
-			} else {
-				throw new Error(`[UserOpBuilder#send] ${e}`)
-			}
-		}
+		return await this._bundler!.sendUserOperation(this.userOp, this._entryPointAddress!)
 	}
 
 	async wait(): Promise<UserOperationReceipt> {
