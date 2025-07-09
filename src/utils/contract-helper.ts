@@ -34,14 +34,19 @@ export function encodeHandleOpsCalldata(userOps: UserOperation[], beneficiary: s
 	])
 }
 
-export function parseContractError(revert: string): string {
+export function parseContractError(revert: string, nameOnly?: boolean): string {
 	if (!revert) return ''
 
 	for (const [name, iface] of Object.entries(INTERFACES)) {
 		try {
 			const decodedError = iface.parseError(revert)
+
 			if (decodedError) {
 				const errorArgs = decodedError.args.length > 0 ? `(${decodedError.args.join(', ')})` : ''
+
+				if (nameOnly) {
+					return revert + ` (${decodedError.name}${errorArgs})`
+				}
 				return `${name}.${decodedError.name}${errorArgs} (Note: The prefix "${name}" may not correspond to the actual contract that triggered the revert.)`
 			}
 		} catch {
@@ -51,4 +56,19 @@ export function parseContractError(revert: string): string {
 	}
 
 	return ''
+}
+
+export function extractHexString(input: string): string | null {
+	// Regex to match 0x followed by one or more hex characters
+	const hexPattern = /0x[0-9a-fA-F]+/
+	const match = input.match(hexPattern)
+
+	return match ? match[0] : null
+}
+
+export function replaceHexString(input: string, replacement: string): string {
+	// Regex to match 0x followed by one or more hex characters
+	const hexPattern = /0x[0-9a-fA-F]+/g
+
+	return input.replace(hexPattern, replacement)
 }
