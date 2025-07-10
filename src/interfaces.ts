@@ -18,6 +18,9 @@ import { IFallback__factory } from '@/contract-types/factories/manual/IERC7579Mo
 import { IHook__factory } from '@/contract-types/factories/manual/IERC7579Modules.sol/IHook__factory';
 import { IExecutor__factory } from '@/contract-types/factories/manual/IERC7579Modules.sol/IExecutor__factory';
 import { ScheduledOrders__factory } from '@/contract-types/factories/manual/ScheduledOrders__factory';
+import { IERC20Errors__factory } from '@/contract-types/factories/manual/draft-IERC6093.sol/IERC20Errors__factory';
+import { IERC1155Errors__factory } from '@/contract-types/factories/manual/draft-IERC6093.sol/IERC1155Errors__factory';
+import { IERC721Errors__factory } from '@/contract-types/factories/manual/draft-IERC6093.sol/IERC721Errors__factory';
 import { ScheduledTransfers__factory } from '@/contract-types/factories/manual/ScheduledTransfers__factory';
 import { IERC20__factory } from '@/contract-types/factories/manual/IERC20__factory';
 import { OwnableValidator__factory } from '@/contract-types/factories/manual/OwnableValidator__factory';
@@ -57,6 +60,9 @@ export const INTERFACES = {
     IHook: IHook__factory.createInterface(),
     IExecutor: IExecutor__factory.createInterface(),
     ScheduledOrders: ScheduledOrders__factory.createInterface(),
+    IERC20Errors: IERC20Errors__factory.createInterface(),
+    IERC1155Errors: IERC1155Errors__factory.createInterface(),
+    IERC721Errors: IERC721Errors__factory.createInterface(),
     ScheduledTransfers: ScheduledTransfers__factory.createInterface(),
     IERC20: IERC20__factory.createInterface(),
     OwnableValidator: OwnableValidator__factory.createInterface(),

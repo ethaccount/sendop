@@ -5,6 +5,8 @@ import type * as ierc7579AccountSol from "./IERC7579Account.sol";
 export type { ierc7579AccountSol };
 import type * as ierc7579ModulesSol from "./IERC7579Modules.sol";
 export type { ierc7579ModulesSol };
+import type * as draftIerc6093Sol from "./draft-IERC6093.sol";
+export type { draftIerc6093Sol };
 import type * as safe from "./safe";
 export type { safe };
 export type { IERC1271 } from "./IERC1271";

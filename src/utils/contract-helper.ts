@@ -45,7 +45,7 @@ export function parseContractError(revert: string, nameOnly?: boolean): string {
 				const errorArgs = decodedError.args.length > 0 ? `(${decodedError.args.join(', ')})` : ''
 
 				if (nameOnly) {
-					return revert + ` (${decodedError.name}${errorArgs})`
+					return `${decodedError.name}${errorArgs}`
 				}
 				return `${name}.${decodedError.name}${errorArgs} (Note: The prefix "${name}" may not correspond to the actual contract that triggered the revert.)`
 			}
