@@ -15,8 +15,8 @@ if (!API_KEY) {
 }
 
 const NETWORK_ENDPOINTS = {
-	mainnet: 'https://api.etherscan.io/api',
-	sepolia: 'https://api-sepolia.etherscan.io/api',
+	mainnet: 'https://api.etherscan.io/v2/api?chainid=1',
+	sepolia: 'https://api.etherscan.io/v2/api?chainid=11155111',
 } as const
 
 export type Network = keyof typeof NETWORK_ENDPOINTS

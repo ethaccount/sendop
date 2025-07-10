@@ -1,19 +1,19 @@
 import { ADDRESS } from '@/addresses'
 import { RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
-import type { SessionStruct } from '@/contract-types/TSmartSession'
+import type { SessionStruct } from '@/contract-types/SmartSession'
 import {
 	ERC7579_MODULE_TYPE,
 	getEncodedFunctionParams,
 	getPermissionId,
-	Kernel,
 	KernelAccountAPI,
+	KernelAPI,
 	PublicPaymaster,
 	randomBytes32,
+	Registry__factory,
 	SingleEOAValidation,
 	SMART_SESSIONS_ENABLE_MODE,
+	SmartSession__factory,
 	toBytes32,
-	TRegistry__factory,
-	TSmartSession__factory,
 	type SignerBehavior,
 } from '@/index'
 import { INTERFACES } from '@/interfaces'
@@ -21,7 +21,7 @@ import { getScheduledTransferInitData } from '@/utils'
 import { getECDSAValidator } from '@/validations/getECDSAValidator'
 import { getOwnableValidator } from '@rhinestone/module-sdk'
 import { concat, JsonRpcProvider, parseEther, Wallet, ZeroAddress } from 'ethers'
-import { ERC4337Bundler } from 'ethers-erc4337'
+import { ERC4337Bundler } from '@/core'
 import { alchemy, pimlico } from 'evm-providers'
 import { executeUserOperation } from './helpers'
 
@@ -59,7 +59,7 @@ const signer: SignerBehavior = {
 
 const ecdsaValidator = getECDSAValidator({ ownerAddress: owner.address })
 
-const { factory, factoryData, accountAddress } = await Kernel.getDeployment({
+const { factory, factoryData, accountAddress } = await KernelAPI.getDeployment({
 	client,
 	validatorAddress: ecdsaValidator.address,
 	validatorData: ecdsaValidator.initData,
@@ -109,7 +109,7 @@ console.log(`Permission ID: ${permissionId}`)
 
 const sessions: SessionStruct[] = [session]
 const encodedSessions = getEncodedFunctionParams(
-	TSmartSession__factory.createInterface().encodeFunctionData('enableSessions', [sessions]),
+	SmartSession__factory.createInterface().encodeFunctionData('enableSessions', [sessions]),
 )
 
 const smartSessionInitData = concat([SMART_SESSIONS_ENABLE_MODE, encodedSessions])
@@ -119,7 +119,7 @@ const executions = [
 	{
 		to: ADDRESS.Registry,
 		value: 0n,
-		data: TRegistry__factory.createInterface().encodeFunctionData('trustAttesters', [
+		data: Registry__factory.createInterface().encodeFunctionData('trustAttesters', [
 			1,
 			[RHINESTONE_ATTESTER_ADDRESS],
 		]),
@@ -128,7 +128,7 @@ const executions = [
 	{
 		to: accountAddress,
 		value: 0n,
-		data: Kernel.encodeInstallModule({
+		data: KernelAPI.encodeInstallModule({
 			moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 			moduleAddress: ADDRESS.SmartSession,
 			initData: smartSessionInitData,
@@ -139,7 +139,7 @@ const executions = [
 	{
 		to: accountAddress,
 		value: 0n,
-		data: Kernel.encodeInstallModule({
+		data: KernelAPI.encodeInstallModule({
 			moduleType: ERC7579_MODULE_TYPE.EXECUTOR,
 			moduleAddress: ADDRESS.ScheduledTransfers,
 			initData: getScheduledTransferInitData({

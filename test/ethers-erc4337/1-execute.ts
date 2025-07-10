@@ -3,7 +3,7 @@ import { KernelAccountAPI, KernelValidationType, PublicPaymaster, type SignerBeh
 import { INTERFACES } from '@/interfaces'
 import { SimpleSmartSessionValidation } from '@/validations/SimpleSmartSessionValidation'
 import { JsonRpcProvider, Wallet } from 'ethers'
-import { ERC4337Bundler } from 'ethers-erc4337'
+import { ERC4337Bundler } from '@/core'
 import { alchemy, pimlico } from 'evm-providers'
 import { executeUserOperation } from './helpers'
 

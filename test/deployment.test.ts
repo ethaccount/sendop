@@ -1,4 +1,4 @@
-import { Kernel, KernelAccountAPI, Nexus, NexusAccountAPI, Safe7579, Safe7579AccountAPI } from '@/accounts'
+import { KernelAccountAPI, KernelAPI, NexusAccountAPI, NexusAPI, Safe7579AccountAPI, Safe7579API } from '@/accounts'
 import { ADDRESS } from '@/addresses'
 import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 import { fetchGasPricePimlico } from '@/fetchGasPrice'
@@ -8,7 +8,7 @@ import { getECDSAValidator } from '@/validations/getECDSAValidator'
 import { SingleEOAValidation } from '@/validations/SingleEOAValidation'
 import { getOwnableValidator } from '@rhinestone/module-sdk'
 import { JsonRpcProvider, Wallet } from 'ethers'
-import { ERC4337Bundler } from 'ethers-erc4337'
+import { ERC4337Bundler } from '@/core'
 import { alchemy, pimlico } from 'evm-providers'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { executeUserOperation } from './helpers'
@@ -59,7 +59,7 @@ describe.concurrent('Deploy accounts on base sepolia', () => {
 	})
 
 	it('kernel', async () => {
-		const { accountAddress, factory, factoryData } = await Kernel.getDeployment({
+		const { accountAddress, factory, factoryData } = await KernelAPI.getDeployment({
 			client,
 			validatorAddress: ecdsaValidator.address,
 			validatorData: ecdsaValidator.initData,
@@ -87,7 +87,7 @@ describe.concurrent('Deploy accounts on base sepolia', () => {
 	})
 
 	it('nexus', async () => {
-		const { accountAddress, factory, factoryData } = await Nexus.getDeployment({
+		const { accountAddress, factory, factoryData } = await NexusAPI.getDeployment({
 			client,
 			creationOptions: {
 				bootstrap: 'initNexusWithSingleValidator',
@@ -121,7 +121,7 @@ describe.concurrent('Deploy accounts on base sepolia', () => {
 	})
 
 	it('safe7579', async () => {
-		const { accountAddress, factory, factoryData } = await Safe7579.getDeployment({
+		const { accountAddress, factory, factoryData } = await Safe7579API.getDeployment({
 			client,
 			creationOptions: {
 				validatorAddress: ownableValidator.address,

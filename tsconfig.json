@@ -31,9 +31,8 @@
 		// resolve @
 		"baseUrl": ".",
 		"paths": {
-			"@/*": ["./src/*"],
-			"ethers-erc4337": ["./ethers-erc4337/src/index.ts"]
+			"@/*": ["./src/*"]
 		}
 	},
-	"include": ["src/**/*.ts", "test/**/*.ts", "script/**/*.ts", "ethers-erc4337/src/UserOpBuilder.ts"]
+	"include": ["src/**/*.ts", "test/**/*.ts", "script/**/*.ts"]
 }

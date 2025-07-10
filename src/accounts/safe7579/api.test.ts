@@ -5,7 +5,7 @@ import { getOwnableValidator } from '@rhinestone/module-sdk'
 import { JsonRpcProvider, Wallet } from 'ethers'
 import { alchemy } from 'evm-providers'
 import { describe, expect, it } from 'vitest'
-import { Safe7579 } from './api'
+import { Safe7579API } from './api'
 
 if (!process.env.ALCHEMY_API_KEY) {
 	throw new Error('ALCHEMY_API_KEY is not set')
@@ -27,7 +27,7 @@ describe('Safe7579 API', () => {
 	})
 
 	it('#getDeployment', async () => {
-		const deployment = await Safe7579.getDeployment({
+		const deployment = await Safe7579API.getDeployment({
 			client,
 			creationOptions: {
 				validatorAddress: ownableValidator.address,
@@ -45,7 +45,7 @@ describe('Safe7579 API', () => {
 	})
 
 	it('#encodeInstallModule', () => {
-		const encoded = Safe7579.encodeInstallModule({
+		const encoded = Safe7579API.encodeInstallModule({
 			moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 			moduleAddress: ADDRESS.WebAuthnValidator,
 			initData: '0x1234',
@@ -54,7 +54,7 @@ describe('Safe7579 API', () => {
 	})
 
 	it('#encodeUninstallModule', () => {
-		const encoded = Safe7579.encodeUninstallModule({
+		const encoded = Safe7579API.encodeUninstallModule({
 			moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 			moduleAddress: ADDRESS.WebAuthnValidator,
 			deInitData: '0x1234',

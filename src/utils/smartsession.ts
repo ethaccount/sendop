@@ -1,4 +1,4 @@
-import type { SessionStruct } from '@/contract-types/TSmartSession'
+import type { SessionStruct } from '@/contract-types/SmartSession'
 import type { Signer } from 'ethers'
 import { concat, keccak256 } from 'ethers'
 import { abiEncode } from './ethers-helper'

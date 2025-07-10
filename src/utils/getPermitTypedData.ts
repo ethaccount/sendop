@@ -1,7 +1,7 @@
 import { Interface, JsonRpcProvider, MaxUint256 } from 'ethers'
 import { Contract } from 'ethers'
 import type { TypedDataDomain } from 'ethers'
-import type { TypedData } from 'ethers-erc4337'
+import type { TypedData } from '@/core'
 
 export async function getPermitTypedData({
 	client,

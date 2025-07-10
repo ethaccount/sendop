@@ -1,7 +1,7 @@
 import { fetchGasPricePimlico } from '@/fetchGasPrice'
 import type { AccountAPI, Execution, PaymasterAPI, SignerBehavior } from '@/types'
 import { getBytes, JsonRpcProvider } from 'ethers'
-import { ERC4337Bundler, UserOpBuilder, type UserOperationReceipt } from 'ethers-erc4337'
+import { ERC4337Bundler, UserOpBuilder, type UserOperationReceipt } from '@/core'
 import { pimlico, type PimlicoChain } from 'evm-providers'
 
 const { PIMLICO_API_KEY = '' } = process.env

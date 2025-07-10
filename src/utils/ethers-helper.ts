@@ -86,7 +86,11 @@ export function zeroPadRight(data: string, length: number = 32) {
 }
 
 export function abiEncode(types: ReadonlyArray<string | ParamType>, values: ReadonlyArray<any>): string {
-	return new AbiCoder().encode(types, values)
+	return AbiCoder.defaultAbiCoder().encode(types, values)
+}
+
+export function abiDecode(types: ReadonlyArray<string | ParamType>, data: string): any {
+	return AbiCoder.defaultAbiCoder().decode(types, data)
 }
 
 export function isSameAddress(address1: string, address2: string) {

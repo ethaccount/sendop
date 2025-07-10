@@ -1,7 +1,7 @@
 # sendop.js
 
 ```sh
-pnpm install ethers ethers-erc4337 sendop
+pnpm install ethers sendop
 ```
 
 ### Test
@@ -23,7 +23,7 @@ docker compose up -d
 bun run build
 bun run build:contract-types
 
-bun typecheck # Type checking including ethers-erc4337
+bun typecheck
 ```
 
 ## License

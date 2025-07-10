@@ -1,10 +1,10 @@
-import { TIERC1271__factory } from '@/contract-types'
-import { getECDSAValidator } from '@/validations'
+import { IERC1271__factory } from '@/contract-types'
 import { isBytes, toBytes32 } from '@/utils'
+import { getECDSAValidator } from '@/validations'
 import { getBytes, isAddress, JsonRpcProvider, keccak256, toUtf8Bytes, Wallet } from 'ethers'
 import { alchemy } from 'evm-providers'
 import { describe, expect, it } from 'vitest'
-import { Kernel } from './api'
+import { KernelAPI } from './api'
 
 if (!process.env.ALCHEMY_API_KEY) {
 	throw new Error('ALCHEMY_API_KEY is not set')
@@ -26,7 +26,7 @@ describe('Test deployed Kernel on base sepolia', () => {
 	const ecdsaValidator = getECDSAValidator({ ownerAddress: owner.address })
 
 	it('#getDeployment', async () => {
-		const { factory, factoryData, accountAddress } = await Kernel.getDeployment({
+		const { factory, factoryData, accountAddress } = await KernelAPI.getDeployment({
 			client,
 			validatorAddress: ecdsaValidator.address,
 			validatorData: ecdsaValidator.initData,
@@ -40,7 +40,7 @@ describe('Test deployed Kernel on base sepolia', () => {
 
 	it('#sign1271', async () => {
 		const hash = keccak256(toUtf8Bytes('Hello, world!'))
-		const signature = await Kernel.sign1271({
+		const signature = await KernelAPI.sign1271({
 			version: '0.3.3',
 			validator: ecdsaValidator.address,
 			hash: getBytes(hash),
@@ -50,7 +50,7 @@ describe('Test deployed Kernel on base sepolia', () => {
 				return owner.signMessage(hash)
 			},
 		})
-		const contract = TIERC1271__factory.connect(ACCOUNT_ADDRESS, client)
+		const contract = IERC1271__factory.connect(ACCOUNT_ADDRESS, client)
 		const result = await contract.isValidSignature(hash, signature)
 		expect(result).toBe('0x1626ba7e')
 	})

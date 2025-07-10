@@ -1,8 +1,9 @@
+import { EntryPointV07__factory } from '@/contract-types'
+import { ENTRY_POINT_V07_ADDRESS } from '@/core'
 import { encode7579Executions, type ERC7579ExecModeConfig } from '@/erc7579'
 import { AbstractModularAccount, type Execution, type ValidationAPI } from '@/types'
 import { isBytes, zeroBytes } from '@/utils'
 import { concat, type JsonRpcProvider } from 'ethers'
-import { ENTRY_POINT_V07_ADDRESS, EntryPointV07__factory } from 'ethers-erc4337'
 import type { Safe7579NonceConfig } from './types'
 
 export class Safe7579AccountAPI extends AbstractModularAccount {

@@ -1,4 +1,5 @@
-import { TIERC20__factory } from '@/contract-types'
+import { IERC20__factory } from '@/contract-types'
+import type { TypedData } from '@/core'
 import type { PaymasterAPI } from '@/types'
 import { getPermitTypedData, zeroBytes } from '@/utils'
 import type { BigNumberish } from 'ethers'
@@ -13,7 +14,6 @@ import {
 	zeroPadValue,
 	type JsonRpcProvider,
 } from 'ethers'
-import type { TypedData } from 'ethers-erc4337'
 
 export const USDC_PAYMASTESR_ADDRESS = '0x3BA9A96eE3eFf3A69E2B18886AcF52027EFF8966' // v0.8
 export const USDC_ADDRESS = '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238' // sepolia
@@ -46,7 +46,7 @@ export async function createUSDCPaymaster({
 	const paymasterPostOpGasLimit = (await usdcPaymaster['additionalGasCharge()']()) as bigint
 
 	// Check current allowance
-	const usdc = TIERC20__factory.connect(usdcAddress, client)
+	const usdc = IERC20__factory.connect(usdcAddress, client)
 	const allowance = await usdc.allowance(accountAddress, paymasterAddress)
 
 	console.log('USDC allowance to paymaster', formatUnits(allowance, 6), 'USDC')

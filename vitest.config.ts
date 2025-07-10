@@ -9,7 +9,6 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			'@': path.resolve(__dirname, 'src'),
-			'ethers-erc4337': path.resolve(__dirname, 'ethers-erc4337/src'),
 		},
 	},
 })

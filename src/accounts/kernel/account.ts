@@ -1,7 +1,8 @@
+import { EntryPointV07__factory } from '@/contract-types'
+import { ENTRY_POINT_V07_ADDRESS } from '@/core'
 import { encode7579Executions, type ERC7579ExecModeConfig } from '@/erc7579'
 import { AbstractModularAccount, type Execution, type ValidationAPI } from '@/types'
 import type { JsonRpcProvider } from 'ethers'
-import { ENTRY_POINT_V07_ADDRESS, EntryPointV07__factory } from 'ethers-erc4337'
 import { getNonceKey, type NonceConfig } from './api/getNonceKey'
 
 export class KernelAccountAPI extends AbstractModularAccount {

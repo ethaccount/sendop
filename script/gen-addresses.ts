@@ -1,3 +1,4 @@
+import { getAddress } from 'ethers'
 import fs from 'fs'
 import path from 'path'
 import { logger } from './common'
@@ -17,7 +18,7 @@ if (fs.existsSync(failedFetchesPath)) {
 // Transform the data into the desired format
 const transformedAddresses: Record<string, string> = {}
 Object.entries(addresses).forEach(([address, name]) => {
-	transformedAddresses[name as string] = address
+	transformedAddresses[name as string] = getAddress(address)
 })
 
 // Generate no-abi addresses combining skip-fetch and failed fetches
@@ -26,7 +27,7 @@ skipFetchAbi.forEach((name: string) => {
 	noAbiAddresses[name] = transformedAddresses[name]
 })
 failedFetches.forEach(({ name, address }) => {
-	noAbiAddresses[name] = address
+	noAbiAddresses[name] = getAddress(address)
 })
 
 // Create the outputs
