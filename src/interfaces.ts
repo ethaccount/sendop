@@ -32,6 +32,7 @@ import { IERC7579AccountEvents__factory } from '@/contract-types/factories/manua
 import { IERC7579AccountView__factory } from '@/contract-types/factories/manual/IERC7579Account.sol/IERC7579AccountView__factory';
 import { SimpleAccountFactoryV08__factory } from '@/contract-types/factories/SimpleAccountFactoryV08__factory';
 import { KernelV3__factory } from '@/contract-types/factories/KernelV3__factory';
+import { UniActionPolicy__factory } from '@/contract-types/factories/UniActionPolicy__factory';
 import { EntryPointV08__factory } from '@/contract-types/factories/EntryPointV08__factory';
 import { NexusFactory__factory } from '@/contract-types/factories/NexusFactory__factory';
 import { KernelV3Factory__factory } from '@/contract-types/factories/KernelV3Factory__factory';
@@ -74,6 +75,7 @@ export const INTERFACES = {
     IERC7579AccountView: IERC7579AccountView__factory.createInterface(),
     SimpleAccountFactoryV08: SimpleAccountFactoryV08__factory.createInterface(),
     KernelV3: KernelV3__factory.createInterface(),
+    UniActionPolicy: UniActionPolicy__factory.createInterface(),
     EntryPointV08: EntryPointV08__factory.createInterface(),
     NexusFactory: NexusFactory__factory.createInterface(),
     KernelV3Factory: KernelV3Factory__factory.createInterface(),

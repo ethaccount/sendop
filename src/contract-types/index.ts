@@ -18,6 +18,7 @@ export type { Simple7702AccountV08 } from "./Simple7702AccountV08";
 export type { SimpleAccountFactoryV08 } from "./SimpleAccountFactoryV08";
 export type { SmartSession } from "./SmartSession";
 export type { SudoPolicy } from "./SudoPolicy";
+export type { UniActionPolicy } from "./UniActionPolicy";
 export type { WebAuthnValidator } from "./WebAuthnValidator";
 export * as factories from "./factories";
 export { Counter__factory } from "./factories/Counter__factory";
@@ -83,4 +84,5 @@ export { Simple7702AccountV08__factory } from "./factories/Simple7702AccountV08_
 export { SimpleAccountFactoryV08__factory } from "./factories/SimpleAccountFactoryV08__factory";
 export { SmartSession__factory } from "./factories/SmartSession__factory";
 export { SudoPolicy__factory } from "./factories/SudoPolicy__factory";
+export { UniActionPolicy__factory } from "./factories/UniActionPolicy__factory";
 export { WebAuthnValidator__factory } from "./factories/WebAuthnValidator__factory";

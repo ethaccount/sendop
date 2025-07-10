@@ -17,4 +17,5 @@ export { Simple7702AccountV08__factory } from "./Simple7702AccountV08__factory";
 export { SimpleAccountFactoryV08__factory } from "./SimpleAccountFactoryV08__factory";
 export { SmartSession__factory } from "./SmartSession__factory";
 export { SudoPolicy__factory } from "./SudoPolicy__factory";
+export { UniActionPolicy__factory } from "./UniActionPolicy__factory";
 export { WebAuthnValidator__factory } from "./WebAuthnValidator__factory";
