@@ -1,14 +1,14 @@
-import { KernelAccountAPI, KernelAPI } from '@/accounts'
+import { KernelAccountAPI } from '@/accounts'
 import { ADDRESS } from '@/addresses'
+import { ERC4337Bundler } from '@/core'
+import { fetchGasPricePimlico } from '@/fetchGasPrice'
 import { INTERFACES } from '@/interfaces'
-import { PublicPaymaster } from '@/paymasters'
-import { toBytes32 } from '@/utils'
+import { getPublicPaymaster } from '@/paymasters'
 import { getECDSAValidator } from '@/validations/getECDSAValidator'
 import { SingleEOAValidation } from '@/validations/SingleEOAValidation'
-import { JsonRpcProvider, Wallet } from 'ethers'
-import { ERC4337Bundler } from '@/core'
+import { getBytes, JsonRpcProvider, Wallet } from 'ethers'
 import { alchemy, pimlico } from 'evm-providers'
-import { executeUserOperation } from './helpers'
+import { buildAccountExecutions } from '../helpers'
 
 const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', DEV_7702_PK = '' } = process.env
 
@@ -22,30 +22,20 @@ if (!dev7702) {
 	throw new Error('dev7702 is not set')
 }
 
-const CHAIN_ID = 11155111
+const CHAIN_ID = 84532
 
 const rpcUrl = alchemy(CHAIN_ID, ALCHEMY_API_KEY)
+console.log(rpcUrl)
 const bundlerUrl = pimlico(CHAIN_ID, PIMLICO_API_KEY)
 
 const client = new JsonRpcProvider(rpcUrl)
 const bundler = new ERC4337Bundler(bundlerUrl)
 
-const wallet = new Wallet(DEV_7702_PK)
+const signer = new Wallet(DEV_7702_PK)
 
 const ecdsaValidator = getECDSAValidator({ ownerAddress: dev7702 })
 
-const signer = {
-	signHash: async (hash: Uint8Array) => {
-		return wallet.signMessage(hash)
-	},
-}
-
-const { accountAddress } = await KernelAPI.getDeployment({
-	client,
-	validatorAddress: ecdsaValidator.address,
-	validatorData: ecdsaValidator.initData,
-	salt: toBytes32(2n),
-})
+const accountAddress = '0x960CBf515F3DcD46f541db66C76Cf7acA5BEf4C7'
 
 const kernelAPI = new KernelAccountAPI({
 	validation: new SingleEOAValidation(),
@@ -60,13 +50,23 @@ const executions = [
 	},
 ]
 
-await executeUserOperation({
+const op = await buildAccountExecutions({
 	accountAPI: kernelAPI,
 	accountAddress,
 	chainId: CHAIN_ID,
 	client,
 	bundler,
 	executions,
-	signer,
-	paymasterAPI: PublicPaymaster,
 })
+
+op.setPaymaster(getPublicPaymaster())
+op.setGasPrice(await fetchGasPricePimlico(bundlerUrl))
+
+await op.estimateGas()
+
+const sig = await signer.signMessage(getBytes(op.hash()))
+
+op.setSignature(await kernelAPI.formatSignature(sig))
+
+await op.send()
+const receipt = await op.wait()

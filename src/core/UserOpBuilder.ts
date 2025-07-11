@@ -14,21 +14,19 @@ import type {
 } from './UserOperation'
 import { getEmptyUserOp, getUserOpHash, getUserOpHashWithEip7702, getV08DomainAndTypes, isEip7702UserOp } from './utils'
 
+type UserOpBuilderOptions = {
+	chainId: BigNumberish
+	bundler?: ERC4337Bundler
+	entryPointAddress?: string
+}
+
 export class UserOpBuilder {
 	private userOp: UserOperation
 	private _chainId: number
 	private _bundler?: ERC4337Bundler
 	private _entryPointAddress?: string
 
-	constructor({
-		chainId,
-		bundler,
-		entryPointAddress,
-	}: {
-		chainId: BigNumberish
-		bundler?: ERC4337Bundler
-		entryPointAddress?: string
-	}) {
+	constructor({ chainId, bundler, entryPointAddress }: UserOpBuilderOptions) {
 		this.userOp = getEmptyUserOp()
 		this._bundler = bundler
 		this._chainId = Number(chainId)
@@ -117,7 +115,7 @@ export class UserOpBuilder {
 		return this
 	}
 
-	setGasPrice(feeData: { maxFeePerGas: bigint; maxPriorityFeePerGas: bigint }): UserOpBuilder {
+	setGasPrice(feeData: { maxFeePerGas: BigNumberish; maxPriorityFeePerGas: BigNumberish }): UserOpBuilder {
 		this.userOp.maxFeePerGas = feeData.maxFeePerGas
 		this.userOp.maxPriorityFeePerGas = feeData.maxPriorityFeePerGas
 		return this
@@ -145,6 +143,57 @@ export class UserOpBuilder {
 
 	preview(): UserOperation {
 		return { ...this.userOp }
+	}
+
+	static from(userOp: UserOperation, options: UserOpBuilderOptions): UserOpBuilder {
+		const op = new UserOpBuilder(options)
+		op.setSender(userOp.sender)
+		userOp.factory && op.setFactory({ factory: userOp.factory, factoryData: userOp.factoryData })
+		userOp.eip7702Auth && op.setEIP7702Auth(userOp.eip7702Auth)
+		op.setNonce(userOp.nonce)
+		userOp.paymaster &&
+			op.setPaymaster({
+				paymaster: userOp.paymaster,
+				paymasterData: userOp.paymasterData,
+				paymasterPostOpGasLimit: userOp.paymasterPostOpGasLimit,
+			})
+		op.setCallData(userOp.callData)
+
+		op.setGasPrice({
+			maxFeePerGas: BigInt(userOp.maxFeePerGas),
+			maxPriorityFeePerGas: BigInt(userOp.maxPriorityFeePerGas),
+		})
+
+		op.setGasValue({
+			verificationGasLimit: userOp.verificationGasLimit,
+			preVerificationGas: userOp.preVerificationGas,
+			callGasLimit: userOp.callGasLimit,
+			paymasterVerificationGasLimit: userOp.paymasterVerificationGasLimit,
+			paymasterPostOpGasLimit: userOp.paymasterPostOpGasLimit,
+		})
+		userOp.signature && op.setSignature(userOp.signature)
+		return op
+	}
+
+	toRequestParams(): [UserOperationHex, string] {
+		this.checkEntryPointAddress()
+		return [this.hex(), this._entryPointAddress!]
+	}
+
+	toEstimateRequest(): string {
+		return JSON.stringify({
+			jsonrpc: '2.0',
+			method: 'eth_estimateUserOperationGas',
+			params: this.toRequestParams(),
+		})
+	}
+
+	toSendRequest(): string {
+		return JSON.stringify({
+			jsonrpc: '2.0',
+			method: 'eth_sendUserOperation',
+			params: this.toRequestParams(),
+		})
 	}
 
 	pack(): PackedUserOperation {

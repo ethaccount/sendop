@@ -1,15 +1,15 @@
 import { KernelAccountAPI, KernelAPI } from '@/accounts'
 import { ADDRESS } from '@/addresses'
+import { ERC4337Bundler, type TypedData } from '@/core'
+import { fetchGasPricePimlico } from '@/index'
 import { INTERFACES } from '@/interfaces'
 import { createUSDCPaymaster } from '@/paymasters/usdc-paymaster'
-import type { SignerBehavior } from '@/types'
 import { toBytes32 } from '@/utils'
 import { getECDSAValidator } from '@/validations/getECDSAValidator'
 import { SingleEOAValidation } from '@/validations/SingleEOAValidation'
 import { getBytes, JsonRpcProvider, TypedDataEncoder, Wallet } from 'ethers'
-import { ERC4337Bundler, type TypedData } from '@/core'
 import { alchemy, pimlico } from 'evm-providers'
-import { executeUserOperation } from './helpers'
+import { executeUserOperation } from '../helpers'
 
 const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', DEV_7702_PK = '' } = process.env
 
@@ -33,12 +33,7 @@ const bundlerUrl = pimlico(CHAIN_ID, PIMLICO_API_KEY)
 const client = new JsonRpcProvider(rpcUrl)
 const bundler = new ERC4337Bundler(bundlerUrl)
 
-const wallet = new Wallet(DEV_7702_PK)
-const signer: SignerBehavior = {
-	signHash: async (hash: Uint8Array) => {
-		return wallet.signingKey.sign(hash).serialized
-	},
-}
+const signer = new Wallet(DEV_7702_PK)
 
 const ecdsaValidator = getECDSAValidator({ ownerAddress: dev7702 })
 
@@ -65,7 +60,7 @@ const usdcPaymaster = await createUSDCPaymaster({
 			chainId: CHAIN_ID,
 			accountAddress,
 			signHash: async (hash: Uint8Array) => {
-				return wallet.signingKey.sign(hash).serialized
+				return signer.signingKey.sign(hash).serialized
 			},
 		})
 	},
@@ -89,6 +84,7 @@ await executeUserOperation({
 			data: INTERFACES.Counter.encodeFunctionData('increment'),
 		},
 	],
+	gasPrice: await fetchGasPricePimlico(bundlerUrl),
 	signer,
 	paymasterAPI: usdcPaymaster,
 })

@@ -1,11 +1,11 @@
 import { ADDRESS } from '@/addresses'
-import { KernelAccountAPI, KernelValidationType, PublicPaymaster, type SignerBehavior } from '@/index'
+import { ERC4337Bundler } from '@/core'
+import { fetchGasPricePimlico, KernelAccountAPI, KernelValidationType, PublicPaymaster } from '@/index'
 import { INTERFACES } from '@/interfaces'
 import { SimpleSmartSessionValidation } from '@/validations/SimpleSmartSessionValidation'
 import { JsonRpcProvider, Wallet } from 'ethers'
-import { ERC4337Bundler } from '@/core'
 import { alchemy, pimlico } from 'evm-providers'
-import { executeUserOperation } from './helpers'
+import { executeUserOperation } from '../helpers'
 
 if (!process.env.ALCHEMY_API_KEY) {
 	throw new Error('ALCHEMY_API_KEY is not set')
@@ -30,17 +30,13 @@ const CHAIN_ID = 84532
 const alchemyUrl = alchemy(CHAIN_ID, process.env.ALCHEMY_API_KEY)
 const pimlicoUrl = pimlico(CHAIN_ID, process.env.PIMLICO_API_KEY)
 const acc1 = new Wallet(process.env.acc1pk)
-const signer: SignerBehavior = {
-	signHash: async hash => {
-		return acc1.signMessage(hash)
-	},
-}
+const signer = acc1
 const client = new JsonRpcProvider(alchemyUrl)
 const bundler = new ERC4337Bundler(pimlicoUrl)
 
 const JOB_ID = 1n
 const PERMISSION_ID = '0xba06d407c8d9ddaaac3b680421283c1c424cd21e8205173dfef1840705aa9957'
-const ACCOUNT_ADDRESS = '0x52a64A1873c14D52007Ec0A146eAa9Ff3B84B865'
+const ACCOUNT_ADDRESS = '0x960CBf515F3DcD46f541db66C76Cf7acA5BEf4C7'
 
 const smartSessionValidation = new SimpleSmartSessionValidation({
 	permissionId: PERMISSION_ID,
@@ -71,5 +67,6 @@ await executeUserOperation({
 	bundler,
 	executions,
 	signer,
+	gasPrice: await fetchGasPricePimlico(pimlicoUrl),
 	paymasterAPI: PublicPaymaster,
 })

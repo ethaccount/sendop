@@ -1,8 +1,10 @@
 import { ADDRESS } from '@/addresses'
 import { RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
 import type { SessionStruct } from '@/contract-types/SmartSession'
+import { ERC4337Bundler } from '@/core'
 import {
 	ERC7579_MODULE_TYPE,
+	fetchGasPricePimlico,
 	getEncodedFunctionParams,
 	getPermissionId,
 	KernelAccountAPI,
@@ -14,16 +16,14 @@ import {
 	SMART_SESSIONS_ENABLE_MODE,
 	SmartSession__factory,
 	toBytes32,
-	type SignerBehavior,
 } from '@/index'
 import { INTERFACES } from '@/interfaces'
 import { getScheduledTransferInitData } from '@/utils'
 import { getECDSAValidator } from '@/validations/getECDSAValidator'
 import { getOwnableValidator } from '@rhinestone/module-sdk'
 import { concat, JsonRpcProvider, parseEther, Wallet, ZeroAddress } from 'ethers'
-import { ERC4337Bundler } from '@/core'
 import { alchemy, pimlico } from 'evm-providers'
-import { executeUserOperation } from './helpers'
+import { executeUserOperation } from '../helpers'
 
 if (!process.env.ALCHEMY_API_KEY) {
 	throw new Error('ALCHEMY_API_KEY is not set')
@@ -50,14 +50,9 @@ const pimlicoUrl = pimlico(CHAIN_ID, process.env.PIMLICO_API_KEY)
 const client = new JsonRpcProvider(alchemyUrl)
 const bundler = new ERC4337Bundler(pimlicoUrl)
 
-const owner = new Wallet(process.env.DEV_7702_PK)
-const signer: SignerBehavior = {
-	signHash: async hash => {
-		return owner.signMessage(hash)
-	},
-}
+const signer = new Wallet(process.env.DEV_7702_PK)
 
-const ecdsaValidator = getECDSAValidator({ ownerAddress: owner.address })
+const ecdsaValidator = getECDSAValidator({ ownerAddress: signer.address })
 
 const { factory, factoryData, accountAddress } = await KernelAPI.getDeployment({
 	client,
@@ -165,6 +160,7 @@ await executeUserOperation({
 	bundler,
 	executions,
 	signer,
+	gasPrice: await fetchGasPricePimlico(pimlicoUrl),
 	paymasterAPI: PublicPaymaster,
 	deployment: {
 		factory,

@@ -6,3 +6,11 @@ export const PublicPaymaster: PaymasterAPI = {
 	getPaymasterData: async () => '0x',
 	getPaymasterPostOpGasLimit: async () => 0n,
 }
+
+export function getPublicPaymaster() {
+	return {
+		paymaster: ADDRESS.PublicPaymaster,
+		paymasterData: '0x',
+		paymasterPostOpGasLimit: 0n,
+	}
+}

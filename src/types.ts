@@ -6,10 +6,6 @@ export type Execution = {
 	value: bigint
 }
 
-export interface SignerBehavior {
-	signHash(hash: Uint8Array): Promise<string>
-}
-
 export interface PaymasterAPI {
 	getPaymaster(): Promise<string>
 	getPaymasterData(): Promise<string>
