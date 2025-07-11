@@ -11,16 +11,13 @@ import { alchemy, pimlico } from 'evm-providers'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { buildAccountExecutions } from './helpers'
 
-const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', DEV_7702_PK = '' } = process.env
+const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', DEV_7702_PK = '' } = process.env
 
 if (!ALCHEMY_API_KEY) {
 	throw new Error('ALCHEMY_API_KEY is not set')
 }
 if (!PIMLICO_API_KEY) {
 	throw new Error('PIMLICO_API_KEY is not set')
-}
-if (!dev7702) {
-	throw new Error('dev7702 is not set')
 }
 if (!DEV_7702_PK) {
 	throw new Error('DEV_7702_PK is not set')
@@ -43,7 +40,7 @@ describe('Kernel Account Execution', () => {
 		bundler = new ERC4337Bundler(bundlerUrl)
 		signer = new Wallet(DEV_7702_PK)
 
-		const ecdsaValidator = getECDSAValidator({ ownerAddress: dev7702 })
+		const ecdsaValidator = getECDSAValidator({ ownerAddress: signer.address })
 
 		kernelAPI = new KernelAccountAPI({
 			validation: new SingleEOAValidation(),

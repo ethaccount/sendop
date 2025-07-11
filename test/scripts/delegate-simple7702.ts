@@ -8,14 +8,10 @@ import { alchemy, pimlico } from 'evm-providers'
 
 // Failed. Don't know why.
 
-const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', DEV_7702_PK = '' } = process.env
+const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', DEV_7702_PK = '' } = process.env
 
 if (!ALCHEMY_API_KEY) {
 	throw new Error('ALCHEMY_API_KEY is not set')
-}
-
-if (!dev7702) {
-	throw new Error('dev7702 is not set')
 }
 
 if (!DEV_7702_PK) {
@@ -38,7 +34,7 @@ const owner = new Wallet(DEV_7702_PK, client)
 
 // sign eip-7702 auth
 
-const eip7702Nonce = await client.getTransactionCount(dev7702)
+const eip7702Nonce = await client.getTransactionCount(owner.address)
 
 const auth = await owner.authorize({
 	address: SIMPLE_7702_ACCOUNT,
@@ -48,10 +44,10 @@ const auth = await owner.authorize({
 
 console.log('auth', auth)
 
-console.log('verifyAuthorization', verifyAuthorization(auth, auth.signature) === dev7702)
+console.log('verifyAuthorization', verifyAuthorization(auth, auth.signature) === owner.address)
 
 const userop = new UserOpBuilder({ chainId: CHAIN_ID, bundler, entryPointAddress })
-	.setSender(dev7702)
+	.setSender(owner.address)
 	.setEIP7702Auth({
 		chainId: CHAIN_ID,
 		address: SIMPLE_7702_ACCOUNT,
@@ -60,7 +56,7 @@ const userop = new UserOpBuilder({ chainId: CHAIN_ID, bundler, entryPointAddress
 		r: auth.signature.r,
 		s: auth.signature.s,
 	})
-	.setNonce(await entryPoint.getNonce(dev7702, 0n))
+	.setNonce(await entryPoint.getNonce(owner.address, 0n))
 	.setGasPrice(await fetchGasPriceAlchemy(rpcUrl))
 	.setSignature(DUMMY_ECDSA_SIGNATURE)
 	.setPaymaster({

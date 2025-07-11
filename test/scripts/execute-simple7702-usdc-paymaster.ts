@@ -8,16 +8,13 @@ import { JsonRpcProvider, parseUnits, Wallet } from 'ethers'
 import { alchemy, pimlico } from 'evm-providers'
 import { executeUserOperation } from '../helpers'
 
-const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', DEV_7702_PK = '' } = process.env
+const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', DEV_7702_PK = '' } = process.env
 
 if (!ALCHEMY_API_KEY) {
 	throw new Error('ALCHEMY_API_KEY is not set')
 }
 if (!PIMLICO_API_KEY) {
 	throw new Error('PIMLICO_API_KEY is not set')
-}
-if (!dev7702) {
-	throw new Error('dev7702 is not set')
 }
 
 const CHAIN_ID = 11155111
@@ -33,7 +30,7 @@ const signer = new Wallet(DEV_7702_PK)
 const usdcPaymaster = await createUSDCPaymaster({
 	client,
 	chainId: CHAIN_ID,
-	accountAddress: dev7702,
+	accountAddress: signer.address,
 	permitAmount: parseUnits('10', 6),
 	minAllowanceThreshold: parseUnits('10', 6),
 	signTypedData: async (typedData: TypedData) => {
@@ -43,7 +40,7 @@ const usdcPaymaster = await createUSDCPaymaster({
 
 await executeUserOperation({
 	accountAPI: new Simple7702AccountAPI(),
-	accountAddress: dev7702,
+	accountAddress: signer.address,
 	chainId: CHAIN_ID,
 	client,
 	bundler,

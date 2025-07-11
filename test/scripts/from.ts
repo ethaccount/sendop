@@ -1,26 +1,14 @@
-import { KernelAccountAPI, KernelAPI } from '@/accounts'
 import { ADDRESS } from '@/addresses'
 import { ERC4337Bundler, UserOpBuilder } from '@/core'
-import { fetchGasPricePimlico } from '@/fetchGasPrice'
-import { INTERFACES } from '@/interfaces'
-import { getPublicPaymaster, PublicPaymaster } from '@/paymasters'
-import { toBytes32 } from '@/utils'
-import { getECDSAValidator } from '@/validations/getECDSAValidator'
-import { SingleEOAValidation } from '@/validations/SingleEOAValidation'
-import { getBytes, JsonRpcProvider, Wallet } from 'ethers'
 import { alchemy, pimlico } from 'evm-providers'
-import { buildAccountExecutions, executeUserOperation } from '../helpers'
 
-const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', dev7702 = '', DEV_7702_PK = '' } = process.env
+const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', DEV_7702_PK = '' } = process.env
 
 if (!ALCHEMY_API_KEY) {
 	throw new Error('ALCHEMY_API_KEY is not set')
 }
 if (!PIMLICO_API_KEY) {
 	throw new Error('PIMLICO_API_KEY is not set')
-}
-if (!dev7702) {
-	throw new Error('dev7702 is not set')
 }
 
 const CHAIN_ID = 84532
