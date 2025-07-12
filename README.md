@@ -2,6 +2,8 @@
 
 A TypeScript library for ERC-4337 account abstraction, making smart contract wallets simple and accessible.
 
+For usage examples of this library, see [Smart Account Manager](https://github.com/ethaccount/SAManager), an open web wallet built on ERC-4337.
+
 ## Features
 
 - **Multiple Account Types**: Support for Kernel, Nexus, Safe7579, and Simple7702 accounts
@@ -18,7 +20,7 @@ A TypeScript library for ERC-4337 account abstraction, making smart contract wal
 npm install ethers sendop
 ```
 
-## Usage (v0.5.0)
+## Quick Start (v0.5.0)
 
 ### Deploy a Kernel account and increment the counter
 
