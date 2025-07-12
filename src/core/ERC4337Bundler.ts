@@ -1,5 +1,13 @@
-import type { Addressable, FetchRequest, JsonRpcApiProviderOptions, Networkish, PerformActionRequest } from 'ethers'
-import { getBigInt, hexlify, JsonRpcProvider, resolveAddress } from 'ethers'
+import type {
+	Addressable,
+	FetchRequest,
+	JsonRpcApiProviderOptions,
+	JsonRpcError,
+	JsonRpcPayload,
+	Networkish,
+	PerformActionRequest,
+} from 'ethers'
+import { getBigInt, hexlify, JsonRpcProvider, makeError, resolveAddress } from 'ethers'
 import type {
 	EstimateUserOperationGasResponse,
 	EstimateUserOperationGasResponseHex,
@@ -9,6 +17,9 @@ import type {
 	UserOperationReceiptHex,
 } from './UserOperation'
 import { fromUserOpReceiptHex, toUserOpHex } from './conversion-utils'
+import type { EthersError } from 'ethers'
+import type { UnknownError } from 'ethers'
+import type { CodedEthersError } from 'ethers'
 
 export interface ERC4337Bundler {
 	// ERC4337 methods
@@ -48,6 +59,11 @@ export interface ERC4337BundlerOptions extends JsonRpcApiProviderOptions {
 	 * If provided, eth methods will be routed to this URL
 	 */
 	ethProviderUrl?: string | FetchRequest
+}
+
+interface AAError extends UnknownError {
+	code: 'CALL_EXCEPTION'
+	message: string
 }
 
 export class ERC4337Bundler extends JsonRpcProvider {
@@ -93,6 +109,22 @@ export class ERC4337Bundler extends JsonRpcProvider {
 
 		// Otherwise force direct method calls via send()
 		return null
+	}
+
+	/**
+	 * @docs erc-7769
+	 */
+	override getRpcError(payload: JsonRpcPayload, _error: JsonRpcError): Error {
+		const { method } = payload
+		const { error } = _error
+
+		// console.log('error', error)
+
+		// return makeError<'UNKNOWN_ERROR', CodedEthersError<AAError>>(`Bundler error: ${error}`, 'UNKNOWN_ERROR', {
+		// 	message: error,
+		// })
+
+		return super.getRpcError(payload, _error)
 	}
 
 	override async _perform(req: PerformActionRequest): Promise<any> {
