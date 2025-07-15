@@ -1,7 +1,8 @@
 import { KernelAccountAPI } from '@/accounts'
 import { ADDRESS } from '@/addresses'
-import { ERC4337Bundler } from '@/core'
+import { ERC4337Bundler, ERC4337Error } from '@/core'
 import { INTERFACES } from '@/interfaces'
+import { getPublicPaymaster } from '@/paymasters'
 import { getECDSAValidator } from '@/validations/getECDSAValidator'
 import { SingleEOAValidation } from '@/validations/SingleEOAValidation'
 import { getBytes, hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
@@ -19,6 +20,9 @@ Differences between Etherspot bundler and Alchemy/Pimlico:
 - userOpReceipt.receipt.status uses "success" instead of "0x1".
 - PublicPaymaster is not supported; ensure the account has sufficient ETH for the following tests.
 - Waiting for receipt is slower than with Alchemy or Pimlico.
+- Do not perform batch calls to the Etherspot bundler; its response format lacks an id field, 
+making it impossible to correlate responses to requests. Note: ethers.js JsonRpcProvider may automatically batch calls.
+set staticNetwork: true to prevent this.
 
 */
 
@@ -40,11 +44,10 @@ if (!ETHERSPOT_API_KEY) {
 const CHAIN_ID = 84532
 const ACCOUNT_ADDRESS = '0x960CBf515F3DcD46f541db66C76Cf7acA5BEf4C7'
 
-describe('Etherspot', () => {
+describe.concurrent('Etherspot', () => {
 	let client: JsonRpcProvider
 	let bundler: ERC4337Bundler
-	let signer: Wallet
-	let kernelAPI: KernelAccountAPI
+	let signer: Wallet = new Wallet(DEV_7702_PK)
 
 	const executions = [
 		{
@@ -54,22 +57,20 @@ describe('Etherspot', () => {
 		},
 	]
 
+	const ecdsaValidator = getECDSAValidator({ ownerAddress: signer.address })
+
 	beforeAll(() => {
 		const rpcUrl = alchemy(CHAIN_ID, ALCHEMY_API_KEY)
-
 		client = new JsonRpcProvider(rpcUrl)
+	})
 
+	it('test counter increment operation using etherspot', async () => {
 		const bundlerUrl = `https://testnet-rpc.etherspot.io/v2/${CHAIN_ID}?api-key=${ETHERSPOT_API_KEY}`
-
 		bundler = new ERC4337Bundler(bundlerUrl, CHAIN_ID, {
 			staticNetwork: true,
 		})
 
-		signer = new Wallet(DEV_7702_PK)
-
-		const ecdsaValidator = getECDSAValidator({ ownerAddress: signer.address })
-
-		kernelAPI = new KernelAccountAPI({
+		const kernelAPI = new KernelAccountAPI({
 			validation: new SingleEOAValidation(),
 			validatorAddress: ecdsaValidator.address,
 			config: {
@@ -78,9 +79,7 @@ describe('Etherspot', () => {
 				},
 			},
 		})
-	})
 
-	it('test counter increment operation using etherspot', async () => {
 		const op = await buildAccountExecutions({
 			accountAPI: kernelAPI,
 			accountAddress: ACCOUNT_ADDRESS,
@@ -99,5 +98,41 @@ describe('Etherspot', () => {
 		const receipt = await op.wait()
 
 		expect(receipt.success).toBe(true)
-	}, 60_000)
+	})
+
+	it('test counter increment operation using PublicPaymaster', async () => {
+		const bundlerUrl = `https://testnet-rpc.etherspot.io/v2/${CHAIN_ID}?api-key=${ETHERSPOT_API_KEY}`
+		bundler = new ERC4337Bundler(bundlerUrl, CHAIN_ID, {
+			staticNetwork: true,
+		})
+
+		const kernelAPI = new KernelAccountAPI({
+			validation: new SingleEOAValidation(),
+			validatorAddress: ecdsaValidator.address,
+			config: {
+				nonceConfig: {
+					key: hexlify(randomBytes(2)),
+				},
+			},
+		})
+
+		const op = await buildAccountExecutions({
+			accountAPI: kernelAPI,
+			accountAddress: ACCOUNT_ADDRESS,
+			chainId: CHAIN_ID,
+			client,
+			bundler,
+			executions,
+		})
+
+		op.setPaymaster(getPublicPaymaster())
+
+		try {
+			await op.estimateGas()
+			throw new Error('Test should fail')
+		} catch (error) {
+			expect(error).toBeInstanceOf(ERC4337Error)
+			expect((error as ERC4337Error).message).toBe('FailedOpWithRevert(0,"AA33 reverted",0x)')
+		}
+	})
 })

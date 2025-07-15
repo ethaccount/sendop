@@ -19,7 +19,7 @@ jobs:
             PIMLICO_API_KEY: ${{ secrets.PIMLICO_API_KEY }}
             PIMLICO_SPONSORSHIP_POLICY_ID: ${{ secrets.PIMLICO_SPONSORSHIP_POLICY_ID }}
             DEV_7702_PK: ${{ secrets.DEV_7702_PK }}
-
+            ETHERSPOT_API_KEY: ${{ secrets.ETHERSPOT_API_KEY }}
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
@@ -44,6 +44,7 @@ jobs:
                   echo "PIMLICO_API_KEY=${{ secrets.PIMLICO_API_KEY }}" >> .env
                   echo "PIMLICO_SPONSORSHIP_POLICY_ID=${{ secrets.PIMLICO_SPONSORSHIP_POLICY_ID }}" >> .env
                   echo "DEV_7702_PK=${{ secrets.DEV_7702_PK }}" >> .env
+                  echo "ETHERSPOT_API_KEY=${{ secrets.ETHERSPOT_API_KEY }}" >> .env
             # - name: Start Docker services
             #   run: |
             #       docker compose up -d
