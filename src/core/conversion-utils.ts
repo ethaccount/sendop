@@ -296,7 +296,7 @@ export function fromUserOpReceiptHex(receiptHex: UserOperationReceiptHex): UserO
 			transactionIndex: getBigInt(receiptHex.receipt.transactionIndex),
 			from: receiptHex.receipt.from,
 			to: receiptHex.receipt.to,
-			status: getBigInt(receiptHex.receipt.status),
+			status: getBigInt(normalizeReceiptStatus(receiptHex.receipt.status)),
 			logsBloom: receiptHex.receipt.logsBloom,
 			blockHash: receiptHex.receipt.blockHash,
 			blockNumber: getBigInt(receiptHex.receipt.blockNumber),
@@ -316,4 +316,24 @@ export function fromUserOpReceiptHex(receiptHex: UserOperationReceiptHex): UserO
 			})),
 		},
 	}
+}
+
+/**
+ * Handle etherspot's quirky receipt status format
+ * Etherspot returns "success" instead of "0x1" which may cause error when using getBigInt
+ * @docs https://eips.ethereum.org/EIPS/eip-1474
+ */
+function normalizeReceiptStatus(status: string | number): string {
+	// Handle etherspot's string format
+	if (typeof status === 'string') {
+		if (status.toLowerCase() === 'success') {
+			return '0x1'
+		}
+		if (status.toLowerCase() === 'failure' || status.toLowerCase() === 'failed') {
+			return '0x0'
+		}
+	}
+
+	// If it's already a proper hex string or number, return as-is
+	return String(status)
 }

@@ -1,4 +1,12 @@
-import type { Addressable, FetchRequest, JsonRpcApiProviderOptions, Networkish, PerformActionRequest } from 'ethers'
+import type {
+	Addressable,
+	FetchRequest,
+	JsonRpcApiProviderOptions,
+	JsonRpcError,
+	JsonRpcPayload,
+	Networkish,
+	PerformActionRequest,
+} from 'ethers'
 import { getBigInt, hexlify, JsonRpcProvider, resolveAddress } from 'ethers'
 import type {
 	EstimateUserOperationGasResponse,
@@ -24,6 +32,53 @@ export interface ERC4337Bundler {
 
 	// convenience methods
 	waitForReceipt(hash: string): Promise<UserOperationReceipt>
+}
+
+export class ERC4337Error extends Error {
+	readonly name: string = 'ERC4337Error'
+	readonly code: number
+	readonly method: string
+	readonly payload: JsonRpcPayload
+	readonly data?: Record<string, any>
+	readonly userOp?: UserOperation
+
+	constructor(
+		message: string,
+		options: {
+			code: number
+			method: string
+			payload: JsonRpcPayload
+			data?: Record<string, any>
+			userOp?: UserOperation
+			cause?: unknown
+		},
+	) {
+		// Use the modern Error constructor with ErrorOptions
+		super(message, { cause: options.cause })
+
+		// Set the prototype explicitly for proper instanceof checks
+		Object.setPrototypeOf(this, ERC4337Error.prototype)
+
+		// Assign custom properties
+		this.code = options.code
+		this.method = options.method
+		this.payload = options.payload
+		this.data = options.data
+		this.userOp = options.userOp
+
+		// Capture stack trace if available (Node.js)
+		if (Error.captureStackTrace) {
+			Error.captureStackTrace(this, ERC4337Error)
+		}
+	}
+
+	isPaymasterError(): boolean {
+		return [-32501, -32504, -32505, -32508].includes(this.code)
+	}
+
+	isOpcodeValidationError(): boolean {
+		return [-32502].includes(this.code)
+	}
 }
 
 // Refer to ERC-7769: JSON-RPC API for ERC-4337: https://eips.ethereum.org/EIPS/eip-7769
@@ -95,6 +150,31 @@ export class ERC4337Bundler extends JsonRpcProvider {
 		return null
 	}
 
+	/**
+	 * @docs erc-7769 https://eips.ethereum.org/EIPS/eip-7769#specification
+	 */
+	override getRpcError(payload: JsonRpcPayload, _error: JsonRpcError): Error {
+		const { method } = payload
+		const { error } = _error
+
+		if (ERC4337_METHODS.includes(method)) {
+			let userOp: UserOperation | undefined
+			if (method === 'eth_sendUserOperation' || method === 'eth_estimateUserOperationGas') {
+				userOp = (payload.params as any[])?.[0] as UserOperation
+			}
+
+			return new ERC4337Error(error.message ?? 'Unknown error', {
+				code: error.code,
+				method,
+				payload,
+				data: error.data,
+				userOp,
+			})
+		}
+
+		return super.getRpcError(payload, _error)
+	}
+
 	override async _perform(req: PerformActionRequest): Promise<any> {
 		// Route to eth provider if available and it's a standard operation
 		if (this.#ethProvider && !ERC4337_METHODS.some(method => super.getRpcRequest(req)?.method === method)) {
@@ -130,6 +210,19 @@ export class ERC4337Bundler extends JsonRpcProvider {
 			toUserOpHex(userOp),
 			await resolveAddress(entryPointAddress),
 		])
+
+		// Only etherspot returns these
+		let maxFeePerGas: string | undefined
+		let maxPriorityFeePerGas: string | undefined
+
+		if (estimation.maxFeePerGas) {
+			maxFeePerGas = estimation.maxFeePerGas
+		}
+
+		if (estimation.maxPriorityFeePerGas) {
+			maxPriorityFeePerGas = estimation.maxPriorityFeePerGas
+		}
+
 		return {
 			preVerificationGas: getBigInt(estimation.preVerificationGas),
 			verificationGasLimit: getBigInt(estimation.verificationGasLimit),
@@ -137,6 +230,8 @@ export class ERC4337Bundler extends JsonRpcProvider {
 			paymasterVerificationGasLimit: estimation.paymasterVerificationGasLimit
 				? getBigInt(estimation.paymasterVerificationGasLimit)
 				: undefined,
+			maxFeePerGas,
+			maxPriorityFeePerGas,
 		}
 	}
 

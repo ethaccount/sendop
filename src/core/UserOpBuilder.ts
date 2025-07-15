@@ -230,6 +230,14 @@ export class UserOpBuilder {
 		this.userOp.preVerificationGas = estimations.preVerificationGas
 		this.userOp.callGasLimit = estimations.callGasLimit
 		this.userOp.paymasterVerificationGasLimit = estimations.paymasterVerificationGasLimit
+
+		// Only etherspot returns these
+		if (estimations.maxFeePerGas) {
+			this.userOp.maxFeePerGas = estimations.maxFeePerGas
+		}
+		if (estimations.maxPriorityFeePerGas) {
+			this.userOp.maxPriorityFeePerGas = estimations.maxPriorityFeePerGas
+		}
 	}
 
 	async signUserOpHash(fn: (userOpHash: Uint8Array) => Promise<string>): Promise<void> {
