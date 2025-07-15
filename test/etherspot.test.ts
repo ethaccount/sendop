@@ -1,17 +1,26 @@
 import { KernelAccountAPI } from '@/accounts'
 import { ADDRESS } from '@/addresses'
 import { ERC4337Bundler } from '@/core'
-import { fetchGasPricePimlico } from '@/fetchGasPrice'
 import { INTERFACES } from '@/interfaces'
-import { getPublicPaymaster } from '@/paymasters'
 import { getECDSAValidator } from '@/validations/getECDSAValidator'
 import { SingleEOAValidation } from '@/validations/SingleEOAValidation'
-import { getBytes, JsonRpcProvider, Wallet } from 'ethers'
-import { alchemy, pimlico } from 'evm-providers'
+import { getBytes, hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
+import { alchemy } from 'evm-providers'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { buildAccountExecutions } from './helpers'
 
-// Got AA33: https://etherspot.fyi/prime-sdk/contracts/error-codes#aa33-reverted-or-oog
+/*
+
+Differences between Etherspot bundler and Alchemy/Pimlico:
+- Does not implement eth_chainId.
+- Switching between testnet and mainnet RPC requires more than just changing the chain id in url.
+- Use v2 endpoint for entrypoint v0.7; use v3 for entrypoint v0.8.
+- eth_estimateUserOperationGas returns maxFeePerGas and maxPriorityFeePerGas (not part of ERC-4337 spec).
+- userOpReceipt.receipt.status uses "success" instead of "0x1".
+- PublicPaymaster is not supported; ensure the account has sufficient ETH for the following tests.
+- Waiting for receipt is slower than with Alchemy or Pimlico.
+
+*/
 
 const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', DEV_7702_PK = '', ETHERSPOT_API_KEY = '' } = process.env
 
@@ -31,17 +40,27 @@ if (!ETHERSPOT_API_KEY) {
 const CHAIN_ID = 84532
 const ACCOUNT_ADDRESS = '0x960CBf515F3DcD46f541db66C76Cf7acA5BEf4C7'
 
-describe('Kernel Account Execution', () => {
+describe('Etherspot', () => {
 	let client: JsonRpcProvider
 	let bundler: ERC4337Bundler
 	let signer: Wallet
 	let kernelAPI: KernelAccountAPI
 
+	const executions = [
+		{
+			to: ADDRESS.Counter,
+			value: 0n,
+			data: INTERFACES.Counter.encodeFunctionData('increment'),
+		},
+	]
+
 	beforeAll(() => {
 		const rpcUrl = alchemy(CHAIN_ID, ALCHEMY_API_KEY)
-		const bundlerUrl = `https://testnet-rpc.etherspot.io/v2/${CHAIN_ID}?api-key=${process.env.ETHERSPOT_API_KEY}`
 
 		client = new JsonRpcProvider(rpcUrl)
+
+		const bundlerUrl = `https://testnet-rpc.etherspot.io/v2/${CHAIN_ID}?api-key=${ETHERSPOT_API_KEY}`
+
 		bundler = new ERC4337Bundler(bundlerUrl, CHAIN_ID, {
 			staticNetwork: true,
 		})
@@ -53,18 +72,15 @@ describe('Kernel Account Execution', () => {
 		kernelAPI = new KernelAccountAPI({
 			validation: new SingleEOAValidation(),
 			validatorAddress: ecdsaValidator.address,
+			config: {
+				nonceConfig: {
+					key: hexlify(randomBytes(2)),
+				},
+			},
 		})
 	})
 
-	it('should execute counter increment operation successfully', async () => {
-		const executions = [
-			{
-				to: ADDRESS.Counter,
-				value: 0n,
-				data: INTERFACES.Counter.encodeFunctionData('increment'),
-			},
-		]
-
+	it('test counter increment operation using etherspot', async () => {
 		const op = await buildAccountExecutions({
 			accountAPI: kernelAPI,
 			accountAddress: ACCOUNT_ADDRESS,
@@ -74,12 +90,7 @@ describe('Kernel Account Execution', () => {
 			executions,
 		})
 
-		op.setPaymaster(getPublicPaymaster())
-		op.setGasPrice(await fetchGasPricePimlico(pimlico(CHAIN_ID, PIMLICO_API_KEY)))
-
 		await op.estimateGas()
-
-		console.log(op.preview())
 
 		const sig = await signer.signMessage(getBytes(op.hash()))
 		op.setSignature(await kernelAPI.formatSignature(sig))
@@ -88,5 +99,5 @@ describe('Kernel Account Execution', () => {
 		const receipt = await op.wait()
 
 		expect(receipt.success).toBe(true)
-	})
+	}, 60_000)
 })

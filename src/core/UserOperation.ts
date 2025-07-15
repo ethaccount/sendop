@@ -87,6 +87,10 @@ export type EstimateUserOperationGasResponse = {
 	verificationGasLimit: bigint
 	callGasLimit: bigint
 	paymasterVerificationGasLimit?: bigint
+
+	// only etherspot returns these
+	maxFeePerGas?: string
+	maxPriorityFeePerGas?: string
 }
 
 export type EstimateUserOperationGasResponseHex = {
@@ -94,6 +98,10 @@ export type EstimateUserOperationGasResponseHex = {
 	verificationGasLimit: string
 	callGasLimit: string
 	paymasterVerificationGasLimit?: string
+
+	// only etherspot returns these
+	maxFeePerGas?: string
+	maxPriorityFeePerGas?: string
 }
 
 /**

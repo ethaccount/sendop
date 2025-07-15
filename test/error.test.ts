@@ -1,12 +1,12 @@
 import { KernelAccountAPI } from '@/accounts'
 import { ADDRESS } from '@/addresses'
-import { ERC4337Bundler, ERC4337Error, type UserOperationReceipt } from '@/core'
+import { ERC4337Bundler, ERC4337Error } from '@/core'
 import { fetchGasPricePimlico } from '@/fetchGasPrice'
 import { INTERFACES } from '@/interfaces'
 import { PublicPaymaster } from '@/paymasters'
 import { getECDSAValidator } from '@/validations/getECDSAValidator'
 import { SingleEOAValidation } from '@/validations/SingleEOAValidation'
-import { JsonRpcProvider, Wallet } from 'ethers'
+import { hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
 import { alchemy, pimlico } from 'evm-providers'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { executeUserOperation } from './helpers'
@@ -53,6 +53,11 @@ describe('Error handling in ERC4337Bundler', () => {
 		kernelAPI = new KernelAccountAPI({
 			validation: new SingleEOAValidation(),
 			validatorAddress: ecdsaValidator.address,
+			config: {
+				nonceConfig: {
+					key: hexlify(randomBytes(2)),
+				},
+			},
 		})
 	})
 

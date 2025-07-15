@@ -6,7 +6,7 @@ import { INTERFACES } from '@/interfaces'
 import { getPublicPaymaster } from '@/paymasters'
 import { getECDSAValidator } from '@/validations/getECDSAValidator'
 import { SingleEOAValidation } from '@/validations/SingleEOAValidation'
-import { getBytes, JsonRpcProvider, Wallet } from 'ethers'
+import { getBytes, hexlify, JsonRpcProvider, randomBytes, Wallet } from 'ethers'
 import { alchemy, pimlico } from 'evm-providers'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { buildAccountExecutions } from './helpers'
@@ -45,6 +45,11 @@ describe('Kernel Account Execution', () => {
 		kernelAPI = new KernelAccountAPI({
 			validation: new SingleEOAValidation(),
 			validatorAddress: ecdsaValidator.address,
+			config: {
+				nonceConfig: {
+					key: hexlify(randomBytes(2)),
+				},
+			},
 		})
 	})
 
@@ -70,8 +75,6 @@ describe('Kernel Account Execution', () => {
 		op.setGasPrice(await fetchGasPricePimlico(pimlico(CHAIN_ID, PIMLICO_API_KEY)))
 
 		await op.estimateGas()
-
-		console.log(op.preview())
 
 		const sig = await signer.signMessage(getBytes(op.hash()))
 		op.setSignature(await kernelAPI.formatSignature(sig))

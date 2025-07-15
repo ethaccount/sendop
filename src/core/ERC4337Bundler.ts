@@ -210,6 +210,19 @@ export class ERC4337Bundler extends JsonRpcProvider {
 			toUserOpHex(userOp),
 			await resolveAddress(entryPointAddress),
 		])
+
+		// Only etherspot returns these
+		let maxFeePerGas: string | undefined
+		let maxPriorityFeePerGas: string | undefined
+
+		if (estimation.maxFeePerGas) {
+			maxFeePerGas = estimation.maxFeePerGas
+		}
+
+		if (estimation.maxPriorityFeePerGas) {
+			maxPriorityFeePerGas = estimation.maxPriorityFeePerGas
+		}
+
 		return {
 			preVerificationGas: getBigInt(estimation.preVerificationGas),
 			verificationGasLimit: getBigInt(estimation.verificationGasLimit),
@@ -217,6 +230,8 @@ export class ERC4337Bundler extends JsonRpcProvider {
 			paymasterVerificationGasLimit: estimation.paymasterVerificationGasLimit
 				? getBigInt(estimation.paymasterVerificationGasLimit)
 				: undefined,
+			maxFeePerGas,
+			maxPriorityFeePerGas,
 		}
 	}
 
