@@ -7,7 +7,7 @@ import type {
 	Networkish,
 	PerformActionRequest,
 } from 'ethers'
-import { getBigInt, hexlify, JsonRpcProvider, makeError, resolveAddress } from 'ethers'
+import { getBigInt, hexlify, JsonRpcProvider, resolveAddress } from 'ethers'
 import type {
 	EstimateUserOperationGasResponse,
 	EstimateUserOperationGasResponseHex,
@@ -17,9 +17,6 @@ import type {
 	UserOperationReceiptHex,
 } from './UserOperation'
 import { fromUserOpReceiptHex, toUserOpHex } from './conversion-utils'
-import type { EthersError } from 'ethers'
-import type { UnknownError } from 'ethers'
-import type { CodedEthersError } from 'ethers'
 
 export interface ERC4337Bundler {
 	// ERC4337 methods
@@ -35,6 +32,53 @@ export interface ERC4337Bundler {
 
 	// convenience methods
 	waitForReceipt(hash: string): Promise<UserOperationReceipt>
+}
+
+export class ERC4337Error extends Error {
+	readonly name: string = 'ERC4337Error'
+	readonly code: number
+	readonly method: string
+	readonly payload: JsonRpcPayload
+	readonly data?: Record<string, any>
+	readonly userOp?: UserOperation
+
+	constructor(
+		message: string,
+		options: {
+			code: number
+			method: string
+			payload: JsonRpcPayload
+			data?: Record<string, any>
+			userOp?: UserOperation
+			cause?: unknown
+		},
+	) {
+		// Use the modern Error constructor with ErrorOptions
+		super(message, { cause: options.cause })
+
+		// Set the prototype explicitly for proper instanceof checks
+		Object.setPrototypeOf(this, ERC4337Error.prototype)
+
+		// Assign custom properties
+		this.code = options.code
+		this.method = options.method
+		this.payload = options.payload
+		this.data = options.data
+		this.userOp = options.userOp
+
+		// Capture stack trace if available (Node.js)
+		if (Error.captureStackTrace) {
+			Error.captureStackTrace(this, ERC4337Error)
+		}
+	}
+
+	isPaymasterError(): boolean {
+		return [-32501, -32504, -32505, -32508].includes(this.code)
+	}
+
+	isOpcodeValidationError(): boolean {
+		return [-32502].includes(this.code)
+	}
 }
 
 // Refer to ERC-7769: JSON-RPC API for ERC-4337: https://eips.ethereum.org/EIPS/eip-7769
@@ -59,11 +103,6 @@ export interface ERC4337BundlerOptions extends JsonRpcApiProviderOptions {
 	 * If provided, eth methods will be routed to this URL
 	 */
 	ethProviderUrl?: string | FetchRequest
-}
-
-interface AAError extends UnknownError {
-	code: 'CALL_EXCEPTION'
-	message: string
 }
 
 export class ERC4337Bundler extends JsonRpcProvider {
@@ -112,17 +151,26 @@ export class ERC4337Bundler extends JsonRpcProvider {
 	}
 
 	/**
-	 * @docs erc-7769
+	 * @docs erc-7769 https://eips.ethereum.org/EIPS/eip-7769#specification
 	 */
 	override getRpcError(payload: JsonRpcPayload, _error: JsonRpcError): Error {
 		const { method } = payload
 		const { error } = _error
 
-		// console.log('error', error)
+		if (ERC4337_METHODS.includes(method)) {
+			let userOp: UserOperation | undefined
+			if (method === 'eth_sendUserOperation' || method === 'eth_estimateUserOperationGas') {
+				userOp = (payload.params as any[])?.[0] as UserOperation
+			}
 
-		// return makeError<'UNKNOWN_ERROR', CodedEthersError<AAError>>(`Bundler error: ${error}`, 'UNKNOWN_ERROR', {
-		// 	message: error,
-		// })
+			return new ERC4337Error(error.message ?? 'Unknown error', {
+				code: error.code,
+				method,
+				payload,
+				data: error.data,
+				userOp,
+			})
+		}
 
 		return super.getRpcError(payload, _error)
 	}
