@@ -39,7 +39,7 @@ describe('Nexus API', () => {
 			},
 		})
 
-		expect(deployment.factory).toBe(ADDRESS.NexusFactory)
+		expect(deployment.factory).toBe(NexusAPI.factoryAddress)
 		expect(deployment.factoryData).toMatch(/^0x[a-fA-F0-9]+$/)
 		expect(deployment.accountAddress).toMatch(/^0x[a-fA-F0-9]{40}$/)
 	})

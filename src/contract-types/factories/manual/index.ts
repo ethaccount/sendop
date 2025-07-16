@@ -4,7 +4,6 @@
 export * as ierc7579AccountSol from "./IERC7579Account.sol";
 export * as ierc7579ModulesSol from "./IERC7579Modules.sol";
 export * as draftIerc6093Sol from "./draft-IERC6093.sol";
-export * as safe from "./safe";
 export { IERC1271__factory } from "./IERC1271__factory";
 export { IERC20__factory } from "./IERC20__factory";
 export { IERC2612__factory } from "./IERC2612__factory";

@@ -47,5 +47,9 @@ export function encodeInstallModule(config: KernelInstallModuleConfig): string {
 			throw new Error(`[Kernel.encodeInstallModule] Unsupported module type`)
 	}
 
-	return INTERFACES.KernelV3.encodeFunctionData('installModule', [config.moduleType, config.moduleAddress, initData])
+	return INTERFACES.IERC7579Account.encodeFunctionData('installModule', [
+		config.moduleType,
+		config.moduleAddress,
+		initData,
+	])
 }

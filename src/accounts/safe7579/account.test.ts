@@ -1,17 +1,16 @@
-import { KernelAccountAPI, KernelAPI, NexusAccountAPI, NexusAPI, Safe7579AccountAPI, Safe7579API } from '@/accounts'
+import { Safe7579AccountAPI, Safe7579API } from '@/accounts'
 import { ADDRESS } from '@/addresses'
 import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
+import { ERC4337Bundler } from '@/core'
 import { fetchGasPricePimlico } from '@/fetchGasPrice'
 import { INTERFACES } from '@/interfaces'
 import { PublicPaymaster } from '@/paymasters'
-import { getECDSAValidator } from '@/validations/getECDSAValidator'
 import { SingleEOAValidation } from '@/validations/SingleEOAValidation'
 import { getOwnableValidator } from '@rhinestone/module-sdk'
 import { JsonRpcProvider, Wallet } from 'ethers'
-import { ERC4337Bundler } from '@/core'
 import { alchemy, pimlico } from 'evm-providers'
+import { executeUserOperation } from 'test/helpers'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { executeUserOperation } from './helpers'
 
 // bun run test test/deployment.test.ts
 
@@ -25,6 +24,7 @@ if (!PIMLICO_API_KEY) {
 }
 
 const CHAIN_ID = 84532
+const existingSafe7579Address = '0xF7FD25f6b36331467Af20A14bBE3166FaA1E7Fa1'
 
 const alchemyUrl = alchemy(CHAIN_ID, ALCHEMY_API_KEY)
 const pimlicoUrl = pimlico(CHAIN_ID, PIMLICO_API_KEY)
@@ -34,7 +34,7 @@ const bundler = new ERC4337Bundler(pimlicoUrl)
 
 const signer = new Wallet(DEV_7702_PK)
 
-const ecdsaValidator = getECDSAValidator({ ownerAddress: signer.address })
+// const ecdsaValidator = getECDSAValidator({ ownerAddress: signer.address })
 const ownableValidator = getOwnableValidator({
 	owners: [signer.address as `0x${string}`],
 	threshold: 1,
@@ -48,7 +48,7 @@ const executions = [
 	},
 ]
 
-describe.concurrent('Deploy accounts on base sepolia', () => {
+describe.concurrent('Safe7579', () => {
 	let gasPrice: {
 		maxFeePerGas: bigint
 		maxPriorityFeePerGas: bigint
@@ -58,69 +58,7 @@ describe.concurrent('Deploy accounts on base sepolia', () => {
 		gasPrice = await fetchGasPricePimlico(pimlicoUrl)
 	})
 
-	it('kernel', async () => {
-		const { accountAddress, factory, factoryData } = await KernelAPI.getDeployment({
-			client,
-			validatorAddress: ecdsaValidator.address,
-			validatorData: ecdsaValidator.initData,
-		})
-		const receipt = await executeUserOperation({
-			accountAPI: new KernelAccountAPI({
-				validation: new SingleEOAValidation(),
-				validatorAddress: ecdsaValidator.address,
-			}),
-			accountAddress,
-			chainId: CHAIN_ID,
-			client,
-			bundler,
-			executions,
-			signer,
-			paymasterAPI: PublicPaymaster,
-			gasPrice,
-			deployment: {
-				factory,
-				factoryData,
-			},
-		})
-		expect(receipt.success).toBe(true)
-		console.log('kernel', receipt.sender)
-	})
-
-	it('nexus', async () => {
-		const { accountAddress, factory, factoryData } = await NexusAPI.getDeployment({
-			client,
-			creationOptions: {
-				bootstrap: 'initNexusWithSingleValidator',
-				validatorAddress: ownableValidator.address,
-				validatorInitData: ownableValidator.initData,
-				registryAddress: ADDRESS.Registry,
-				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS],
-				threshold: 1,
-			},
-		})
-		const receipt = await executeUserOperation({
-			accountAPI: new NexusAccountAPI({
-				validation: new SingleEOAValidation(),
-				validatorAddress: ownableValidator.address,
-			}),
-			accountAddress,
-			chainId: CHAIN_ID,
-			client,
-			bundler,
-			executions,
-			signer,
-			paymasterAPI: PublicPaymaster,
-			gasPrice,
-			deployment: {
-				factory,
-				factoryData,
-			},
-		})
-		expect(receipt.success).toBe(true)
-		console.log('nexus', receipt.sender)
-	})
-
-	it('safe7579', async () => {
+	it('deploy account', async () => {
 		const { accountAddress, factory, factoryData } = await Safe7579API.getDeployment({
 			client,
 			creationOptions: {
@@ -152,5 +90,25 @@ describe.concurrent('Deploy accounts on base sepolia', () => {
 		})
 		expect(receipt.success).toBe(true)
 		console.log('safe7579', receipt.sender)
+	})
+
+	it('execute counter increment operation', async () => {
+		const safe7579API = new Safe7579AccountAPI({
+			validation: new SingleEOAValidation(),
+			validatorAddress: ownableValidator.address,
+		})
+		const receipt = await executeUserOperation({
+			accountAPI: safe7579API,
+			accountAddress: existingSafe7579Address,
+			chainId: CHAIN_ID,
+			client,
+			bundler,
+			signer,
+			paymasterAPI: PublicPaymaster,
+			executions,
+			gasPrice: await fetchGasPricePimlico(pimlico(CHAIN_ID, PIMLICO_API_KEY)),
+		})
+
+		expect(receipt.success).toBe(true)
 	})
 })
