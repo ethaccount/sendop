@@ -1,14 +1,18 @@
 import { randomBytes32 } from '@/utils'
 import type { BigNumberish } from 'ethers'
-import { JsonRpcProvider } from 'ethers'
+import { concat, Contract, Interface, JsonRpcProvider, ZeroAddress } from 'ethers'
 import { encodeInstallModule } from './api/encodeInstallModule'
 import { encodeUninstallModule } from './api/encodeUninstallModule'
-import { getDeployment } from './api/getDeployment'
 import { getNonceKey } from './api/getNonceKey'
 import { sign1271 } from './api/sign1271'
-import type { KernelInstallModuleConfig, KernelUninstallModuleConfig } from './types'
+import { KernelValidationType, type KernelInstallModuleConfig, type KernelUninstallModuleConfig } from './types'
 
 export class KernelAPI {
+	static implementationAddress = '0xd6CEDDe84be40893d153Be9d467CD6aD37875b28'
+	static factoryAddress = '0x2577507b78c2008Ff367261CB6285d44ba5eF2E9'
+
+	static executeSelector = '0xe9ae5c53'
+
 	static async getDeployment({
 		client,
 		validatorAddress,
@@ -20,13 +24,32 @@ export class KernelAPI {
 		validatorData: string
 		salt?: string
 	}) {
-		const { factory, factoryData, accountAddress } = await getDeployment({
-			client,
-			validatorAddress,
+		const KERNEL_V3_3_FACTORY_ABI = [
+			'function getAddress(bytes calldata data, bytes32 salt) public view returns (address)',
+			'function createAccount(bytes calldata data, bytes32 salt) public payable returns (address)',
+		]
+
+		const KERNEL_V3_3_ABI = [
+			'function initialize(bytes21 _rootValidator, address hook, bytes calldata validatorData, bytes calldata hookData, bytes[] calldata initConfig) external',
+		]
+
+		const initializeData = new Interface(KERNEL_V3_3_ABI).encodeFunctionData('initialize', [
+			concat([KernelValidationType.VALIDATOR, validatorAddress]),
+			ZeroAddress,
 			validatorData,
+			'0x',
+			[],
+		])
+
+		const factoryData = new Interface(KERNEL_V3_3_FACTORY_ABI).encodeFunctionData('createAccount', [
+			initializeData,
 			salt,
-		})
-		return { factory, factoryData, accountAddress }
+		])
+
+		const kernelFactory = new Contract(KernelAPI.factoryAddress, KERNEL_V3_3_FACTORY_ABI, client)
+		const accountAddress = (await kernelFactory['getAddress(bytes,bytes32)'](initializeData, salt)) as string
+
+		return { factory: KernelAPI.factoryAddress, factoryData, accountAddress }
 	}
 
 	static getNonceKey(validatorAddress: string) {

@@ -29,10 +29,8 @@ import { IERC7579Account__factory } from '@/contract-types/factories/manual/IERC
 import { IERC7579AccountEvents__factory } from '@/contract-types/factories/manual/IERC7579Account.sol/IERC7579AccountEvents__factory';
 import { IERC7579AccountView__factory } from '@/contract-types/factories/manual/IERC7579Account.sol/IERC7579AccountView__factory';
 import { SimpleAccountFactoryV08__factory } from '@/contract-types/factories/SimpleAccountFactoryV08__factory';
-import { KernelV3__factory } from '@/contract-types/factories/KernelV3__factory';
 import { UniActionPolicy__factory } from '@/contract-types/factories/UniActionPolicy__factory';
 import { EntryPointV08__factory } from '@/contract-types/factories/EntryPointV08__factory';
-import { KernelV3Factory__factory } from '@/contract-types/factories/KernelV3Factory__factory';
 import { SmartSession__factory } from '@/contract-types/factories/SmartSession__factory';
 import { Counter__factory } from '@/contract-types/factories/Counter__factory';
 import { EntryPointV07__factory } from '@/contract-types/factories/EntryPointV07__factory';
@@ -69,10 +67,8 @@ export const INTERFACES = {
     IERC7579AccountEvents: IERC7579AccountEvents__factory.createInterface(),
     IERC7579AccountView: IERC7579AccountView__factory.createInterface(),
     SimpleAccountFactoryV08: SimpleAccountFactoryV08__factory.createInterface(),
-    KernelV3: KernelV3__factory.createInterface(),
     UniActionPolicy: UniActionPolicy__factory.createInterface(),
     EntryPointV08: EntryPointV08__factory.createInterface(),
-    KernelV3Factory: KernelV3Factory__factory.createInterface(),
     SmartSession: SmartSession__factory.createInterface(),
     Counter: Counter__factory.createInterface(),
     EntryPointV07: EntryPointV07__factory.createInterface()

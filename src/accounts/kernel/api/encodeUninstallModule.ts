@@ -16,7 +16,7 @@ export function encodeUninstallModule(config: KernelUninstallModuleConfig): stri
 			throw new Error(`[Kernel.encodeUninstallModule] Unsupported module type`)
 	}
 
-	return INTERFACES.KernelV3.encodeFunctionData('uninstallModule', [
+	return INTERFACES.IERC7579Account.encodeFunctionData('uninstallModule', [
 		config.moduleType,
 		config.moduleAddress,
 		deInitData,

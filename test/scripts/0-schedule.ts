@@ -127,7 +127,7 @@ const executions = [
 			moduleType: ERC7579_MODULE_TYPE.VALIDATOR,
 			moduleAddress: ADDRESS.SmartSession,
 			initData: smartSessionInitData,
-			selectorData: INTERFACES.KernelV3.getFunction('execute').selector,
+			selectorData: KernelAPI.executeSelector,
 		}),
 	},
 	// install scheduled transfers module
