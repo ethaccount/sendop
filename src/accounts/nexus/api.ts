@@ -1,14 +1,17 @@
-import { ADDRESS } from '@/addresses'
-import { NexusFactory__factory } from '@/contract-types'
 import { ERC7579_MODULE_TYPE } from '@/erc7579'
 import { INTERFACES } from '@/interfaces'
 import { abiEncode, randomBytes32, sortAndUniquifyAddresses } from '@/utils'
 import type { JsonRpcProvider } from 'ethers'
-import { dataLength, isHexString } from 'ethers'
+import { Contract, dataLength, Interface, isHexString } from 'ethers'
 import { concat } from 'ethers/utils'
 import type { NexusCreationOptions, NexusInstallModuleConfig, NexusUninstallModuleConfig } from './types'
 
 export class NexusAPI {
+	// https://docs.biconomy.io/contracts-and-audits#nexus-v120--for-chains-with-eip-7702-support
+	static implementationAddress = '0x0000000025a29E0598c88955fd00E256691A089c'
+	static bootstrapAddress = '0x000000001aafD7ED3B8baf9f46cD592690A5BBE5'
+	static factoryAddress = '0x000000008b898679A19ac138831F26bE07a2aA08'
+
 	static async getDeployment({
 		client,
 		creationOptions,
@@ -20,13 +23,19 @@ export class NexusAPI {
 	}) {
 		const fullCreationOptions = { ...creationOptions, salt }
 
-		const initializeData = getInitializeData(fullCreationOptions)
-		const factoryData = INTERFACES.NexusFactory.encodeFunctionData('createAccount', [initializeData, salt])
+		// https://github.com/bcnmy/nexus/blob/8db1a6e41780dd0cc85298b0cbe6ab493adc6bb5/contracts/interfaces/factory/INexusFactory.sol/#L49https://github.com/bcnmy/nexus/blob/8db1a6e41780dd0cc85298b0cbe6ab493adc6bb5/contracts/interfaces/factory/INexusFactory.sol/#L49
+		const factoryInterface = new Interface([
+			'function createAccount(bytes calldata initData, bytes32 salt) external payable returns (address payable)',
+			'function computeAccountAddress(bytes calldata initData, bytes32 salt) external view returns (address payable expectedAddress)',
+		])
 
-		const nexusFactory = NexusFactory__factory.connect(ADDRESS.NexusFactory, client)
+		const initializeData = getInitializeData(fullCreationOptions)
+		const factoryData = factoryInterface.encodeFunctionData('createAccount', [initializeData, salt])
+
+		const nexusFactory = new Contract(NexusAPI.factoryAddress, factoryInterface, client)
 		const accountAddress = await nexusFactory.computeAccountAddress(initializeData, fullCreationOptions.salt)
 
-		return { factory: ADDRESS.NexusFactory, factoryData, accountAddress }
+		return { factory: NexusAPI.factoryAddress, factoryData, accountAddress }
 	}
 
 	static encodeInstallModule(config: NexusInstallModuleConfig): string {
@@ -56,7 +65,7 @@ export class NexusAPI {
 			default:
 				throw new Error('[Nexus.encodeInstallModule] Invalid NexusInstallModuleConfig.moduleType')
 		}
-		return INTERFACES.Nexus.encodeFunctionData('installModule', [
+		return INTERFACES.IERC7579Account.encodeFunctionData('installModule', [
 			config.moduleType,
 			config.moduleAddress,
 			moduleInitData,
@@ -85,7 +94,7 @@ export class NexusAPI {
 				break
 		}
 
-		return INTERFACES.Nexus.encodeFunctionData('uninstallModule', [
+		return INTERFACES.IERC7579Account.encodeFunctionData('uninstallModule', [
 			config.moduleType,
 			config.moduleAddress,
 			moduleDeInitData,
@@ -100,17 +109,24 @@ function getInitializeData(creationOptions: NexusCreationOptions): string {
 	let bootstrapCalldata: string
 	switch (creationOptions.bootstrap) {
 		case 'initNexusWithSingleValidator':
-			bootstrapCalldata = INTERFACES.NexusBootstrap.encodeFunctionData('initNexusWithSingleValidator', [
+			// https://github.com/bcnmy/nexus/blob/8db1a6e41780dd0cc85298b0cbe6ab493adc6bb5/contracts/utils/NexusBootstrap.sol#L208C14-L208C52
+			const bootstrapInterface = new Interface([
+				'function initNexusWithSingleValidator(address validator, bytes calldata data, tuple(address registry, address[] attesters, uint8 threshold) registryConfig) external',
+			])
+
+			bootstrapCalldata = bootstrapInterface.encodeFunctionData('initNexusWithSingleValidator', [
 				creationOptions.validatorAddress,
 				creationOptions.validatorInitData,
-				creationOptions.registryAddress,
-				sortAndUniquifyAddresses(creationOptions.attesters),
-				creationOptions.threshold,
+				{
+					registry: creationOptions.registryAddress,
+					attesters: sortAndUniquifyAddresses(creationOptions.attesters),
+					threshold: creationOptions.threshold,
+				},
 			])
 			break
 		// NICE-TO-HAVE: implement other bootstrap functions
 		default:
 			throw new Error('[Nexus.getInitializeData] Unsupported bootstrap function')
 	}
-	return abiEncode(['address', 'bytes'], [ADDRESS.NexusBootstrap, bootstrapCalldata])
+	return abiEncode(['address', 'bytes'], [NexusAPI.bootstrapAddress, bootstrapCalldata])
 }

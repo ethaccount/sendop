@@ -8,7 +8,7 @@ import { concat, hexlify } from 'ethers/utils'
 import { NexusValidationMode, type NexusNonceConfig } from './types'
 
 export class NexusAccountAPI extends AbstractModularAccount {
-	id = 'biconomy.nexus.1.0.2'
+	id = 'biconomy.nexus.1.2.0'
 	entryPointAddress = ENTRY_POINT_V07_ADDRESS
 
 	private validatorAddress: string
