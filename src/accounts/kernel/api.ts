@@ -13,6 +13,17 @@ export class KernelAPI {
 
 	static executeSelector = '0xe9ae5c53'
 
+	// https://github.com/zerodevapp/kernel/blob/v3.3/src/factory/KernelFactory.sol
+	static factoryInterface = new Interface([
+		'function getAddress(bytes calldata data, bytes32 salt) public view returns (address)',
+		'function createAccount(bytes calldata data, bytes32 salt) public payable returns (address)',
+	])
+
+	// https://github.com/zerodevapp/kernel/blob/v3.3/src/Kernel.sol
+	static accountInterface = new Interface([
+		'function initialize(bytes21 _rootValidator, address hook, bytes calldata validatorData, bytes calldata hookData, bytes[] calldata initConfig) external',
+	])
+
 	static async getDeployment({
 		client,
 		validatorAddress,
@@ -24,16 +35,7 @@ export class KernelAPI {
 		validatorData: string
 		salt?: string
 	}) {
-		const KERNEL_V3_3_FACTORY_ABI = [
-			'function getAddress(bytes calldata data, bytes32 salt) public view returns (address)',
-			'function createAccount(bytes calldata data, bytes32 salt) public payable returns (address)',
-		]
-
-		const KERNEL_V3_3_ABI = [
-			'function initialize(bytes21 _rootValidator, address hook, bytes calldata validatorData, bytes calldata hookData, bytes[] calldata initConfig) external',
-		]
-
-		const initializeData = new Interface(KERNEL_V3_3_ABI).encodeFunctionData('initialize', [
+		const initializeData = KernelAPI.accountInterface.encodeFunctionData('initialize', [
 			concat([KernelValidationType.VALIDATOR, validatorAddress]),
 			ZeroAddress,
 			validatorData,
@@ -41,12 +43,9 @@ export class KernelAPI {
 			[],
 		])
 
-		const factoryData = new Interface(KERNEL_V3_3_FACTORY_ABI).encodeFunctionData('createAccount', [
-			initializeData,
-			salt,
-		])
+		const factoryData = KernelAPI.factoryInterface.encodeFunctionData('createAccount', [initializeData, salt])
 
-		const kernelFactory = new Contract(KernelAPI.factoryAddress, KERNEL_V3_3_FACTORY_ABI, client)
+		const kernelFactory = new Contract(KernelAPI.factoryAddress, KernelAPI.factoryInterface, client)
 		const accountAddress = (await kernelFactory['getAddress(bytes,bytes32)'](initializeData, salt)) as string
 
 		return { factory: KernelAPI.factoryAddress, factoryData, accountAddress }

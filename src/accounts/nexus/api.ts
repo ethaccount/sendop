@@ -12,6 +12,12 @@ export class NexusAPI {
 	static bootstrapAddress = '0x000000001aafD7ED3B8baf9f46cD592690A5BBE5'
 	static factoryAddress = '0x000000008b898679A19ac138831F26bE07a2aA08'
 
+	// https://github.com/bcnmy/nexus/blob/8db1a6e41780dd0cc85298b0cbe6ab493adc6bb5/contracts/interfaces/factory/INexusFactory.sol/#L49https://github.com/bcnmy/nexus/blob/8db1a6e41780dd0cc85298b0cbe6ab493adc6bb5/contracts/interfaces/factory/INexusFactory.sol/#L49
+	static factoryInterface = new Interface([
+		'function createAccount(bytes calldata initData, bytes32 salt) external payable returns (address payable)',
+		'function computeAccountAddress(bytes calldata initData, bytes32 salt) external view returns (address payable expectedAddress)',
+	])
+
 	static async getDeployment({
 		client,
 		creationOptions,
@@ -23,16 +29,10 @@ export class NexusAPI {
 	}) {
 		const fullCreationOptions = { ...creationOptions, salt }
 
-		// https://github.com/bcnmy/nexus/blob/8db1a6e41780dd0cc85298b0cbe6ab493adc6bb5/contracts/interfaces/factory/INexusFactory.sol/#L49https://github.com/bcnmy/nexus/blob/8db1a6e41780dd0cc85298b0cbe6ab493adc6bb5/contracts/interfaces/factory/INexusFactory.sol/#L49
-		const factoryInterface = new Interface([
-			'function createAccount(bytes calldata initData, bytes32 salt) external payable returns (address payable)',
-			'function computeAccountAddress(bytes calldata initData, bytes32 salt) external view returns (address payable expectedAddress)',
-		])
-
 		const initializeData = getInitializeData(fullCreationOptions)
-		const factoryData = factoryInterface.encodeFunctionData('createAccount', [initializeData, salt])
+		const factoryData = NexusAPI.factoryInterface.encodeFunctionData('createAccount', [initializeData, salt])
 
-		const nexusFactory = new Contract(NexusAPI.factoryAddress, factoryInterface, client)
+		const nexusFactory = new Contract(NexusAPI.factoryAddress, NexusAPI.factoryInterface, client)
 		const accountAddress = await nexusFactory.computeAccountAddress(initializeData, fullCreationOptions.salt)
 
 		return { factory: NexusAPI.factoryAddress, factoryData, accountAddress }

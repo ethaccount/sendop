@@ -6,6 +6,7 @@ import { JsonRpcProvider, Wallet } from 'ethers'
 import { alchemy } from 'evm-providers'
 import { describe, expect, it } from 'vitest'
 import { Safe7579API } from './api'
+import { toBytes32 } from '@/utils'
 
 if (!process.env.ALCHEMY_API_KEY) {
 	throw new Error('ALCHEMY_API_KEY is not set')
@@ -37,9 +38,12 @@ describe('Safe7579 API', () => {
 				attesters: [RHINESTONE_ATTESTER_ADDRESS, BICONOMY_ATTESTER_ADDRESS],
 				attestersThreshold: 1,
 			},
+			salt: toBytes32(1n),
 		})
 
-		expect(deployment.factory).toBe(ADDRESS.SafeProxyFactory)
+		console.log('deployment', deployment)
+
+		expect(deployment.factory).toBe(Safe7579API.factoryAddress)
 		expect(deployment.factoryData).toMatch(/^0x[a-fA-F0-9]+$/)
 		expect(deployment.accountAddress).toMatch(/^0x[a-fA-F0-9]{40}$/)
 	})
