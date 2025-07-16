@@ -1,3 +1,4 @@
+import { Contract, Interface, JsonRpcProvider } from 'ethers'
 import { zeroPadLeft } from './ethers-helper'
 
 export function findPrevious(array: string[], entry: string): string {
@@ -11,4 +12,18 @@ export function findPrevious(array: string[], entry: string): string {
 		}
 	}
 	throw new Error('[findPrevious] Entry not found in array')
+}
+
+export async function getValidatorsPaginated(
+	client: JsonRpcProvider,
+	accountAddress: string,
+	cursor: string,
+	size: number,
+) {
+	const iface = new Interface([
+		'function getValidatorsPaginated(address cursor, uint256 size) external view returns (address[] memory array, address next)',
+	])
+	const contract = new Contract(accountAddress, iface, client)
+	const { array, next } = (await contract.getValidatorsPaginated(cursor, size)) as { array: string[]; next: string }
+	return { validators: array, next }
 }
