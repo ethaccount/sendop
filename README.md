@@ -20,7 +20,7 @@ For usage examples of this library, see [Smart Account Manager](https://github.c
 npm install ethers sendop
 ```
 
-## Quick Start (v0.5.0)
+## Quick Start (v0.5.x)
 
 ### Deploy a Kernel account and increment the counter
 
@@ -30,6 +30,7 @@ import { alchemy, pimlico } from 'evm-providers'
 import {
 	ADDRESS,
 	ERC4337Bundler,
+	ERC4337Error,
 	fetchGasPricePimlico,
 	getECDSAValidator,
 	getPublicPaymaster,
@@ -96,15 +97,28 @@ op.setGasPrice(await fetchGasPricePimlico(pimlico(CHAIN_ID, PIMLICO_API_KEY)))
 await op.estimateGas()
 
 // Inspect userop
-console.log(op.preview())
-console.log(op.toRequestParams())
-console.log(op.toSendRequest())
+console.log('op.preview', op.preview())
+console.log('op.toRequestParams', op.toRequestParams())
+console.log('op.toSendRequest', op.toSendRequest())
+console.log('op.encodeHandleOpsDataWithDefaultGas', op.encodeHandleOpsDataWithDefaultGas())
 
 // Sign and send
 const sig = await signer.signMessage(getBytes(op.hash()))
 op.setSignature(await kernelAPI.formatSignature(sig))
 
-await op.send()
+try {
+	await op.send()
+} catch (error) {
+	if (error instanceof ERC4337Error) {
+		console.error('error.message', error.message)
+		console.error('error.code', error.code)
+		console.error('error.method', error.method)
+		console.error('error.payload', error.payload)
+		console.error('error.userOp', error.userOp)
+	}
+	process.exit(1)
+}
+
 const receipt = await op.wait()
 
 console.log('Operation success:', receipt.success)
@@ -116,7 +130,6 @@ console.log('Operation success:', receipt.success)
 
 ```sh
 bun run test # vitest (recommended)
-bun run test test/deployment.test.ts
 
 bun test # bun built-in test; some tests may fail
 bun test -t 'test case'
