@@ -75,7 +75,7 @@ describe('Error handling in ERC4337Bundler', () => {
 				gasPrice: await fetchGasPricePimlico(pimlico(CHAIN_ID, PIMLICO_API_KEY)),
 			})
 		} catch (error) {
-			console.error(error)
+			// console.error(error)
 			expect(error).toBeInstanceOf(ERC4337Error)
 
 			if (error instanceof ERC4337Error) {
@@ -101,7 +101,7 @@ describe('Error handling in ERC4337Bundler', () => {
 				gasPrice: await fetchGasPricePimlico(pimlico(CHAIN_ID, PIMLICO_API_KEY)),
 			})
 		} catch (error) {
-			console.error(error)
+			// console.error(error)
 			expect(error).toBeInstanceOf(ERC4337Error)
 
 			if (error instanceof ERC4337Error) {

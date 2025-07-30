@@ -5,6 +5,8 @@ import { getBytes, isAddress, JsonRpcProvider, keccak256, toUtf8Bytes, Wallet } 
 import { alchemy } from 'evm-providers'
 import { describe, expect, it } from 'vitest'
 import { KernelAPI } from './api'
+import { ERC1271_MAGICVALUE } from '@/constants'
+import type { TypedData } from '@/core'
 
 if (!process.env.ALCHEMY_API_KEY) {
 	throw new Error('ALCHEMY_API_KEY is not set')
@@ -46,14 +48,14 @@ describe('Test deployed Kernel on base sepolia', () => {
 			hash: getBytes(hash),
 			chainId: CHAIN_ID,
 			accountAddress: existingAccountAddress,
-			signHash: async (hash: Uint8Array) => {
-				return owner.signMessage(hash)
+			signTypedData: async (typedData: TypedData) => {
+				return owner.signTypedData(...typedData)
 			},
 		})
 		const contract = IERC1271__factory.connect(existingAccountAddress, client)
 		try {
 			const result = await contract.isValidSignature(hash, signature)
-			expect(result).toBe('0x1626ba7e')
+			expect(result).toBe(ERC1271_MAGICVALUE)
 		} catch (e) {
 			if (e instanceof Error && e.message.includes('could not decode result data')) {
 				throw new Error('Account may not be deployed')

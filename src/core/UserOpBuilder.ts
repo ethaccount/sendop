@@ -1,7 +1,7 @@
 import { EntryPointV08__factory } from '@/contract-types'
 import type { BigNumberish } from 'ethers'
 import { getBytes, hexlify, ZeroAddress } from 'ethers'
-import { INITCODE_EIP7702_MARKER } from './constants'
+import { INITCODE_EIP7702_MARKER } from '@/constants'
 import { packUserOp, toUserOpHex } from './conversion-utils'
 import { type ERC4337Bundler } from './ERC4337Bundler'
 import type { TypedData } from './types'
@@ -12,7 +12,14 @@ import type {
 	UserOperationHex,
 	UserOperationReceipt,
 } from './UserOperation'
-import { getEmptyUserOp, getUserOpHash, getUserOpHashWithEip7702, getV08DomainAndTypes, isEip7702UserOp } from './utils'
+import {
+	getEmptyUserOp,
+	getPackedUserOpWithEip7702,
+	getUserOpHash,
+	getUserOpHashWithEip7702,
+	getV08DomainAndTypes,
+	isEip7702UserOp,
+} from './utils'
 
 type UserOpBuilderOptions = {
 	chainId: BigNumberish
@@ -217,6 +224,12 @@ export class UserOpBuilder {
 
 	typedData(): TypedData {
 		const { domain, types } = getV08DomainAndTypes(this._chainId)
+		if (isEip7702UserOp(this.userOp)) {
+			if (!this.userOp.eip7702Auth) {
+				throw new Error('[UserOpBuilder#hash] EIP-7702 auth is not set')
+			}
+			return [domain, types, getPackedUserOpWithEip7702(this.userOp, this.userOp.eip7702Auth.address)]
+		}
 		return [domain, types, this.pack()]
 	}
 

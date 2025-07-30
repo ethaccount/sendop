@@ -56,8 +56,8 @@ const usdcPaymaster = await createUSDCPaymaster({
 			hash: getBytes(TypedDataEncoder.hash(...typedData)),
 			chainId: CHAIN_ID,
 			accountAddress,
-			signHash: async (hash: Uint8Array) => {
-				return signer.signingKey.sign(hash).serialized
+			signTypedData: async (typedData: TypedData) => {
+				return signer.signTypedData(...typedData)
 			},
 		})
 	},

@@ -1,10 +1,13 @@
 import { ADDRESS } from '@/addresses'
-import { BICONOMY_ATTESTER_ADDRESS, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
+import { BICONOMY_ATTESTER_ADDRESS, ERC1271_MAGICVALUE, RHINESTONE_ATTESTER_ADDRESS } from '@/constants'
+import { IERC1271__factory } from '@/contract-types'
+import { getEmptyUserOp, UserOpBuilder, type TypedData } from '@/core'
 import { ERC7579_MODULE_TYPE } from '@/erc7579'
 import { getOwnableValidator } from '@rhinestone/module-sdk'
-import { JsonRpcProvider, Wallet } from 'ethers'
+import { JsonRpcProvider, keccak256, toUtf8Bytes, Wallet } from 'ethers'
 import { alchemy } from 'evm-providers'
 import { describe, expect, it } from 'vitest'
+import { Simple7702API } from '../simple7702/api'
 import { NexusAPI } from './api'
 
 if (!process.env.ALCHEMY_API_KEY) {
@@ -19,6 +22,7 @@ const CHAIN_ID = 84532
 const alchemyUrl = alchemy(CHAIN_ID, process.env.ALCHEMY_API_KEY)
 const signer = new Wallet(process.env.DEV_7702_PK)
 const client = new JsonRpcProvider(alchemyUrl)
+const existingNexusAddress = '0x0c748E9265FBaCffdBcEA8ab25A1e76585372837'
 
 describe('Nexus API', () => {
 	const ownableValidator = getOwnableValidator({
@@ -61,5 +65,26 @@ describe('Nexus API', () => {
 			prev: ADDRESS.OwnableValidator,
 		})
 		expect(encoded).toMatch(/^0x[a-fA-F0-9]+$/)
+	})
+
+	it('#sign1271', async () => {
+		const hash = keccak256(toUtf8Bytes('Hello, world!'))
+		const userOp = UserOpBuilder.from(getEmptyUserOp(), { chainId: CHAIN_ID })
+		const signature = await Simple7702API.sign1271({
+			typedData: userOp.typedData(),
+			signTypedData: async (typedData: TypedData) => {
+				return signer.signTypedData(...typedData)
+			},
+		})
+
+		const contract = IERC1271__factory.connect(existingNexusAddress, client)
+		try {
+			const result = await contract.isValidSignature(hash, signature)
+			expect(result).toBe(ERC1271_MAGICVALUE)
+		} catch (e) {
+			if (e instanceof Error && e.message.includes('could not decode result data')) {
+				throw new Error('Account may not be deployed')
+			}
+		}
 	})
 })

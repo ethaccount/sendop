@@ -1,4 +1,3 @@
-export * from './constants'
 export * from './conversion-utils'
 export * from './ERC4337Bundler'
 export * from './types'

@@ -5,6 +5,7 @@ import type { JsonRpcProvider } from 'ethers'
 import { Contract, dataLength, Interface, isHexString } from 'ethers'
 import { concat } from 'ethers/utils'
 import type { NexusCreationOptions, NexusInstallModuleConfig, NexusUninstallModuleConfig } from './types'
+import type { TypedData } from '@/core'
 
 export class NexusAPI {
 	// https://docs.biconomy.io/contracts-and-audits#nexus-v120--for-chains-with-eip-7702-support
@@ -99,6 +100,19 @@ export class NexusAPI {
 			config.moduleAddress,
 			moduleDeInitData,
 		])
+	}
+
+	static async sign1271({
+		validatorAddress,
+		typedData,
+		signTypedData,
+	}: {
+		validatorAddress: string
+		typedData: TypedData
+		signTypedData: (typedData: TypedData) => Promise<string>
+	}) {
+		const sig = await signTypedData(typedData)
+		return concat([validatorAddress, sig])
 	}
 }
 

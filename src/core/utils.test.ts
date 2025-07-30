@@ -2,7 +2,7 @@ import { EntryPointV07__factory, EntryPointV08__factory } from '@/contract-types
 import { concat, hexlify, JsonRpcProvider } from 'ethers'
 import { alchemy } from 'evm-providers'
 import { describe, expect, it } from 'vitest'
-import { EIP7702_PREFIX, ENTRY_POINT_V07_ADDRESS, ENTRY_POINT_V08_ADDRESS } from './constants'
+import { EIP7702_PREFIX, ENTRY_POINT_V07_ADDRESS, ENTRY_POINT_V08_ADDRESS } from '@/constants'
 import { packUserOp } from './conversion-utils'
 import { getEmptyUserOp, getUserOpHash, getUserOpHashV08, getUserOpHashWithEip7702, isEip7702UserOp } from './utils'
 
