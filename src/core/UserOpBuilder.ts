@@ -1,7 +1,7 @@
 import { EntryPointV08__factory } from '@/contract-types'
 import type { BigNumberish } from 'ethers'
 import { getBytes, hexlify, ZeroAddress } from 'ethers'
-import { INITCODE_EIP7702_MARKER } from './constants'
+import { INITCODE_EIP7702_MARKER } from '@/constants'
 import { packUserOp, toUserOpHex } from './conversion-utils'
 import { type ERC4337Bundler } from './ERC4337Bundler'
 import type { TypedData } from './types'

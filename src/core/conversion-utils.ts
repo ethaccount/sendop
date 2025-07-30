@@ -18,7 +18,7 @@ import type {
 	UserOperationReceipt,
 	UserOperationReceiptHex,
 } from './UserOperation'
-import { INITCODE_EIP7702_MARKER } from './constants'
+import { INITCODE_EIP7702_MARKER } from '@/constants'
 
 export function packUserOp(userOp: UserOperation): PackedUserOperation {
 	let initCode = '0x'

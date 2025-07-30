@@ -190,4 +190,17 @@ export class Safe7579API {
 			moduleDeInitData,
 		])
 	}
+
+	static async sign1271({
+		validatorAddress,
+		hash,
+		signHash,
+	}: {
+		validatorAddress: string
+		hash: Uint8Array
+		signHash: (hash: Uint8Array) => Promise<string>
+	}) {
+		const sig = await signHash(hash)
+		return concat([validatorAddress, sig])
+	}
 }

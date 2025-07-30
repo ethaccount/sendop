@@ -1,5 +1,5 @@
 import { EntryPointV08__factory } from '@/contract-types'
-import { ENTRY_POINT_V08_ADDRESS } from '@/core'
+import { ENTRY_POINT_V08_ADDRESS } from '@/constants'
 import { INTERFACES } from '@/interfaces'
 import { type AccountAPI, type Execution } from '@/types'
 import { SingleEOAValidation } from '@/validations/SingleEOAValidation'

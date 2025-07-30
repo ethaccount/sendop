@@ -1,7 +1,7 @@
 import type { BigNumberish } from 'ethers'
 import { AbiCoder, getBigInt, getBytes, keccak256, TypedDataEncoder, ZeroAddress, type TypedDataDomain } from 'ethers'
 import type { UserOperation } from './UserOperation'
-import { ENTRY_POINT_V07_ADDRESS, ENTRY_POINT_V08_ADDRESS, INITCODE_EIP7702_MARKER } from './constants'
+import { ENTRY_POINT_V07_ADDRESS, ENTRY_POINT_V08_ADDRESS, INITCODE_EIP7702_MARKER } from '@/constants'
 import { packUserOp } from './conversion-utils'
 import type { TypedDataTypes } from './types'
 

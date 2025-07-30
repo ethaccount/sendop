@@ -1,5 +1,5 @@
 import { EntryPointV07__factory } from '@/contract-types'
-import { ENTRY_POINT_V07_ADDRESS } from '@/core'
+import { ENTRY_POINT_V07_ADDRESS } from '@/constants'
 import { encode7579Executions, type ERC7579ExecModeConfig } from '@/erc7579'
 import { AbstractModularAccount, type Execution, type ValidationAPI } from '@/types'
 import { zeroBytes } from '@/utils'
