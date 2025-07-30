@@ -8,14 +8,14 @@ export async function sign1271({
 	hash,
 	chainId,
 	accountAddress,
-	signHash,
+	signTypedData,
 }: {
 	version: '0.3.3' | '0.3.1'
 	validator: string
 	hash: Uint8Array
 	chainId: BigNumberish
 	accountAddress: string
-	signHash: (hash: Uint8Array) => Promise<string>
+	signTypedData: (typedData: TypedData) => Promise<string>
 }) {
 	const typedData: TypedData = [
 		{
@@ -32,7 +32,7 @@ export async function sign1271({
 		},
 	]
 
-	const sig = await signHash(getBytes(TypedDataEncoder.hash(...typedData)))
+	const sig = await signTypedData(typedData)
 
 	return concat([
 		'0x01', // validator mode

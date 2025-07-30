@@ -1,6 +1,7 @@
 import { ERC1271_MAGICVALUE } from '@/constants'
 import { IERC1271__factory } from '@/contract-types'
-import { getBytes, JsonRpcProvider, keccak256, toUtf8Bytes, Wallet } from 'ethers'
+import { getEmptyUserOp, UserOpBuilder, type TypedData } from '@/core'
+import { JsonRpcProvider, keccak256, toUtf8Bytes, Wallet } from 'ethers'
 import { alchemy } from 'evm-providers'
 import { describe, expect, it } from 'vitest'
 import { Simple7702API } from './api'
@@ -21,12 +22,14 @@ const client = new JsonRpcProvider(alchemyUrl)
 describe('Simple7702 API', () => {
 	it('#sign1271', async () => {
 		const hash = keccak256(toUtf8Bytes('Hello, world!'))
+		const userOp = UserOpBuilder.from(getEmptyUserOp(), { chainId: CHAIN_ID })
 		const signature = await Simple7702API.sign1271({
-			hash: getBytes(hash),
-			signHash: async (hash: Uint8Array) => {
-				return signer.signMessage(hash)
+			typedData: userOp.typedData(),
+			signTypedData: async (typedData: TypedData) => {
+				return signer.signTypedData(...typedData)
 			},
 		})
+
 		const contract = IERC1271__factory.connect(signer.address, client)
 		try {
 			const result = await contract.isValidSignature(hash, signature)

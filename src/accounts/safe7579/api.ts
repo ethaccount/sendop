@@ -10,6 +10,7 @@ import {
 	type Safe7579InstallModuleConfig,
 	type Safe7579UninstallModuleConfig,
 } from './types'
+import type { TypedData } from '@/core'
 
 export class Safe7579API {
 	static implementationAddress = '0x7579EE8307284F293B1927136486880611F20002'
@@ -193,14 +194,14 @@ export class Safe7579API {
 
 	static async sign1271({
 		validatorAddress,
-		hash,
-		signHash,
+		typedData,
+		signTypedData,
 	}: {
 		validatorAddress: string
-		hash: Uint8Array
-		signHash: (hash: Uint8Array) => Promise<string>
+		typedData: TypedData
+		signTypedData: (typedData: TypedData) => Promise<string>
 	}) {
-		const sig = await signHash(hash)
+		const sig = await signTypedData(typedData)
 		return concat([validatorAddress, sig])
 	}
 }

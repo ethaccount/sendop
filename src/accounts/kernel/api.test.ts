@@ -6,6 +6,7 @@ import { alchemy } from 'evm-providers'
 import { describe, expect, it } from 'vitest'
 import { KernelAPI } from './api'
 import { ERC1271_MAGICVALUE } from '@/constants'
+import type { TypedData } from '@/core'
 
 if (!process.env.ALCHEMY_API_KEY) {
 	throw new Error('ALCHEMY_API_KEY is not set')
@@ -47,8 +48,8 @@ describe('Test deployed Kernel on base sepolia', () => {
 			hash: getBytes(hash),
 			chainId: CHAIN_ID,
 			accountAddress: existingAccountAddress,
-			signHash: async (hash: Uint8Array) => {
-				return owner.signMessage(hash)
+			signTypedData: async (typedData: TypedData) => {
+				return owner.signTypedData(...typedData)
 			},
 		})
 		const contract = IERC1271__factory.connect(existingAccountAddress, client)

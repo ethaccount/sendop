@@ -1,3 +1,4 @@
+import type { TypedData } from '@/core'
 import { randomBytes32 } from '@/utils'
 import type { BigNumberish } from 'ethers'
 import { concat, Contract, Interface, JsonRpcProvider, ZeroAddress } from 'ethers'
@@ -61,16 +62,16 @@ export class KernelAPI {
 		validator,
 		chainId,
 		accountAddress,
-		signHash,
+		signTypedData,
 	}: {
 		hash: Uint8Array
 		version: '0.3.3' | '0.3.1'
 		validator: string
 		chainId: BigNumberish
 		accountAddress: string
-		signHash: (hash: Uint8Array) => Promise<string>
+		signTypedData: (typedData: TypedData) => Promise<string>
 	}) {
-		return await sign1271({ version, validator, hash, chainId, accountAddress, signHash })
+		return await sign1271({ version, validator, hash, chainId, accountAddress, signTypedData })
 	}
 
 	static encodeInstallModule(config: KernelInstallModuleConfig): string {
