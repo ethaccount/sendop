@@ -1,3 +1,4 @@
+import { INITCODE_EIP7702_MARKER } from '@/constants'
 import type { BigNumberish } from 'ethers'
 import {
 	concat,
@@ -18,12 +19,11 @@ import type {
 	UserOperationReceipt,
 	UserOperationReceiptHex,
 } from './UserOperation'
-import { INITCODE_EIP7702_MARKER } from '@/constants'
 
 export function packUserOp(userOp: UserOperation): PackedUserOperation {
 	let initCode = '0x'
 	if (userOp.factory) {
-		const factory = processUserOpFactory(userOp.factory)
+		const factory = processUserOpFactory(userOp.factory, true)
 		initCode = concat([factory, userOp.factoryData ?? '0x'])
 	}
 
@@ -59,7 +59,7 @@ export function packUserOp(userOp: UserOperation): PackedUserOperation {
 	}
 }
 
-export function processUserOpFactory(factory: string): string {
+export function processUserOpFactory(factory: string, eip7702TrailingZeros: boolean): string {
 	const isEip7702 = factory.startsWith(INITCODE_EIP7702_MARKER)
 	const isValidAddress = isAddress(factory) && factory !== ZeroAddress
 
@@ -67,8 +67,13 @@ export function processUserOpFactory(factory: string): string {
 		throw new Error(`[packUserOp] Invalid factory: ${factory}`)
 	}
 
-	// EIP-7702 factories need to be zero-padded to 20 bytes
-	return isEip7702 ? zeroPadBytes(factory, 20) : factory
+	// For pimlico, factory must be 0x7702 without trailing zeros
+	// sample error: Invalid EIP-7702 authorization: UserOperation cannot contain factory that is neither null or 0x7702.
+	return isEip7702
+		? eip7702TrailingZeros
+			? zeroPadBytes(INITCODE_EIP7702_MARKER, 20)
+			: INITCODE_EIP7702_MARKER
+		: factory
 }
 
 export function unpackUserOp(packedUserOp: PackedUserOperation): UserOperation {
@@ -136,7 +141,7 @@ export function toUserOpHex(userOp: UserOperation): UserOperationHex {
 	let factory: string | undefined
 	let factoryData: string | undefined
 	if (userOp.factory) {
-		factory = processUserOpFactory(userOp.factory)
+		factory = processUserOpFactory(userOp.factory, false)
 		factoryData = userOp.factoryData ?? '0x'
 		// Note that it may have factory without factoryData when using EIP-7702
 	}

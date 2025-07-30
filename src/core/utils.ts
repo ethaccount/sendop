@@ -1,6 +1,6 @@
 import type { BigNumberish } from 'ethers'
 import { AbiCoder, getBigInt, getBytes, keccak256, TypedDataEncoder, ZeroAddress, type TypedDataDomain } from 'ethers'
-import type { UserOperation } from './UserOperation'
+import type { PackedUserOperation, UserOperation } from './UserOperation'
 import { ENTRY_POINT_V07_ADDRESS, ENTRY_POINT_V08_ADDRESS, INITCODE_EIP7702_MARKER } from '@/constants'
 import { packUserOp } from './conversion-utils'
 import type { TypedDataTypes } from './types'
@@ -73,18 +73,31 @@ export function getUserOpHashWithEip7702(op: UserOperation, chainId: number, del
 		throw new Error(`[getUserOpHashWithEip7702] factory should start with ${INITCODE_EIP7702_MARKER}`)
 	}
 
-	return getUserOpHashV08(
-		// Note that we create a new userOp with the delegate address instead of modifying the original userOp
-		{
-			...op,
-			factory: delegateAddress,
-		},
-		chainId,
-	)
+	// Create a new userOp instead of modifying the original one
+	const newUserOp = {
+		...op,
+		factory: delegateAddress,
+	}
+
+	return getUserOpHashV08(newUserOp, chainId)
+}
+
+export function getPackedUserOpWithEip7702(op: UserOperation, delegateAddress: string): PackedUserOperation {
+	if (!isEip7702UserOp(op)) {
+		throw new Error(`[getUserOpHashWithEip7702] factory should start with ${INITCODE_EIP7702_MARKER}`)
+	}
+
+	// Create a new userOp instead of modifying the original one
+	const newUserOp = {
+		...op,
+		factory: delegateAddress,
+	}
+	return packUserOp(newUserOp)
 }
 
 export function getUserOpHashV08(userOp: UserOperation, chainId: BigNumberish): Uint8Array {
 	const packedUserOp = packUserOp(userOp)
+	console.log('packedUserOp', packedUserOp)
 	const { domain, types } = getV08DomainAndTypes(chainId)
 	return getBytes(TypedDataEncoder.hash(domain, types, packedUserOp))
 }
