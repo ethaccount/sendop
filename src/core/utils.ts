@@ -97,7 +97,6 @@ export function getPackedUserOpWithEip7702(op: UserOperation, delegateAddress: s
 
 export function getUserOpHashV08(userOp: UserOperation, chainId: BigNumberish): Uint8Array {
 	const packedUserOp = packUserOp(userOp)
-	console.log('packedUserOp', packedUserOp)
 	const { domain, types } = getV08DomainAndTypes(chainId)
 	return getBytes(TypedDataEncoder.hash(domain, types, packedUserOp))
 }
