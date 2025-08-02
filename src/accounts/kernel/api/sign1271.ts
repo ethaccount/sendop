@@ -1,6 +1,6 @@
-import type { BigNumberish } from 'ethers'
-import { concat, getBytes, TypedDataEncoder } from 'ethers'
 import { type TypedData } from '@/core'
+import type { BigNumberish } from 'ethers'
+import { concat } from 'ethers'
 
 export async function sign1271({
 	version = '0.3.3',
