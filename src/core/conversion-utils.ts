@@ -324,11 +324,17 @@ export function fromUserOpReceiptHex(receiptHex: UserOperationReceiptHex): UserO
 }
 
 /**
- * Handle etherspot's quirky receipt status format
- * Etherspot returns "success" instead of "0x1" which may cause error when using getBigInt
+ * Handle bundler-specific receipt status formats
+ * - Etherspot returns "success" instead of "0x1" which may cause error when using getBigInt
+ * - Candide return undefined status, default to success since we got a receipt
  * @docs https://eips.ethereum.org/EIPS/eip-1474
  */
-function normalizeReceiptStatus(status: string | number): string {
+function normalizeReceiptStatus(status: string | number | undefined): string {
+	// Handle undefined status (e.g., from Candide bundler)
+	if (status === undefined || status === null) {
+		return '0x1' // Default to success since we received a receipt
+	}
+
 	// Handle etherspot's string format
 	if (typeof status === 'string') {
 		if (status.toLowerCase() === 'success') {

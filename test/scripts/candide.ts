@@ -1,16 +1,23 @@
 import { KernelAccountAPI } from '@/accounts'
 import { ADDRESS } from '@/addresses'
 import { ERC4337Bundler } from '@/core'
-import { fetchGasPricePimlico } from '@/fetchGasPrice'
+import { fetchGasPriceAlchemy, fetchGasPricePimlico } from '@/fetchGasPrice'
 import { INTERFACES } from '@/interfaces'
-import { getPublicPaymaster } from '@/paymasters'
 import { getECDSAValidator } from '@/validations/getECDSAValidator'
 import { SingleEOAValidation } from '@/validations/SingleEOAValidation'
 import { getBytes, JsonRpcProvider, Wallet } from 'ethers'
 import { alchemy, pimlico } from 'evm-providers'
 import { buildAccountExecutions } from '../helpers'
+import { getPublicPaymaster } from '@/paymasters'
 
-const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', DEV_7702_PK = '' } = process.env
+// - Candide does not support batching, so you must set `batchMaxCount: 1` on the JSON RPC provider.
+// - Candide does not support public paymasters, and will throw an error: `ERC4337Error: AA33 revertedb''`.
+// - Using Candide with Alchemy to fetch gas prices will result in an error:
+//   `ERC4337Error: maxFeePerGas and (maxPriorityFeePerGas + estimated basefee) should be equal or higher than : 0xf1b74`.
+//   You must use Pimlico to fetch gas prices instead.
+// - In Candide, `userOpReceipt.receipt.status` is `undefined`, default to 0x1 since we received a receipt
+
+const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', DEV_7702_PK = '', CANDIDE_API_KEY = '' } = process.env
 
 if (!ALCHEMY_API_KEY) {
 	throw new Error('ALCHEMY_API_KEY is not set')
@@ -19,14 +26,20 @@ if (!PIMLICO_API_KEY) {
 	throw new Error('PIMLICO_API_KEY is not set')
 }
 
+if (!CANDIDE_API_KEY) {
+	throw new Error('CANDIDE_API_KEY is not set')
+}
+
 const CHAIN_ID = 84532
 
-const rpcUrl = alchemy(CHAIN_ID, ALCHEMY_API_KEY)
-console.log(rpcUrl)
-const bundlerUrl = pimlico(CHAIN_ID, PIMLICO_API_KEY)
+const alchemyUrl = alchemy(CHAIN_ID, ALCHEMY_API_KEY)
+const pimlicoUrl = pimlico(CHAIN_ID, PIMLICO_API_KEY)
+const candideUrl = `https://api.candide.dev/bundler/v3/base-sepolia/${CANDIDE_API_KEY}`
 
-const client = new JsonRpcProvider(rpcUrl)
-const bundler = new ERC4337Bundler(bundlerUrl)
+const client = new JsonRpcProvider(alchemyUrl)
+const bundler = new ERC4337Bundler(candideUrl, undefined, {
+	batchMaxCount: 1, // candide doesn't support rpc batching
+})
 
 const signer = new Wallet(DEV_7702_PK)
 
@@ -56,8 +69,9 @@ const op = await buildAccountExecutions({
 	executions,
 })
 
-op.setPaymaster(getPublicPaymaster())
-op.setGasPrice(await fetchGasPricePimlico(bundlerUrl))
+// candide doesn't support public paymaster
+// op.setPaymaster(getPublicPaymaster())
+op.setGasPrice(await fetchGasPricePimlico(pimlicoUrl))
 
 await op.estimateGas()
 
