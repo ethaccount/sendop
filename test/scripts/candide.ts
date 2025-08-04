@@ -34,7 +34,7 @@ const CHAIN_ID = 84532
 
 const alchemyUrl = alchemy(CHAIN_ID, ALCHEMY_API_KEY)
 const pimlicoUrl = pimlico(CHAIN_ID, PIMLICO_API_KEY)
-const candideUrl = `https://api.candide.dev/bundler/v3/base-sepolia/${CANDIDE_API_KEY}`
+const candideUrl = `https://api.candide.dev/api/v3/${CHAIN_ID}/${CANDIDE_API_KEY}`
 
 const client = new JsonRpcProvider(alchemyUrl)
 const bundler = new ERC4337Bundler(candideUrl, undefined, {
