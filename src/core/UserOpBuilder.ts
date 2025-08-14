@@ -1,7 +1,7 @@
+import { INITCODE_EIP7702_MARKER } from '@/constants'
 import { EntryPointV08__factory } from '@/contract-types'
 import type { BigNumberish } from 'ethers'
 import { getBytes, hexlify, ZeroAddress } from 'ethers'
-import { INITCODE_EIP7702_MARKER } from '@/constants'
 import { packUserOp, toUserOpHex } from './conversion-utils'
 import { type ERC4337Bundler } from './ERC4337Bundler'
 import type { TypedData } from './types'
@@ -271,9 +271,20 @@ export class UserOpBuilder {
 		return await this._bundler!.sendUserOperation(this.userOp, this._entryPointAddress!)
 	}
 
-	async wait(): Promise<UserOperationReceipt> {
+	/**
+	 * Wait for the user operation to be included in a block and return its receipt.
+	 * @param timeout the timeout in milliseconds, default to 30 seconds. Use -1 for no timeout
+	 * @param interval the polling interval in milliseconds, default to 1 second
+	 * @returns a `UserOperationReceipt` object when the operation is mined
+	 * @throws Error if timeout is reached before the operation is mined
+	 */
+	async wait(timeout = 30_000, interval = 1_000): Promise<UserOperationReceipt> {
 		this.checkBundler()
-		return await this._bundler!.waitForReceipt(this.hash())
+		try {
+			return await this._bundler!.waitForReceipt(this.hash(), timeout, interval)
+		} catch (error) {
+			throw new Error(`[UserOpBuilder#wait] Failed to wait for user operation receipt`, { cause: error })
+		}
 	}
 
 	async execute(): Promise<{
