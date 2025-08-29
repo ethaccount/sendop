@@ -39,5 +39,5 @@ export async function getExecutorsPaginated(
 	])
 	const contract = new Contract(accountAddress, iface, client)
 	const { array, next } = (await contract.getExecutorsPaginated(cursor, size)) as { array: string[]; next: string }
-	return { validators: array, next }
+	return { executors: array, next }
 }
