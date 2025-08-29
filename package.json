@@ -1,6 +1,6 @@
 {
 	"name": "sendop",
-	"version": "0.5.4",
+	"version": "0.5.5",
 	"description": "ERC-4337 utilities for sending user operations with ethers.js",
 	"author": "Johnson Chen <johnson86tw@gmail.com>",
 	"repository": "https://github.com/ethaccount/sendop",
