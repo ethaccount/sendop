@@ -270,12 +270,12 @@ export class ERC4337Bundler extends JsonRpcProvider {
 	/**
 	 * Wait for a `UserOperationReceipt` to be included in a block.
 	 * @param hash a `userOpHash` value returned by `eth_sendUserOperation`
-	 * @param timeout the timeout in milliseconds, default to 30 seconds
+	 * @param timeout the timeout in milliseconds, default to 30 seconds. Use -1 for no timeout
 	 * @param interval the interval in milliseconds, default to 1 second
 	 * @returns a `UserOperationReceipt` object
 	 */
 	async waitForReceipt(hash: string, timeout = 30_000, interval = 1_000): Promise<UserOperationReceipt> {
-		const endtime = Date.now() + timeout
+		const endtime = timeout === -1 ? Infinity : Date.now() + timeout
 
 		let receipt: UserOperationReceipt | null = null
 		while (!receipt && Date.now() < endtime) {

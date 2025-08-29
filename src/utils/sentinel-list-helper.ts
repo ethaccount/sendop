@@ -27,3 +27,17 @@ export async function getValidatorsPaginated(
 	const { array, next } = (await contract.getValidatorsPaginated(cursor, size)) as { array: string[]; next: string }
 	return { validators: array, next }
 }
+
+export async function getExecutorsPaginated(
+	client: JsonRpcProvider,
+	accountAddress: string,
+	cursor: string,
+	size: number,
+) {
+	const iface = new Interface([
+		'function getExecutorsPaginated(address cursor, uint256 size) external view returns (address[] memory array, address next)',
+	])
+	const contract = new Contract(accountAddress, iface, client)
+	const { array, next } = (await contract.getExecutorsPaginated(cursor, size)) as { array: string[]; next: string }
+	return { validators: array, next }
+}
