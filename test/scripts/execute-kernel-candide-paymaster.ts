@@ -1,20 +1,20 @@
 import { KernelAccountAPI } from '@/accounts'
 import { ADDRESS } from '@/addresses'
 import { ERC4337Bundler } from '@/core'
+import type {
+	GetPaymasterDataParams,
+	GetPaymasterDataResult,
+	GetPaymasterStubDataParams,
+	GetPaymasterStubDataResult,
+} from '@/erc7677-types'
 import { fetchGasPricePimlico } from '@/fetchGasPrice'
 import { INTERFACES } from '@/interfaces'
+import { isSameAddress } from '@/utils'
 import { getECDSAValidator } from '@/validations/getECDSAValidator'
 import { SingleEOAValidation } from '@/validations/SingleEOAValidation'
-import { getBytes, JsonRpcProvider, Wallet } from 'ethers'
+import { getAddress, getBytes, JsonRpcProvider, toBeHex, Wallet } from 'ethers'
 import { alchemy, pimlico } from 'evm-providers'
 import { buildAccountExecutions } from '../helpers'
-
-// - Candide does not support batching, so you must set `batchMaxCount: 1` on the JSON RPC provider.
-// - Candide does not support public paymasters, and will throw an error: `ERC4337Error: AA33 revertedb''`.
-// - Using Candide with Alchemy to fetch gas prices will result in an error:
-//   `ERC4337Error: maxFeePerGas and (maxPriorityFeePerGas + estimated basefee) should be equal or higher than : 0xf1b74`.
-//   You must use Pimlico to fetch gas prices instead.
-// - In Candide, `userOpReceipt.receipt.status` is `undefined`, default to 0x1 since we received a receipt
 
 const { ALCHEMY_API_KEY = '', PIMLICO_API_KEY = '', DEV_7702_PK = '', CANDIDE_API_KEY = '' } = process.env
 
@@ -24,20 +24,24 @@ if (!ALCHEMY_API_KEY) {
 if (!PIMLICO_API_KEY) {
 	throw new Error('PIMLICO_API_KEY is not set')
 }
-
 if (!CANDIDE_API_KEY) {
 	throw new Error('CANDIDE_API_KEY is not set')
 }
 
 const CHAIN_ID = 84532
 
-const alchemyUrl = alchemy(CHAIN_ID, ALCHEMY_API_KEY)
+const rpcUrl = alchemy(CHAIN_ID, ALCHEMY_API_KEY)
 const pimlicoUrl = pimlico(CHAIN_ID, PIMLICO_API_KEY)
 const candideUrl = `https://api.candide.dev/api/v3/${CHAIN_ID}/${CANDIDE_API_KEY}`
+const paymasterUrl = `https://api.candide.dev/paymaster/v3/base-sepolia/${CANDIDE_API_KEY}`
 
-const client = new JsonRpcProvider(alchemyUrl)
+const client = new JsonRpcProvider(rpcUrl)
 const bundler = new ERC4337Bundler(candideUrl, undefined, {
 	batchMaxCount: 1, // candide doesn't support rpc batching
+})
+const paymasterClient = new JsonRpcProvider(paymasterUrl, CHAIN_ID, {
+	staticNetwork: true,
+	batchMaxCount: 1,
 })
 
 const signer = new Wallet(DEV_7702_PK)
@@ -68,11 +72,57 @@ const op = await buildAccountExecutions({
 	executions,
 })
 
-// candide doesn't support public paymaster
-// op.setPaymaster(getPublicPaymaster())
+if (!op.entryPointAddress) {
+	throw new Error('Entry point address is not set')
+}
+
+const entryPointAddress = getAddress(op.entryPointAddress)
+
+const supportedEntryPoints = await paymasterClient.send('pm_supportedEntryPoints', [])
+
+if (!supportedEntryPoints.some((entryPoint: string) => isSameAddress(entryPoint, entryPointAddress))) {
+	throw new Error('Entry point not supported by paymaster')
+}
+
+const params: GetPaymasterStubDataParams = [
+	op.hex(),
+	getAddress(op.entryPointAddress),
+	toBeHex(CHAIN_ID),
+	{ sponsorshipPolicyId: 'f0785f78e6678a99' },
+]
+
+const paymasterStubData: GetPaymasterStubDataResult | null = await paymasterClient.send(
+	'pm_getPaymasterStubData',
+	params,
+)
+
+if (!paymasterStubData) {
+	throw new Error('Paymaster stub data is falsy')
+}
+console.log('paymasterStubData', paymasterStubData)
+
+op.setPaymaster(paymasterStubData)
+
 op.setGasPrice(await fetchGasPricePimlico(pimlicoUrl))
 
 await op.estimateGas()
+
+if (!paymasterStubData.isFinal) {
+	const params: GetPaymasterDataParams = [
+		op.hex(),
+		op.entryPointAddress,
+		toBeHex(CHAIN_ID),
+		{ sponsorshipPolicyId: 'f0785f78e6678a99' },
+	]
+	const paymasterData: GetPaymasterDataResult | null = await paymasterClient.send('pm_getPaymasterData', params)
+	console.log('paymasterData', paymasterData)
+
+	if (!paymasterData) {
+		throw new Error('Paymaster data is falsy')
+	}
+
+	op.setPaymasterData(paymasterData.paymasterData)
+}
 
 const sig = await signer.signMessage(getBytes(op.hash()))
 
