@@ -106,14 +106,22 @@ export class UserOpBuilder {
 		paymaster,
 		paymasterData = '0x',
 		paymasterPostOpGasLimit = 0,
+		paymasterVerificationGasLimit = 0,
 	}: {
 		paymaster: string
 		paymasterData?: string
 		paymasterPostOpGasLimit?: BigNumberish
+		paymasterVerificationGasLimit?: BigNumberish
 	}): UserOpBuilder {
 		this.userOp.paymaster = paymaster
 		this.userOp.paymasterData = paymasterData
 		this.userOp.paymasterPostOpGasLimit = paymasterPostOpGasLimit
+		this.userOp.paymasterVerificationGasLimit = paymasterVerificationGasLimit
+		return this
+	}
+
+	setPaymasterData(paymasterData: string): UserOpBuilder {
+		this.userOp.paymasterData = paymasterData
 		return this
 	}
 
@@ -233,6 +241,11 @@ export class UserOpBuilder {
 		return [domain, types, this.pack()]
 	}
 
+	/**
+	 * Estimates gas values for the user operation using the bundler.
+	 * Always sets: verificationGasLimit, preVerificationGas, callGasLimit
+	 * Conditionally sets: paymasterVerificationGasLimit (only if not already set), maxFeePerGas, maxPriorityFeePerGas
+	 */
 	async estimateGas(): Promise<void> {
 		this.checkSender()
 		this.checkEntryPointAddress()
@@ -242,7 +255,11 @@ export class UserOpBuilder {
 		this.userOp.verificationGasLimit = estimations.verificationGasLimit
 		this.userOp.preVerificationGas = estimations.preVerificationGas
 		this.userOp.callGasLimit = estimations.callGasLimit
-		this.userOp.paymasterVerificationGasLimit = estimations.paymasterVerificationGasLimit
+
+		// Only set paymasterVerificationGasLimit if not already set
+		if (!this.userOp.paymasterVerificationGasLimit) {
+			this.userOp.paymasterVerificationGasLimit = estimations.paymasterVerificationGasLimit
+		}
 
 		// Only etherspot returns these
 		if (estimations.maxFeePerGas) {
