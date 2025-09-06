@@ -1,6 +1,6 @@
 // https://eips.ethereum.org/EIPS/eip-7677
 
-import type { UserOperationHex } from './core'
+import type { UserOperationHex } from '../core'
 
 // [userOp, entryPoint, chainId, context]
 export type GetPaymasterStubDataParams = [

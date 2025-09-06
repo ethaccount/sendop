@@ -1,18 +1,13 @@
 import { KernelAccountAPI } from '@/accounts'
 import { ADDRESS } from '@/addresses'
 import { ERC4337Bundler } from '@/core'
-import type {
-	GetPaymasterDataParams,
-	GetPaymasterDataResult,
-	GetPaymasterStubDataParams,
-	GetPaymasterStubDataResult,
-} from '@/erc7677-types'
 import { fetchGasPricePimlico } from '@/fetchGasPrice'
 import { INTERFACES } from '@/interfaces'
+import { PaymasterService } from '@/paymasters/PaymasterService'
 import { isSameAddress } from '@/utils'
 import { getECDSAValidator } from '@/validations/getECDSAValidator'
 import { SingleEOAValidation } from '@/validations/SingleEOAValidation'
-import { getAddress, getBytes, JsonRpcProvider, toBeHex, Wallet } from 'ethers'
+import { getAddress, getBytes, JsonRpcProvider, Wallet } from 'ethers'
 import { alchemy, pimlico } from 'evm-providers'
 import { buildAccountExecutions } from '../helpers'
 
@@ -36,13 +31,10 @@ const candideUrl = `https://api.candide.dev/api/v3/${CHAIN_ID}/${CANDIDE_API_KEY
 const paymasterUrl = `https://api.candide.dev/paymaster/v3/base-sepolia/${CANDIDE_API_KEY}`
 
 const client = new JsonRpcProvider(rpcUrl)
-const bundler = new ERC4337Bundler(candideUrl, undefined, {
+const bundler = new ERC4337Bundler(pimlicoUrl, undefined, {
 	batchMaxCount: 1, // candide doesn't support rpc batching
 })
-const paymasterClient = new JsonRpcProvider(paymasterUrl, CHAIN_ID, {
-	staticNetwork: true,
-	batchMaxCount: 1,
-})
+const paymasterService = new PaymasterService(paymasterUrl, CHAIN_ID)
 
 const signer = new Wallet(DEV_7702_PK)
 
@@ -78,23 +70,17 @@ if (!op.entryPointAddress) {
 
 const entryPointAddress = getAddress(op.entryPointAddress)
 
-const supportedEntryPoints = await paymasterClient.send('pm_supportedEntryPoints', [])
+const supportedEntryPoints = await paymasterService.supportedEntryPoints()
 
 if (!supportedEntryPoints.some((entryPoint: string) => isSameAddress(entryPoint, entryPointAddress))) {
 	throw new Error('Entry point not supported by paymaster')
 }
 
-const params: GetPaymasterStubDataParams = [
-	op.hex(),
-	getAddress(op.entryPointAddress),
-	toBeHex(CHAIN_ID),
-	{ sponsorshipPolicyId: 'f0785f78e6678a99' },
-]
-
-const paymasterStubData: GetPaymasterStubDataResult | null = await paymasterClient.send(
-	'pm_getPaymasterStubData',
-	params,
-)
+const paymasterStubData = await paymasterService.getPaymasterStubData({
+	userOp: op.preview(),
+	entryPointAddress: op.entryPointAddress,
+	context: { sponsorshipPolicyId: 'f0785f78e6678a99' },
+})
 
 if (!paymasterStubData) {
 	throw new Error('Paymaster stub data is falsy')
@@ -108,13 +94,11 @@ op.setGasPrice(await fetchGasPricePimlico(pimlicoUrl))
 await op.estimateGas()
 
 if (!paymasterStubData.isFinal) {
-	const params: GetPaymasterDataParams = [
-		op.hex(),
-		op.entryPointAddress,
-		toBeHex(CHAIN_ID),
-		{ sponsorshipPolicyId: 'f0785f78e6678a99' },
-	]
-	const paymasterData: GetPaymasterDataResult | null = await paymasterClient.send('pm_getPaymasterData', params)
+	const paymasterData = await paymasterService.getPaymasterData({
+		userOp: op.preview(),
+		entryPointAddress: op.entryPointAddress,
+		context: { sponsorshipPolicyId: 'f0785f78e6678a99' },
+	})
 	console.log('paymasterData', paymasterData)
 
 	if (!paymasterData) {
