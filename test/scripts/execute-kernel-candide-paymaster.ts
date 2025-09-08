@@ -24,6 +24,7 @@ if (!CANDIDE_API_KEY) {
 }
 
 const CHAIN_ID = 84532
+const POLICY_ID = 'f0785f78e6678a99'
 
 const rpcUrl = alchemy(CHAIN_ID, ALCHEMY_API_KEY)
 const pimlicoUrl = pimlico(CHAIN_ID, PIMLICO_API_KEY)
@@ -79,7 +80,7 @@ if (!supportedEntryPoints.some((entryPoint: string) => isSameAddress(entryPoint,
 const paymasterStubData = await paymasterService.getPaymasterStubData({
 	userOp: op.preview(),
 	entryPointAddress: op.entryPointAddress,
-	context: { sponsorshipPolicyId: 'f0785f78e6678a99' },
+	context: { sponsorshipPolicyId: POLICY_ID },
 })
 
 if (!paymasterStubData) {
@@ -97,7 +98,7 @@ if (!paymasterStubData.isFinal) {
 	const paymasterData = await paymasterService.getPaymasterData({
 		userOp: op.preview(),
 		entryPointAddress: op.entryPointAddress,
-		context: { sponsorshipPolicyId: 'f0785f78e6678a99' },
+		context: { sponsorshipPolicyId: POLICY_ID },
 	})
 	console.log('paymasterData', paymasterData)
 
