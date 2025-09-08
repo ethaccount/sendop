@@ -1,6 +1,6 @@
 import { toUserOpHex, type UserOperation } from '@/core'
 import type { AddressLike, BigNumberish, FetchRequest, JsonRpcApiProviderOptions } from 'ethers'
-import { getBigInt, JsonRpcProvider, resolveAddress, toBeHex } from 'ethers'
+import { JsonRpcProvider, resolveAddress, toBeHex } from 'ethers'
 import type {
 	GetPaymasterDataParams,
 	GetPaymasterDataResult,
@@ -16,7 +16,7 @@ export class PaymasterServiceError extends Error {
 }
 
 export class PaymasterService extends JsonRpcProvider {
-	chainId: bigint
+	chainId: number
 
 	constructor(url: string | FetchRequest, chainId: BigNumberish, options?: JsonRpcApiProviderOptions) {
 		const serviceOptions = {
@@ -24,8 +24,9 @@ export class PaymasterService extends JsonRpcProvider {
 			batchMaxCount: options?.batchMaxCount ? 1 : options?.batchMaxCount,
 			staticNetwork: options?.staticNetwork ?? true,
 		}
-		super(url, chainId, serviceOptions)
-		this.chainId = getBigInt(chainId)
+		const chainIdNumber = Number(chainId)
+		super(url, chainIdNumber, serviceOptions)
+		this.chainId = chainIdNumber
 	}
 
 	/**
