@@ -19,23 +19,18 @@ if (!ALCHEMY_API_KEY) {
 if (!PIMLICO_API_KEY) {
 	throw new Error('PIMLICO_API_KEY is not set')
 }
-if (!CANDIDE_API_KEY) {
-	throw new Error('CANDIDE_API_KEY is not set')
-}
 
 const CHAIN_ID = 84532
-const POLICY_ID = 'f0785f78e6678a99'
+const POLICY_ID = 'sp_charming_molecule_man'
 
 const rpcUrl = alchemy(CHAIN_ID, ALCHEMY_API_KEY)
 const pimlicoUrl = pimlico(CHAIN_ID, PIMLICO_API_KEY)
-const candideUrl = `https://api.candide.dev/api/v3/${CHAIN_ID}/${CANDIDE_API_KEY}`
-const paymasterUrl = `https://api.candide.dev/paymaster/v3/base-sepolia/${CANDIDE_API_KEY}`
 
 const client = new JsonRpcProvider(rpcUrl)
-const bundler = new ERC4337Bundler(candideUrl, undefined, {
+const bundler = new ERC4337Bundler(pimlicoUrl, undefined, {
 	batchMaxCount: 1, // candide doesn't support rpc batching
 })
-const paymasterService = new PaymasterService(paymasterUrl, CHAIN_ID)
+const paymasterService = new PaymasterService(pimlicoUrl, CHAIN_ID)
 
 const signer = new Wallet(DEV_7702_PK)
 
